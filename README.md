@@ -21,3 +21,5 @@ Install python rec_app with poetry for easy installation
 ```
 code here
 ```
+
+Copy / install arduino_firmware folder to RPI pico using arduino ide
