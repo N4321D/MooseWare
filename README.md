@@ -1,6 +1,19 @@
 # MooseWare
 
 ```
+     ___            ___ 
+    /   \          /   \
+   \_   \        /  __/
+     _\   \      /  /__ 
+     \___  \____/   __/ 
+         \_       _/    
+           | @ @  \_    
+           |            
+         _/     /\      
+        /o)  (o/\ \_    
+        \_____/ /       
+          \____/        
+                                                    NEUREFLECT INC.
 |   |   | /   \  /   \ /    /  /   ]  |  |  | /    ||    \   /   ]
 |       ||     ||     (   \   /  [ |  |  |  ||  o  ||  D  ) /  [  
 |  \ /  ||  O  ||  O  |\    ||     ]  |  |  ||     ||    / |     ]
@@ -12,4 +25,13 @@
 Recording Software  
 *by Dmitri Yousef Yengej*
 
-Recording software to record from Neureflect inc. patented devices
+## Description 
+Recording software to record from Neureflect inc. patented devices. This repository consists of micro controller drivers for RPI Pico written in C++ (Arduino IDE) and the control / GUI software which can run on multiple devices written in python.
+
+## Installation
+Install python rec_app with poetry for easy installation
+```
+code here
+```
+
+Copy / install arduino_firmware folder to RPI pico using arduino ide
