@@ -1,7 +1,7 @@
-./.vscode
-./ArduinoOutput
-./requirements.txt
-./tests
-./rec_app/data
+/.vscode
+/ArduinoOutput
+/requirements.txt
+/tests
+/rec_app/data
 **/.vscode
 **/__pycache__
