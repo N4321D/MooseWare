@@ -1,0 +1,1698 @@
+
+2023-06-12 14:14:55,730 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-12 14:14:55,730 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 14:14:55,731 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-12 14:14:55,731 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-12 14:14:55,731 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-12 14:14:55,732 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 14:14:55,732 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-12 14:14:55,933 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-12 14:14:55,933 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-12 14:14:55,935 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-12 14:14:55,935 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-12 14:14:56,513 - kivy - CRITICAL - AudioSDL2: Unable to initialize SDL: b''
+
+2023-06-12 14:14:56,513 - kivy - WARNING - Audio: Unable to find a loader for </home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/Icons/moose.mp3>
+
+2023-06-12 14:14:59,596 - kivy - WARNING - MTD: Unable to open device "/dev/input/event13". Please ensure you have the appropriate permissions.
+
+2023-06-12 14:17:29,443 - kivy - WARNING - stderr: Exception ignored in: functools.partial(<function _widget_destructor at 0x7fa844fd9d80>, 4304)
+
+2023-06-12 14:17:29,443 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-12 14:17:29,443 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/widget.py", line 265, in _widget_destructor
+
+2023-06-12 14:17:29,444 - kivy - WARNING - stderr:     def _widget_destructor(uid, r):
+
+2023-06-12 14:17:29,444 - kivy - WARNING - stderr: KeyboardInterrupt: 
+
+2023-06-12 15:18:53,081 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-12 15:18:53,081 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 15:18:53,082 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-12 15:18:53,082 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-12 15:18:53,083 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-12 15:18:53,083 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 15:18:53,083 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-12 15:18:53,316 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-12 15:18:53,316 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-12 15:18:53,318 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-12 15:18:53,318 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-12 15:18:53,889 - kivy - CRITICAL - AudioSDL2: Unable to initialize SDL: b''
+
+2023-06-12 15:18:53,889 - kivy - WARNING - Audio: Unable to find a loader for </home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/Icons/moose.mp3>
+
+2023-06-12 15:18:56,969 - kivy - WARNING - MTD: Unable to open device "/dev/input/event13". Please ensure you have the appropriate permissions.
+
+2023-06-12 15:19:38,949 - kivy - WARNING - stderr: --- Logging error ---
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 391, in <module>
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:     asyncio.run(mainCoro())
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:     return loop.run_until_complete(main)
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/asyncio/base_events.py", line 646, in run_until_complete
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:     return future.result()
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 389, in mainCoro
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:     await app.async_run()
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/app.py", line 967, in async_run
+
+2023-06-12 15:19:38,950 - kivy - WARNING - stderr:     await async_runTouchApp(async_lib=async_lib)
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 597, in async_runTouchApp
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     await EventLoop.async_mainloop()
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 354, in async_mainloop
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     await self.async_idle()
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 422, in async_idle
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     self.dispatch_input()
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 334, in dispatch_input
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     post_dispatch_input(*pop(0))
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 302, in post_dispatch_input
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     wid.dispatch('on_touch_up', me)
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "kivy/_event.pyx", line 731, in kivy._event.EventDispatcher.dispatch
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/behaviors/button.py", line 179, in on_touch_up
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     self.dispatch('on_release')
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "kivy/_event.pyx", line 727, in kivy._event.EventDispatcher.dispatch
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "kivy/_event.pyx", line 1307, in kivy._event.EventObservers.dispatch
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "kivy/_event.pyx", line 1191, in kivy._event.EventObservers._dispatch
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/lang/builder.py", line 55, in custom_callback
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     exec(__kvlang__.co_value, idmap)
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "<string>", line 31, in <module>
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/gui/screens/rec.py", line 464, in start_stop
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     self.app.IO.stop_recording()
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 326, in stop_recording
+
+2023-06-12 15:19:38,951 - kivy - WARNING - stderr:     self.sav.stop()
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 115, in stop
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     self.save_buffer()
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 217, in save_buffer
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     data, newest_pos = self.get_data(par)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 237, in get_data
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     last_pos = self.data_structure.get('saved', par)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/misc/shared_mem_np_dict.py", line 162, in get
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     return self.array[par][index]
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr: IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr: 
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr: During handling of the above exception, another exception occurred:
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr: 
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/logging/__init__.py", line 1100, in emit
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     msg = self.format(record)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/logging/__init__.py", line 943, in format
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     return fmt.format(record)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/logger.py", line 291, in format
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     record = copy.deepcopy(record)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 172, in deepcopy
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:     y = _reconstruct(x, memo, *rv)
+
+2023-06-12 15:19:38,952 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 271, in _reconstruct
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     state = deepcopy(state, memo)
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 146, in deepcopy
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     y = copier(x, memo)
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 231, in _deepcopy_dict
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     y[deepcopy(key, memo)] = deepcopy(value, memo)
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 146, in deepcopy
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     y = copier(x, memo)
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 211, in _deepcopy_tuple
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     y = [deepcopy(a, memo) for a in x]
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 211, in <listcomp>
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     y = [deepcopy(a, memo) for a in x]
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/copy.py", line 161, in deepcopy
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr:     rv = reductor(4)
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr: TypeError: cannot pickle 'traceback' object
+
+2023-06-12 15:19:38,953 - kivy - WARNING - stderr: Call stack:
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/bin/ipython", line 8, in <module>
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     sys.exit(start_ipython())
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/__init__.py", line 124, in start_ipython
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     return launch_new_instance(argv=argv, **kwargs)
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/traitlets/config/application.py", line 1042, in launch_instance
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     app.initialize(argv)
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/traitlets/config/application.py", line 113, in inner
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     return method(app, *args, **kwargs)
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/terminal/ipapp.py", line 285, in initialize
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     self.init_code()
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/shellapp.py", line 309, in init_code
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     self._run_cmd_line_code()
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/shellapp.py", line 434, in _run_cmd_line_code
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     self._exec_file(fname, shell_futures=True)
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/shellapp.py", line 359, in _exec_file
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     self.shell.safe_execfile(full_filename,
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/interactiveshell.py", line 2802, in safe_execfile
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     py3compat.execfile(
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/utils/py3compat.py", line 55, in execfile
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     exec(compiler(f.read(), fname, "exec"), glob, loc)
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 402, in <module>
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     log(f"{type(e).__name__}: {e}", "exception")
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 28, in log
+
+2023-06-12 15:19:38,954 - kivy - WARNING - stderr:     getattr(logger, level)(f"MAIN: {message}")  # change RECORDER SAVER IN CLASS NAME
+
+2023-06-12 15:19:38,955 - kivy - WARNING - stderr: Message: 'MAIN: IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices'
+
+2023-06-12 15:19:38,955 - kivy - WARNING - stderr: Arguments: ()
+
+2023-06-12 15:19:38,939 - kivy - ERROR - MAIN: IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+Traceback (most recent call last):
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 391, in <module>
+    asyncio.run(mainCoro())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 646, in run_until_complete
+    return future.result()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 389, in mainCoro
+    await app.async_run()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/app.py", line 967, in async_run
+    await async_runTouchApp(async_lib=async_lib)
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 597, in async_runTouchApp
+    await EventLoop.async_mainloop()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 354, in async_mainloop
+    await self.async_idle()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 422, in async_idle
+    self.dispatch_input()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 334, in dispatch_input
+    post_dispatch_input(*pop(0))
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 302, in post_dispatch_input
+    wid.dispatch('on_touch_up', me)
+  File "kivy/_event.pyx", line 731, in kivy._event.EventDispatcher.dispatch
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/behaviors/button.py", line 179, in on_touch_up
+    self.dispatch('on_release')
+  File "kivy/_event.pyx", line 727, in kivy._event.EventDispatcher.dispatch
+  File "kivy/_event.pyx", line 1307, in kivy._event.EventObservers.dispatch
+  File "kivy/_event.pyx", line 1191, in kivy._event.EventObservers._dispatch
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/lang/builder.py", line 55, in custom_callback
+    exec(__kvlang__.co_value, idmap)
+  File "<string>", line 31, in <module>
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/gui/screens/rec.py", line 464, in start_stop
+    self.app.IO.stop_recording()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 326, in stop_recording
+    self.sav.stop()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 115, in stop
+    self.save_buffer()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 217, in save_buffer
+    data, newest_pos = self.get_data(par)
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/saver.py", line 237, in get_data
+    last_pos = self.data_structure.get('saved', par)
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/misc/shared_mem_np_dict.py", line 162, in get
+    return self.array[par][index]
+IndexError: only integers, slices (`:`), ellipsis (`...`), numpy.newaxis (`None`) and integer or boolean arrays are valid indices
+
+2023-06-12 15:19:42,809 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-12 15:19:42,809 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 15:19:42,810 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-12 15:19:42,810 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-12 15:19:42,810 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-12 15:19:42,811 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-12 15:19:42,811 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-12 15:19:43,055 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-12 15:19:43,055 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-12 15:19:43,057 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-12 15:19:43,057 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-12 15:19:43,646 - kivy - CRITICAL - AudioSDL2: Unable to initialize SDL: b''
+
+2023-06-12 15:19:43,646 - kivy - WARNING - Audio: Unable to find a loader for </home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/Icons/moose.mp3>
+
+2023-06-12 15:19:46,732 - kivy - WARNING - MTD: Unable to open device "/dev/input/event13". Please ensure you have the appropriate permissions.
+
+2023-06-12 15:51:03,484 - kivy - WARNING - stderr: 
+
+2023-06-12 15:51:03,484 - kivy - WARNING - stderr: KeyboardInterrupt
+
+2023-06-12 15:51:03,484 - kivy - WARNING - stderr: 
+
+2023-06-13 08:51:20,409 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 08:51:20,410 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 08:51:20,410 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 08:51:20,411 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 08:51:20,411 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 08:51:20,412 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 08:51:20,412 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 08:51:20,797 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 08:51:20,798 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 08:51:20,800 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 08:51:20,800 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 08:51:21,177 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7ff05017d690>" was accessed, it will be removed in a future version
+
+2023-06-13 08:51:24,528 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/bin/ipython", line 8, in <module>
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     sys.exit(start_ipython())
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/__init__.py", line 129, in start_ipython
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     return launch_new_instance(argv=argv, **kwargs)
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/traitlets/config/application.py", line 1043, in launch_instance
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     app.start()
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/terminal/ipapp.py", line 318, in start
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     self.shell.mainloop()
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/terminal/interactiveshell.py", line 907, in mainloop
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     self._atexit_once()
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/interactiveshell.py", line 3858, in _atexit_once
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     self.history_manager.end_session()
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/history.py", line 580, in end_session
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     with self.db:
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr: KeyboardInterrupt
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr: 
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr: If you suspect this is an IPython 8.14.0 bug, please report it at:
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr:     https://github.com/ipython/ipython/issues
+
+2023-06-13 09:00:03,619 - kivy - WARNING - stderr: or send an email to the mailing list at ipython-dev@python.org
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: 
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: You can print a more detailed traceback right now with "%tb", or use "%debug"
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: to interactively debug it.
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: 
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr:     %config Application.verbose_crash=True
+
+2023-06-13 09:00:03,620 - kivy - WARNING - stderr: 
+
+2023-06-13 09:00:33,535 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 09:00:33,536 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 09:00:33,536 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 09:00:33,537 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 09:00:33,537 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 09:00:33,537 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 09:00:33,538 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 09:00:33,740 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 09:00:33,740 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 09:00:33,742 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 09:00:33,742 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 09:00:34,104 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f2823fb1850>" was accessed, it will be removed in a future version
+
+2023-06-13 09:00:37,444 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/bin/ipython", line 8, in <module>
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr:     sys.exit(start_ipython())
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/__init__.py", line 129, in start_ipython
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr:     return launch_new_instance(argv=argv, **kwargs)
+
+2023-06-13 09:46:00,413 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/traitlets/config/application.py", line 1043, in launch_instance
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     app.start()
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/terminal/ipapp.py", line 318, in start
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     self.shell.mainloop()
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/terminal/interactiveshell.py", line 907, in mainloop
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     self._atexit_once()
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/interactiveshell.py", line 3858, in _atexit_once
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     self.history_manager.end_session()
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/IPython/core/history.py", line 580, in end_session
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     with self.db:
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: KeyboardInterrupt
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: 
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: If you suspect this is an IPython 8.14.0 bug, please report it at:
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr:     https://github.com/ipython/ipython/issues
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: or send an email to the mailing list at ipython-dev@python.org
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: 
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: You can print a more detailed traceback right now with "%tb", or use "%debug"
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: to interactively debug it.
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: 
+
+2023-06-13 09:46:00,414 - kivy - WARNING - stderr: Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+
+2023-06-13 09:46:00,415 - kivy - WARNING - stderr:     %config Application.verbose_crash=True
+
+2023-06-13 09:46:00,415 - kivy - WARNING - stderr: 
+
+2023-06-13 09:46:02,134 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 09:46:02,134 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 09:46:02,134 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 09:46:02,135 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 09:46:02,135 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 09:46:02,135 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 09:46:02,136 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 09:46:02,356 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 09:46:02,356 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 09:46:02,358 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 09:46:02,358 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 09:46:02,733 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7fa6ff2bd9a0>" was accessed, it will be removed in a future version
+
+2023-06-13 09:46:06,083 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:04:28,945 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:28,946 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:28,946 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:28,946 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:28,947 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:04:28,947 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:28,948 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:04:29,176 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:04:29,176 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:04:29,178 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:04:29,178 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:04:29,552 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7fbcbe759930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:04:32,908 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:04:45,369 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:45,370 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:45,370 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:45,370 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:45,371 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:04:45,371 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:04:45,372 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:04:45,592 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:04:45,592 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:04:45,594 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:04:45,594 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:04:45,964 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f6b73a31930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:04:49,320 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:04:49,339 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'Not Connected'
+
+2023-06-13 10:04:49,340 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'Not Connected'
+
+2023-06-13 10:04:50,345 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'Not Connected'
+
+2023-06-13 10:04:50,345 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'Not Connected'
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr: Process Process-1:
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:     self.run()
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:     self._target(*self._args, **self._kwargs)
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:   File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/recording/recorder.py", line 249, in loop
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr:     time.sleep(0)
+
+2023-06-13 10:04:50,873 - kivy - WARNING - stderr: KeyboardInterrupt
+
+2023-06-13 10:06:17,445 - kivy - WARNING - stderr: Exception ignored in: <module 'threading' from '/usr/lib/python3.10/threading.py'>
+
+2023-06-13 10:06:17,445 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 10:06:17,445 - kivy - WARNING - stderr:   File "/usr/lib/python3.10/threading.py", line 1567, in _shutdown
+
+2023-06-13 10:06:17,445 - kivy - WARNING - stderr:     lock.acquire()
+
+2023-06-13 10:06:17,445 - kivy - WARNING - stderr: KeyboardInterrupt: 
+
+2023-06-13 10:06:19,005 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:06:19,006 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:06:19,006 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:06:19,007 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:06:19,007 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:06:19,008 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:06:19,008 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:06:19,222 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:06:19,223 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:06:19,224 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:06:19,225 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:06:19,590 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f3563eb1930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:06:22,954 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:06:24,173 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:06:24,173 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:06:25,182 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:06:25,182 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:06:25,628 - kivy - ERROR - MAIN: AssertionError: can only join a started process
+Traceback (most recent call last):
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 391, in <module>
+    asyncio.run(mainCoro())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 646, in run_until_complete
+    return future.result()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/main.py", line 389, in mainCoro
+    await app.async_run()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/app.py", line 968, in async_run
+    await async_runTouchApp(async_lib=async_lib)
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 597, in async_runTouchApp
+    await EventLoop.async_mainloop()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 354, in async_mainloop
+    await self.async_idle()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 422, in async_idle
+    self.dispatch_input()
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 334, in dispatch_input
+    post_dispatch_input(*pop(0))
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/base.py", line 302, in post_dispatch_input
+    wid.dispatch('on_touch_up', me)
+  File "kivy/_event.pyx", line 731, in kivy._event.EventDispatcher.dispatch
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/behaviors/button.py", line 179, in on_touch_up
+    self.dispatch('on_release')
+  File "kivy/_event.pyx", line 727, in kivy._event.EventDispatcher.dispatch
+  File "kivy/_event.pyx", line 1307, in kivy._event.EventObservers.dispatch
+  File "kivy/_event.pyx", line 1191, in kivy._event.EventObservers._dispatch
+  File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/lang/builder.py", line 55, in custom_callback
+    exec(__kvlang__.co_value, idmap)
+  File "<string>", line 31, in <module>
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/gui/screens/rec.py", line 464, in start_stop
+    self.app.IO.stop_recording()
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 328, in stop_recording
+    self.rec_pr.join()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 148, in join
+    assert self._popen is not None, 'can only join a started process'
+AssertionError: can only join a started process
+
+2023-06-13 10:07:14,616 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:07:14,616 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:07:14,617 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:07:14,617 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:07:14,618 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:07:14,618 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:07:14,619 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:07:14,837 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:07:14,837 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:07:14,839 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:07:14,839 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:07:15,204 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f2a13809930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:07:18,540 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:07:18,543 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:07:18,543 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:07:19,547 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:07:19,547 - kivy - WARNING - INPUT_OUTPUT: Parameter not in memory or no data yet: 'NoneType' object has no attribute 'copy'
+
+2023-06-13 10:10:41,555 - kivy - WARNING - stderr: Exception ignored in: functools.partial(<function _widget_destructor at 0x7f2a86760dc0>, 3370)
+
+2023-06-13 10:10:41,555 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 10:10:41,555 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/widget.py", line 265, in _widget_destructor
+
+2023-06-13 10:10:41,555 - kivy - WARNING - stderr:     def _widget_destructor(uid, r):
+
+2023-06-13 10:10:41,555 - kivy - WARNING - stderr: KeyboardInterrupt: 
+
+2023-06-13 10:10:43,005 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:10:43,006 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:10:43,006 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:10:43,006 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:10:43,007 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:10:43,007 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:10:43,008 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:10:43,235 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:10:43,235 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:10:43,237 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:10:43,237 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:10:43,619 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f08c9e21930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:10:46,976 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.
+
+2023-06-13 10:15:52,770 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:53,772 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:54,776 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:55,780 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:56,784 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:57,790 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:58,796 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:15:59,656 - kivy - WARNING - FILEMANAGER: [Errno 2] No such file or directory: '/media/dmitri/RPI-RP2'
+
+2023-06-13 10:15:59,801 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:00,805 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:01,810 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:02,814 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:03,818 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:04,823 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:05,828 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:06,831 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:07,836 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:08,841 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:09,847 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:10,851 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:11,855 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:12,859 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:13,866 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:14,870 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:15,875 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:16,878 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:17,884 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:18,887 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:19,891 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:20,905 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:21,909 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:22,914 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:23,919 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:24,924 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:25,930 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:26,934 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:27,939 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:28,944 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:29,948 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:30,952 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:31,958 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:32,963 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:33,967 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:34,972 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:35,977 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:36,982 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:37,990 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:38,995 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:40,002 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:41,010 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:42,014 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:43,019 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:44,024 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:45,030 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:46,036 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:47,042 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:48,047 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:49,049 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:50,054 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:51,059 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:52,066 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:53,072 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:54,076 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:55,079 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:56,084 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:57,088 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:58,091 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:16:59,095 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:00,099 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:01,105 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:02,110 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:03,116 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:04,121 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:05,127 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:06,134 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:07,139 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:08,143 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:09,147 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:10,153 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:11,157 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:12,162 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:13,168 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:14,173 - kivy - ERROR - INPUT_OUTPUT: Error in async.gather results: Traceback (most recent call last):
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 393, in update_plot_pars
+    self._update_plot_pars()
+
+  File "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/input_ouput.py", line 409, in _update_plot_pars
+    dev = self.micro_controllers[self.plot_micro]
+
+KeyError: 'Raspberry Pi - Pico'
+
+
+2023-06-13 10:17:14,763 - kivy - WARNING - stderr: Exception ignored in: functools.partial(<function _widget_destructor at 0x7f0948d3cd30>, 3370)
+
+2023-06-13 10:17:14,763 - kivy - WARNING - stderr: Traceback (most recent call last):
+
+2023-06-13 10:17:14,763 - kivy - WARNING - stderr:   File "/home/dmitri/.cache/pypoetry/virtualenvs/rec-app-EfDc1YsZ-py3.10/lib/python3.10/site-packages/kivy/uix/widget.py", line 265, in _widget_destructor
+
+2023-06-13 10:17:14,763 - kivy - WARNING - stderr:     def _widget_destructor(uid, r):
+
+2023-06-13 10:17:14,763 - kivy - WARNING - stderr: KeyboardInterrupt: 
+
+2023-06-13 10:17:16,588 - kivy - WARNING - RECORDER: OIS Sensor not found, dummy driver loaded
+
+2023-06-13 10:17:16,589 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:17:16,589 - kivy - WARNING - RECORDER: Pressure Sensor not found, dummy driver loaded
+
+2023-06-13 10:17:16,589 - kivy - WARNING - RECORDER: Humidity Sensor not found, dummy driver loaded
+
+2023-06-13 10:17:16,590 - kivy - WARNING - RECORDER: Lightstrip not found, dummy driver loaded
+
+2023-06-13 10:17:16,590 - kivy - WARNING - RECORDER: Motion Sensor not found, dummy driver loaded
+
+2023-06-13 10:17:16,591 - kivy - WARNING - RECORDER: GPIO not found, dummy driver loaded
+
+2023-06-13 10:17:16,805 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-06-13 10:17:16,806 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-06-13 10:17:16,807 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-06-13 10:17:16,808 - kivy - WARNING - Warning: Twilio not found, no SMS alerts available
+
+2023-06-13 10:17:17,170 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7efd7eb41930>" was accessed, it will be removed in a future version
+
+2023-06-13 10:17:20,506 - kivy - WARNING - MTD: Unable to open device "/dev/input/event18". Please ensure you have the appropriate permissions.

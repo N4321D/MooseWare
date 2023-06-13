@@ -1,0 +1,7 @@
+
+command -> edit configurations and include in include paths
+                "/home/dmitri/Arduino/**",
+                "/home/dmitri/.arduino15/**"
+
+
+dir name must be the same as .ino name
