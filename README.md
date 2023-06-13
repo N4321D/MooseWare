@@ -1,7 +1,7 @@
 # MooseWare
 
 ```
-NEUREFLECT INC.
+                                                    NEUREFLECT INC.
 |   |   | /   \  /   \ /    /  /   ]  |  |  | /    ||    \   /   ]
 |       ||     ||     (   \   /  [ |  |  |  ||  o  ||  D  ) /  [  
 |  \ /  ||  O  ||  O  |\    ||     ]  |  |  ||     ||    / |     ]
