@@ -116,6 +116,7 @@ public:
         // js["parameter__short_names"] = PARAMETER_SHORT_NAMES;
         js["output_text"] = output_text;
         js["i2c_status"] = i2c_error;
+        js["record"] = record;
 
         JsonArray par_names = js.createNestedArray("parameter_names");
         JsonArray par_short_names = js.createNestedArray("parameter_short_names");
