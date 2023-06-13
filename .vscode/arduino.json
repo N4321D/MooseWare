@@ -1,8 +1,0 @@
-{
-    "port": "/dev/ttyACM0",
-    "configuration": "flash=2097152_0,freq=133,opt=Small,rtti=Disabled,stackprotect=Disabled,exceptions=Disabled,dbgport=Disabled,dbglvl=None,usbstack=picosdk,ipbtstack=ipv4only,uploadmethod=default",
-    "board": "rp2040:rp2040:rpipico",
-    "programmer": "adafruit_jlink",
-    "sketch": "rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino",
-    "output": "./ArduinoOutput"
-}
