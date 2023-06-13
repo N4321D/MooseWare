@@ -1,4 +1,4 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/drivers/motion.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/drivers/motion.h"
 /**
  * Driver for movement sensor LMS6DS3
  * 

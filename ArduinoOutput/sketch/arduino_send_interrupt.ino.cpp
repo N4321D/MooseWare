@@ -1,4 +1,4 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 // NOTES:
 // - RPI pico has 2 i2c controllers 0 (wire) and 1 (wire1), they can only use specific
 //    ports, refer to pinout which one can use __itimer_which
@@ -90,33 +90,33 @@ bool START = false;
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);
 
-#line 92 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 92 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 bool TimerHandler(repeating_timer *rt);
-#line 137 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 137 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void feedbackstats(const char *txt);
-#line 145 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 145 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void adjustFreq(float freq);
-#line 168 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 168 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 byte findSensByName(const char *name);
-#line 182 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 182 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void sample();
-#line 229 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 229 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void idle();
-#line 251 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 251 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void run();
-#line 262 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 262 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void procCmd(const char *key, JsonVariant jsonVal);
-#line 292 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 292 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void control(const char *key, JsonVariant value);
-#line 310 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 310 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void readInput();
-#line 335 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 335 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void sendData();
-#line 344 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 344 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void setup();
-#line 395 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 395 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 void loop();
-#line 92 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/rec_app/subs/driver/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+#line 92 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
 bool TimerHandler(repeating_timer *rt)
 { // this function is called by the interupt timer
   callCounter++;
