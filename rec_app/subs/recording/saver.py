@@ -63,7 +63,7 @@ class Saver():
 
     compression = {'compression': "gzip",       # compression parameters for h5 file
                    'compression_opts': 5,       # 5 is optimal (higher number does not really make the file smaller)
-                   'fletcher32': True,
+                   'fletcher32': False,
                    'shuffle': False,            # Only shuffle if not linear data
                    }
     
@@ -150,7 +150,9 @@ class Saver():
 
 
         self.dataset = {}
-        self.attrs = {}                          # attributes to write to file
+        self.attrs = {"timezone": str(datetime.now().astimezone().tzinfo),
+                      "time_offset_utc": round((datetime.now() - datetime.utcnow()).total_seconds()),
+                      }         # attributes to write to file
 
         log("new file: {}".format(self.full_file_name), "debug")
 
@@ -288,7 +290,6 @@ class Saver():
                                     )
                             )
 
-# TODO: save timezone and other par info in attrs
 # TODO: use shared dictionary for shared pars?
 
 # TEST
