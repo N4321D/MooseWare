@@ -347,7 +347,7 @@ class Controller(EventDispatcher):
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
     MAX_MEM = 200 * 1.024e6
 
-    # specify dtypes
+    # specify dtypes for saving
     dtypes = {
         "time": "f8",
         "us": "u4",
@@ -358,6 +358,7 @@ class Controller(EventDispatcher):
     def __init__(self, testing=False, **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
+        self.data_dtype_fields = {}
         self.name = ""
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
@@ -517,41 +518,20 @@ class Controller(EventDispatcher):
         if self.buffer_length == 0:
             # create buffer based on incoming data
             self.set_buffer_dims(data_unpacked)
+            self.data_dtype_fields = self.shared_buffer.buffer[self.name].dtype.fields
 
         self.save_data(data_unpacked)
         self._calc_ema(data_unpacked['sDt'])
 
     def save_data(self, data):
-
-                DO HANDLE errros here if sensor disconnects: 
-    `   """
-    Traceback (most recent call last):
-  File "/usr/lib/python3.9/asyncio/events.py", line 80, in _run
-    self._context.run(self._callback, *self._args)
-  File "/home/pi/.local/lib/python3.9/site-packages/serial_asyncio/__init__.py", line 120, in _read_ready
-    self._protocol.data_received(data)
-  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 50, in data_received
-    self.save(data)
-  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 60, in save
-    self.do()
-  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 480, in on_incoming
-    self.do_new_data(data)
-  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 520, in do_new_data
-    self.save_data(data_unpacked)
-  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 525, in save_data
-    self.shared_buffer.add_1_to_buffer(
-  File "/home/pi/rec_app/rec_app/subs/recording/buffer.py", line 261, in add_1_to_buffer
-    self.buffer[par][pos] = data
-ValueError: could not assign tuple of length 12 to structure with 14 fields.
-
-        """
-
-
-
+        # get data or replace with nans
+        data = tuple(data.get(k, np.nan if v[0].kind == 'f' else 0) 
+                for k, v in self.data_dtype_fields.items())
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.name,
-            tuple(data.values())
+            # tuple(data.values())
+            data
         )
 
     def do_feedback(self, data, e):
