@@ -167,9 +167,8 @@ class SharedBuffer():
 
         # return as much as possible if start and end are the same
         if (start == end):
-            # log(f"{par}: start idx {start} == end idx {end},"
-            #     "returning as much as possible", "warning")
-            # TODO: check why this happens so often
+            log(f"{par}: start idx {start} == end idx {end},"
+                "returning as much as possible", "warning")
             start += 1
 
         if start < end:

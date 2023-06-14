@@ -196,11 +196,11 @@ class Saver():
                     # limit buffer to half of the size of the data buffer and minimal 1
                     self.save_block_lengths[par] = int(data_size / 2) or 1
 
-
                 n_items = self.shared_buffer.get_n_items('added', 'saved', par)
-
+                print(n_items, par)
+               
                 if (n_items >= self.save_block_lengths[par]) and n_items > 0:
-                    self.save_buffer()
+                    self.save_buffer(par)
 
                     # increase save block size if saving takes too long
                     if (data_size // 2) > n_items > (2 * self.save_block_lengths[par]):
@@ -210,25 +210,25 @@ class Saver():
                             f'increasing blocksize to {self.save_block_lengths[par]}', 
                             'warning')
 
-    def save_buffer(self):
+    def save_buffer(self, par=None):
         ''' 
         call this method to save data
         '''
         
-        for par in self.buffer:
+        for par in (self.buffer if par is None else (par,)):
             data, newest_pos = self.get_data(par)
             
             if data is not None:
                 self.write(par, data)
                 self.data_structure.set(newest_pos, 'saved', par)
 
-        if self.file:
-            self.file.flush()               # write all data to file
+            if self.file:
+                self.file.flush()               # write all data to file
 
-        # create new file each ... time interval
-        if ((datetime.now() - self.start_time) >= self.NEW_FILE_INTERVAL
-            and not self.STOP.is_set()):
-            self.new_file()
+            # create new file each ... time interval
+            if ((datetime.now() - self.start_time) >= self.NEW_FILE_INTERVAL
+                and not self.STOP.is_set()):
+                self.new_file()
 
     def get_data(self, par):
         """
@@ -248,9 +248,12 @@ class Saver():
         size = self.data_structure.get('dim0', par)
         newest_pos = (newest_pos) % size
 
-        data = self.shared_buffer.get_buf(par, start=last_pos, end=newest_pos)
+        data = self.shared_buffer.get_buf(par, 
+                                          start=last_pos + 1, 
+                                          end=newest_pos
+                                          )  # add one to prevent double saving last position
 
-        newest_pos = (newest_pos + 1 % size)                                     # add one to prevent double saving end with next save
+        newest_pos %= size                         
 
         return data, newest_pos
 
