@@ -34,7 +34,7 @@ Install python rec_app with poetry for easy installation:
 1. install poetry (see: https://python-poetry.org/)
 2. clone repository
 3. goto folder where repository is and run `poetry install`
-4. to start, goto the rec_app folder and run the main.py file
+4. to start: make sure the poetry env is activated `poetry shell`, then goto the rec_app folder and run the main.py file
 
 ### Micro controller driver:
 Copy / install arduino_firmware folder to RPI pico using arduino ide
