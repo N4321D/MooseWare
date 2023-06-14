@@ -5,4 +5,4 @@
 /rec_app/data
 **/.vscode
 **/__pycache__
-**/*.pyc
+*.pyc
