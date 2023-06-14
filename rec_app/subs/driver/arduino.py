@@ -16,7 +16,6 @@ from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
 
-
 # Logger
 from subs.log import create_logger
 logger = create_logger()
@@ -341,7 +340,7 @@ class DummyMicro(EventDispatcher):
             return self.recv_buff.pop(0)
 
 
-class Controller(EventDispatcher):
+class Controller():
 
 
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
@@ -489,39 +488,37 @@ class Controller(EventDispatcher):
         self.sensors = data
         self.parameters = {f"{k}_{par}": k for k, v in self.sensors.items()
                            for par in v['parameter_short_names'] if v.get("i2c_status") == 0}
-        # print(data)
+        
 
     def do_new_data(self, data):
-        data = self._do_time(data)
+        data_unpacked = self._do_time(data)
 
-        data_unpacked = {}
-        
-        for sens, v in data.items():
-            if isinstance(v, dict):
+        # data_unpacked = {}
+        for sens in tuple(data_unpacked):
+            if isinstance(data_unpacked[sens], dict):
+                v = data_unpacked.pop(sens)
                 _status = v.get("!I2C", 0)
-                self.sensors.setdefault(sens, {})
-                self.sensors[sens]['i2c_status'] = _status
+                self.sensors.setdefault(sens, {})['i2c_status'] = _status
 
                 if _status > 0:
                     # handle errors
-                    data_unpacked.update({f"{sens}_{k2}": np.nan
-                                          for k2 in v if k2 != "!I2C"})
+                    continue  # do not include sensor in data
 
                 else:
+                    # upack dictionary
                     data_unpacked.update({f"{sens}_{k2}": v[k2]
                                           for k2 in v})
-            else:
-                data_unpacked[sens] = v
-
-        self._last_data = data_unpacked
 
         if self.buffer_length == 0:
             # create buffer based on incoming data
             self.set_buffer_dims(data_unpacked)
+            
+            # save dtype of current data
             self.data_dtype_fields = self.shared_buffer.buffer[self.name].dtype.fields
 
         self.save_data(data_unpacked)
         self._calc_ema(data_unpacked['sDt'])
+
 
     def save_data(self, data):
         # get data or replace with nans
