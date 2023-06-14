@@ -1,4 +1,3 @@
-from subs.gui.changelog import CHANGE_LOG
 from datetime import timedelta
 
 # PARS:

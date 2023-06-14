@@ -197,7 +197,6 @@ class Saver():
                     self.save_block_lengths[par] = int(data_size / 2) or 1
 
                 n_items = self.shared_buffer.get_n_items('added', 'saved', par)
-                print(n_items, par)
                
                 if (n_items >= self.save_block_lengths[par]) and n_items > 0:
                     self.save_buffer(par)

@@ -31,12 +31,16 @@ from kivy.app import App
 LOG_FILENAME = './data/logs/syslog.log'
 MAX_LOG_SIZE = 200_000
 N_BACKUPS = 20
+
+from kivy.logger import Logger, LOG_LEVELS
+
 FILE_LOG_LEVEL = logging.WARNING # logging.INFO
-PRINT_LOG_LEVEL = logging.INFO
+
+PRINT_LOG_LEVEL = LOG_LEVELS['info']
 # log levels: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
 
 def create_logger() -> logging.Logger:
-    logger = logging.getLogger('kivy')
+    logger = Logger
     logger.setLevel(PRINT_LOG_LEVEL)
 
     if not any([isinstance(i, RotatingFileHandler) for i in logger.handlers]):

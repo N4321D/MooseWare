@@ -494,22 +494,23 @@ class Controller(EventDispatcher):
         data = self._do_time(data)
 
         data_unpacked = {}
-        for k, v in data.items():
+        
+        for sens, v in data.items():
             if isinstance(v, dict):
                 _status = v.get("!I2C", 0)
-                self.sensors.setdefault(k, {})
-                self.sensors[k]['i2c_status'] = _status
+                self.sensors.setdefault(sens, {})
+                self.sensors[sens]['i2c_status'] = _status
 
                 if _status > 0:
                     # handle errors
-                    data_unpacked.update({f"{k}_{kk}": np.nan
-                                          for kk in v if kk != "!I2C"})
+                    data_unpacked.update({f"{sens}_{k2}": np.nan
+                                          for k2 in v if k2 != "!I2C"})
 
                 else:
-                    data_unpacked.update({f"{k}_{kk}": v[kk]
-                                          for kk in v})
+                    data_unpacked.update({f"{sens}_{k2}": v[k2]
+                                          for k2 in v})
             else:
-                data_unpacked[k] = v
+                data_unpacked[sens] = v
 
         self._last_data = data_unpacked
 
@@ -521,6 +522,32 @@ class Controller(EventDispatcher):
         self._calc_ema(data_unpacked['sDt'])
 
     def save_data(self, data):
+
+                DO HANDLE errros here if sensor disconnects: 
+    `   """
+    Traceback (most recent call last):
+  File "/usr/lib/python3.9/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/pi/.local/lib/python3.9/site-packages/serial_asyncio/__init__.py", line 120, in _read_ready
+    self._protocol.data_received(data)
+  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 50, in data_received
+    self.save(data)
+  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 60, in save
+    self.do()
+  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 480, in on_incoming
+    self.do_new_data(data)
+  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 520, in do_new_data
+    self.save_data(data_unpacked)
+  File "/home/pi/rec_app/rec_app/subs/driver/arduino.py", line 525, in save_data
+    self.shared_buffer.add_1_to_buffer(
+  File "/home/pi/rec_app/rec_app/subs/recording/buffer.py", line 261, in add_1_to_buffer
+    self.buffer[par][pos] = data
+ValueError: could not assign tuple of length 12 to structure with 14 fields.
+
+        """
+
+
+
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.name,
