@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rec_app"
+name = "MooseWare"
 version = "2.47.a3"
 description = "Recording Software for micro chips"
 authors = ["Dmitri Yousef Yengej"]
