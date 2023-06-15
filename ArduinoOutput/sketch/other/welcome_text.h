@@ -1,5 +1,6 @@
 #line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/other/welcome_text.h"
 static String welcome_text = "\n\n"
+"                                                        NEUREFLECT INC.\n"
 "|   |   | /   \\  /   \\ /    /  /   ]  |  |  | /    ||    \\   /   ]  \n"
 "|       ||     ||     (   \\   /  [ |  |  |  ||  o  ||  D  ) /  [      \n"
 "|  \\ /  ||  O  ||  O  |\\    ||     ]  |  |  ||     ||    / |     ]   \n"
