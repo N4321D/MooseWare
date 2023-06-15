@@ -1,3 +1,4 @@
+from typing import Any
 import serial
 import serial_asyncio
 from serial.tools import list_ports
@@ -279,7 +280,7 @@ class DummyMicro(EventDispatcher):
         pass
 
     def write(self, data):
-        print(f"writing to micro: {data}")
+        print(f"TEST_MICRO - writing to micro: {data}")
         data = json.loads(data)
         cmd = data.get("CTRL")
         if cmd:
@@ -340,9 +341,56 @@ class DummyMicro(EventDispatcher):
             return self.recv_buff.pop(0)
 
 
+class Chip():
+    """
+    placeholder class for 
+
+    Returns:
+        _type_: _description_
+    """
+    def __init__(self, short_name, chip_dict, controller) -> None:
+        self.controller = controller
+        self.connected = True
+        self.name = short_name
+        self.short_name = short_name
+        self.i2c_status = 0
+        self.record = True
+        self.update(chip_dict)
+        self.control_panel = (json.loads(chip_dict.get("control_str") or "[]")
+                 + [{"title": "Record",
+                     "type": "bool",
+                     "desc": "Record data from this chip",
+                     "section": self.name,
+                     "key": "recording",
+                  }])
+        
+    
+    def return_default_options(self):
+        return {"recording": self.record}
+
+    def __setattr__(self, name: str, value) -> None:
+        if hasattr(self, name) and getattr(self, name) != value:
+            if name == 'i2c_status':
+                self.connected = (value == 0)
+            else:
+                self.send_cmd({name: value})
+        super().__setattr__(name, value)
+
+    def send_cmd(self, val):
+        print(f"Sending {val}")
+        self.controller.micro.write(json.dumps({self.short_name: val}))
+
+    def update(self, chip_dict):
+        self.__dict__.update(chip_dict)
+    
+    def json_panel(self) -> list:
+        return self.control_panel
+    
+    def do_config(self, par, value):
+        print(par, value, "TODO DO CONFIG in arduino.py -> chip")
+
+
 class Controller():
-
-
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
     MAX_MEM = 200 * 1.024e6
 
@@ -390,7 +438,6 @@ class Controller():
                                  # on_write_pause=lambda *_: self.text_event.cancel(),
                                  # on_write_resume=lambda *_: self.text_event(),
                                  )
-
         self.disconnected = self.micro.disconnected
         self.connected = self.micro.connected
 
@@ -485,10 +532,13 @@ class Controller():
 
     def do_idle(self, data):
         data.pop("idle")
-        self.sensors = data
-        self.parameters = {f"{k}_{par}": k for k, v in self.sensors.items()
-                           for par in v['parameter_short_names'] if v.get("i2c_status") == 0}
-        
+
+        for name, chip_d in data.items():
+            self.sensors.setdefault(name, Chip(name, chip_d, self)).update(chip_d)
+
+        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items()
+                           for par in chip.parameter_short_names 
+                           if (chip.i2c_status == 0 and chip.record)}   
 
     def do_new_data(self, data):
         data_unpacked = self._do_time(data)
@@ -498,7 +548,11 @@ class Controller():
             if isinstance(data_unpacked[sens], dict):
                 v = data_unpacked.pop(sens)
                 _status = v.get("!I2C", 0)
-                self.sensors.setdefault(sens, {})['i2c_status'] = _status
+
+                if sens in self.sensors:
+                    self.sensors[sens].i2c_status = _status
+                else:
+                    self.sensors[sens] = Chip(sens, {"i2c_status":  _status}, self)
 
                 if _status > 0:
                     # handle errors

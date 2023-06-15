@@ -408,7 +408,7 @@ class InputOutput(EventDispatcher):
         if self.plot_micro != "Internal":
             dev = self.micro_controllers[self.plot_micro]
             sensors = {k: v for k, v in dev.sensors.items()
-                       if v.get('i2c_status') == 0}
+                       if v.connected}
             pars = dev.parameters
         else:
             sensors, pars = get_connected_chips_and_pars(filter_pars=True)

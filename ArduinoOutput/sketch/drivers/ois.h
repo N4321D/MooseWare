@@ -27,13 +27,7 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
 
-        control_str = "["
-            "{\"title\": \"Record\","
-            "\"type\": \"bool\","
-            "\"desc\": \"Record data from this chip\","
-            "\"section\": \"" + String(NAME) + "\","
-            "\"key\": \"recording\"},"
-            "{\"title\": \"Green Led Intensity\","
+        control_str = "[{\"title\": \"Green Led Intensity\","
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
             "\"section\": \"recording\","

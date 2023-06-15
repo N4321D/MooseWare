@@ -67,28 +67,41 @@ class ChipLabel(Button):
     chip_name = ""
     chip_enabled = BooleanProperty(True)
 
-    def __init__(self, chip, app, **kwargs):
+    def __init__(self, chip, short_name, app, **kwargs):
         super().__init__(**kwargs)
         self.app = app
-        self.chip = chip
-        self.chip_name = self.chip.name
-        self.text = chip.short_name # chip.short_name.replace(" ", "\n")
-        self.chip_enabled = chip.record
+
+        config = ConfigParser().get_configparser("app_config")
+
+        if isinstance(chip, dict):
+            self.chip_name = chip['name']
+            self.text = short_name
+            self.chip_enabled = chip['record']
+            default_opts = chip.get(default_opts, {'recording': True})
+
+        else:
+            self.chip = chip
+            self.chip_name = chip.name
+            self.text = chip.short_name # chip.short_name.replace(" ", "\n")
+            self.chip_enabled = chip.record
+            default_opts = chip.return_default_options()
         
         self.bind(chip_enabled=self._enable_disable_chip)
         
-        config = ConfigParser().get_configparser("app_config")
-        config.adddefaultsection(chip.name)
-        config.setdefaults(chip.name, chip.return_default_options())
+        config.adddefaultsection(self.chip_name)
+        config.setdefaults(self.chip_name, default_opts)
+
         self.settings = ChipPanel(self, config)
         
-        for opt in config.options(chip.name):
+        for opt in config.options(self.chip_name):
             # restore last saved options
-            val = config.get(chip.name, opt)
-            self.settings.on_config_change(config, chip.name, opt, val)
+            val = config.get(self.chip_name, opt)
+            self.settings.on_config_change(config, self.chip_name, opt, val)
 
     def _enable_disable_chip(self, *args):
         self.chip.record = bool(int(self.chip_enabled))
+
+        # update plotpars
         Clock.schedule_once(lambda dt:
             asyncio.run_coroutine_threadsafe(
                 self.app.IO.update_plot_pars(), 
@@ -100,13 +113,12 @@ class ChipLabel(Button):
         self.open_panel()
 
     def open_panel(self, *args):
-        # if self.parent.app.IO.running is True:
-        #     return # stop opening panel when running
         self.on_release = self.close_panel
         self.parent.parent.add_widget(self.settings)
     
     def close_panel(self, *args):
         self.on_release = self.open_panel
+        print(self.chip_name)
         self.parent.parent.remove_widget(self.settings)
 
 class ChipWidget(BoxLayout):
@@ -119,17 +131,25 @@ class ChipWidget(BoxLayout):
         self.sensor_status = self.app.IO.sensor_status
         
         Builder.load_string(kv_str)
+        self.create_buttons()
+        self.app.IO.bind(sensors=self.create_buttons)
 
-        self.chip_labels = {name: ChipLabel(chip_d[name], self.app) 
-                                            for name in chip_d}
+    def create_buttons(self, *args):
+        self.clear_widgets()
+        self.chip_labels = {name: ChipLabel(self.app.IO.sensors[name], name, self.app) 
+                                            for name in self.app.IO.sensors}
+
         for i, c in enumerate(self.chip_labels.values()):
-            self.add_widget(c, index=i) 
+            self.add_widget(c, index=i)
+        
+        # add empty buttons if low number of buttons
+        min_buttons = 8
+        if len(self.chip_labels) < min_buttons:
+            [self.add_widget(Button(background_color=CW_BUT_BGR_EN)) 
+             for i in range(min_buttons - len(self.chip_labels))]
         
         self.app.IO.bind(sensor_status=self.change_color)
-        Clock.schedule_once(self.__kv_init__, 0)
-    
-    def __kv_init__(self, dt):
-        self.change_color
+        self.change_color()
 
     def change_color(self, *args):
         for chip in self.chip_labels:

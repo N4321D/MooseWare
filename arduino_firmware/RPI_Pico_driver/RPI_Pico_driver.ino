@@ -52,7 +52,7 @@ textStr texts;
 adjustableSettings settings;
 
 // declare json for data in and out
-#define JSON_CAP 1024U
+#define JSON_CAP 10 * 1024U
 char jsonString_out[JSON_CAP];
 
 DynamicJsonDocument doc_out(JSON_CAP);
@@ -160,7 +160,7 @@ void adjustFreq(float freq)
   }
 
   else
-    feedback("Error Select another freq. or timer");
+    feedback("Err setting Freq");
   settings.current_timer_freq_hz = freq;
   loopCounter = callCounter;
 }
@@ -229,9 +229,6 @@ void sample()
 void idle()
 {
   // idle loop, check connected sensors etc
-  doc_out.clear();
-  doc_out["idle"] = true;
-
   if (settings.current_timer_freq_hz != settings.idle_freq_hz)
     adjustFreq(settings.idle_freq_hz);
 
@@ -240,11 +237,13 @@ void idle()
   // test connected sensors
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
+    doc_out.clear();
+    doc_out["idle"] = true;
     ptrSensors[i]->test_connection();
     JsonObject sens_json = doc_out.createNestedObject(ptrSensors[i]->SHORT_NAME);
     ptrSensors[i]->getInfo(sens_json);
+    sendData();
   };
-  sendData();
   delay(10);
 }
 
@@ -398,6 +397,9 @@ void loop()
   { // connection lost
     setLed(1);
     feedback("Serial Disconnected");
+    // stop recording
+    START = 0;
+    idle();
     while (!Serial)
     {
       loopCounter = callCounter;

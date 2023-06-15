@@ -115,15 +115,6 @@ class GasSens(Sensor):
                  ]
         return panel
 
-    def return_default_options(self):
-        """
-        returns dict with default options for kivy settings panel
-        """
-
-        return {# "recording": self.record,
-        #         "ang_sensitivity": self.current_ang_sens,
-        #         "lin_sensitivity": self.current_lin_sens,
-                }
 
     def do_config(self, par, value):
         if par == 'ang_sensitivity':
