@@ -41,7 +41,7 @@ SPLASH_SCREEN_TIMEOUT = 2
 
 # SETTINGS (change able in settings)
 # TODO: replace other vars with these ones
-SETTINGS_VAR = {"Main": {"app_version": "2.47.a4",
+SETTINGS_VAR = {"Main": {"app_version": "2.50.0",
                          'title': "MooseWare",
                          'app_logo': '└┘┘┘┘=|◶◶|=└└└└┘',
                          }

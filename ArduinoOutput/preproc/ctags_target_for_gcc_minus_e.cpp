@@ -1,4 +1,4 @@
-# 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino"
+# 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino"
 // NOTES:
 // - RPI pico has 2 i2c controllers 0 (wire) and 1 (wire1), they can only use specific
 //    ports, refer to pinout which one can use __itimer_which
@@ -11,12 +11,12 @@
 //        4: other error.
 //        5: timeout
 
-# 14 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
-# 15 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
+# 14 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 15 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 
 // display
-# 19 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
+# 19 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 
 
@@ -26,8 +26,8 @@
 Adafruit_SSD1306 display(128 /* OLED display width, in pixels*/, 64 /* OLED display height, in pixels*/, &Wire, -1 /* Reset pin # (or -1 if sharing Arduino reset pin)*/);
 
 // interrupt timer libs:
-# 29 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
-# 30 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
+# 29 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 30 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 struct adjustableSettings
 {
@@ -60,10 +60,10 @@ DynamicJsonDocument doc_out(1024U);
 DynamicJsonDocument doc_in(1024U);
 
 // // init sensors
-# 63 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
-# 64 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
-# 65 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
-# 66 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
+# 63 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 64 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 65 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 66 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
@@ -85,7 +85,7 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
-# 88 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/arduino_send_interrupt.ino" 2
+# 88 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);

@@ -658,3 +658,6 @@ BoxLayout:
 
     app = AsyncApp()  # You have to instanciate your App class
     app.start()
+
+
+# TODO: use more async in protocol?

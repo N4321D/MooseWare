@@ -9,7 +9,7 @@ GUI For Recording
 from platform import system, machine
 from kivy.event import EventDispatcher
 
-if system() == 'Linux' and machine() == 'armv7l':
+if system() == 'Linux' and machine() in {'armv7l', 'aarch64'}:
     # RPI specific options:
     import os
 
@@ -384,7 +384,7 @@ if (sys == 'Linux'
         async def mainCoro():
             global app  
             # start GUI
-            guiApp.TESTING = False
+            # guiApp.TESTING = False
             app = guiApp()        
             await app.async_run()
 
@@ -423,21 +423,11 @@ if (sys == 'Linux'
 
 
 # CRITICAL
-# TODO: NOTES does not show last entry
-# TODO: plotting full  has looped data in it.
-# TODO: not plotting mystery:
-#   - somehow data is not created in shared buffer, only notes
-#   - the rec data_structure is not linked to the sav and IO datastructure
-#   - data is recorded in buffer (autostim can find it, but not plotted) -> async start issue in IO ?
-#   - issue with kivy clock calls on startup: need to wait till all are finished? solved no with a splash screen
-#   - app.IO._plotdata does not show errors, fix this -> asyncio.gather does not print output, fixed now?!!
-
+# TODO: plotting full  has looped data in it??
 
 # HIGH
 # TODO: update logger to print/save a certain level of exceptions with traceback when the exception is 
 #       inputted instead of a string, use trackback.format_exception (see app.IO)
-# TODO: when zooming out up to 3:40:15 ish, data is not plotted on rpi 
-#       (maybe only if incrementing in steps of 1 sec) -> check now, does it work not that tbs are printed?
 # TODO: do autostim in utc time if app.root.UTC is True, (e.g. replace datetime.now for datetime.utcnow  or  datetime.utcfromtimestamp(dtime.timestamp()))
 #       or pull time from central clock
 

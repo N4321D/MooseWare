@@ -1,4 +1,4 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/other/welcome_text.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/other/welcome_text.h"
 static String welcome_text = "\n\n"
 "                                                        NEUREFLECT INC.\n"
 "|   |   | /   \\  /   \\ /    /  /   ]  |  |  | /    ||    \\   /   ]  \n"

@@ -1,4 +1,4 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/drivers/i2csensor.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/i2csensor.h"
 /**
 *  template for sensor class
 
