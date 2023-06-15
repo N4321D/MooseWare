@@ -19,7 +19,6 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[0], "PR");
         strcpy(PARAMETER_SHORT_NAMES[1], "TMP");
 
-        output_text = "";
 
     }
 

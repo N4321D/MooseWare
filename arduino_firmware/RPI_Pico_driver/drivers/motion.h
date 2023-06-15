@@ -40,7 +40,6 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[4], "LY");
         strcpy(PARAMETER_SHORT_NAMES[5], "LZ");
 
-        output_text = "";
     }
 
     void init()

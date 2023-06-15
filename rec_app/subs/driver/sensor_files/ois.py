@@ -313,7 +313,7 @@ class LightSens(Sensor):
 
     def json_panel(self):
         """
-        return json panel with properties for kivy intrenface 
+        return json panel with properties for kivy interface 
         to change in settings panel
         """
 
@@ -328,7 +328,7 @@ class LightSens(Sensor):
                     "desc": "Power in mA of the green LEDs",
                     "section": "recording",
                     "key": "ois_ma",
-                    # [low range, high range, step]
+                    # [min of range, max of range, step in range]
                     "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],
                     "limits": [0, 65],   # [min, max]
                     "live_widget": True

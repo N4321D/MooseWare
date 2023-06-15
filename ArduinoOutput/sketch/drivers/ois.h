@@ -27,7 +27,21 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
 
-        output_text = "";
+        control_str = "["
+            "{\"title\": \"Record\","
+            "\"type\": \"bool\","
+            "\"desc\": \"Record data from this chip\","
+            "\"section\": \"" + String(NAME) + "\","
+            "\"key\": \"recording\"},"
+            "{\"title\": \"Green Led Intensity\","
+            "\"type\": \"plusminin\","
+            "\"desc\": \"Power in mA of the green LEDs\","
+            "\"section\": \"recording\","
+            "\"key\": \"ois_ma\","
+            "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," // [min of range, max of range, step in range]
+            "\"limits\": [0, 65],"                                 // [min, max]
+            "\"live_widget\": true}"
+                      "]";
     }
     void init()
     {

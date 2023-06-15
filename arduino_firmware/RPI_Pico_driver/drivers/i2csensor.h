@@ -58,7 +58,7 @@ public:
     bool connected = true;                  // indicate if sensor is disconnected or not
     bool record = true;                     // indicate if sensor needs to be recorded or not
 
-    String output_text;
+    String control_str;
 
     // sensor specific
     uint32_t sampled_data[MAX_PARS]; // data is stored here
@@ -114,7 +114,7 @@ public:
         js["name"] = NAME;
         // js["parameter_names"] = PARAMETER_NAMES;
         // js["parameter__short_names"] = PARAMETER_SHORT_NAMES;
-        js["output_text"] = output_text;
+        js["control_str"] = control_str;
         js["i2c_status"] = i2c_error;
         js["record"] = record;
 
