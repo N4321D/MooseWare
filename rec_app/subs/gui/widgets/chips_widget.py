@@ -139,8 +139,10 @@ class ChipWidget(BoxLayout):
         self.chip_labels = {name: ChipLabel(self.app.IO.sensors[name], name, self.app) 
                                             for name in self.app.IO.sensors}
 
-        for i, c in enumerate(self.chip_labels.values()):
-            self.add_widget(c, index=i)
+        # add widgets sorted on chip name
+        for i, c in enumerate(sorted(self.chip_labels, 
+                                     key=lambda x: 0 if x == "CTRL" else 1)[::-1]):
+            self.add_widget(self.chip_labels[c], index=i)
         
         # add empty buttons if low number of buttons
         min_buttons = 8
@@ -158,7 +160,10 @@ class ChipWidget(BoxLayout):
             _resets = self.app.IO.sensor_status.get(f"{chip}:reset_count", (0,))[0]
 
             # status color
-            status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
+            try:
+                status_color = self.chip_labels[chip].chip.status
+            except:
+                status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
             if self.chip_labels[chip].color != SENSOR_COLORS[status_color]:
                 self.chip_labels[chip].color = SENSOR_COLORS[status_color]
 
@@ -195,7 +200,9 @@ class ChipPanel(MySettingsWithNoMenu):
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
             
             # create values if not exisiting
-            self.config.setdefault(item['section'], item['key'], None)
+            if not self.config.has_section(item['section']):
+                self.config.add_section(item['section'])
+            self.config.setdefault(item['section'], item['key'], 0)
 
         self.add_json_panel(self.parent_button.chip.name, self.config, 
                             data=json.dumps(json_list))

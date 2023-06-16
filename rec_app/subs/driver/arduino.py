@@ -324,7 +324,6 @@ class DummyMicro(EventDispatcher):
                              "control_str": ("[{\"title\": \"Green Led Intensity\","
                              "\"type\": \"plusminin\","
                              "\"desc\": \"Power in mA of the green LEDs\","
-                             "\"section\": \"OIS\","
                              "\"key\": \"amps\","
                              "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," 
                              "\"limits\": [0, 65],"                            
@@ -351,26 +350,47 @@ class DummyMicro(EventDispatcher):
 
 class Chip():
     """
-    placeholder class for 
+    A class representing a chip device.
 
-    Returns:
-        _type_: _description_
+    Attributes:
+        controller (Controller): The controller object to which the chip is connected.
+        parent_name (str): The name of the parent device or controller.
+        connected (bool): Indicates if the chip is currently connected.
+        status (int): Indicates the current status of the chip.
+        name (str): The full name of the chip.
+        short_name (str): A short name or identifier for the chip.
+        i2c_status (int): The status of the I2C connection.
+        record (bool): Indicates whether data from this chip should be recorded.
+        control_panel (list): A list of control panel settings for the chip.
+        
+    Methods:
+        return_default_options(): Returns the default options for the chip.
+        __setattr__(name: str, value): Overrides the default setattr behavior to handle attribute changes.
+        send_cmd(val): Sends a command to the chip.
+        update(chip_dict): Updates the chip attributes using a dictionary.
+        json_panel() -> list: Returns the control panel settings in JSON format.
+        do_config(par, value): Performs configuration for the chip.
+
     """
     def __init__(self, short_name, chip_dict, controller) -> None:
         self.controller = controller
+        self.parent_name = self.controller.name
         self.connected = True
+        self.status = 1                  # indicates what chip is doing (see vars.py sensor status)
         self.name = short_name
         self.short_name = short_name
         self.i2c_status = 0
         self.record = True
         self.update(chip_dict)
-        self.control_panel = (json.loads(chip_dict.get("control_str") or "[]")
-                 + [{"title": "Record",
+        self.control_panel = [{"title": "Record",
                      "type": "bool",
-                     "desc": "Record data from this chip",
-                     "section": self.name,
+                     "desc": "Record data from this device",
                      "key": "recording",
-                  }])
+                  }] + (json.loads(chip_dict.get("control_str") or "[]")
+                 )
+        # add section for saving settings
+        [i.update({"section": f"{self.parent_name}: {self.name}"})
+         for i in self.control_panel]
         
     
     def return_default_options(self):
@@ -380,13 +400,15 @@ class Chip():
         if hasattr(self, name) and getattr(self, name) != value:
             if name == 'i2c_status':
                 self.connected = (value == 0)
+                self.status = 1 if self.connected else 0
             else:
                 self.send_cmd({name: value})
         super().__setattr__(name, value)
 
     def send_cmd(self, val):
+        val = json.dumps({self.short_name: val})
         print(f"Sending {val}")
-        self.controller.micro.write(json.dumps({self.short_name: val}))
+        self.controller.micro.write(val)
 
     def update(self, chip_dict):
         self.__dict__.update(chip_dict)
@@ -428,12 +450,7 @@ class Controller():
      
         # length of buffer (will be calculated from buffer_time * startrate)
         self.buffer_length = 0
-
-
         self.__dict__.update(kwargs)
-
-
-
         self.app = App.get_running_app()
 
         if testing:
@@ -505,6 +522,20 @@ class Controller():
         print(f"CONNECTED TO: {self.micro.name}")
         self.name = self.micro.name
         self.connect_buffer()
+
+        self.sensors["CTRL"] = Chip("CTRL", {
+                "name": "Controller",
+                "control_str": ("[{\"title\": \"Recording Frequency\","
+                                "\"type\": \"plusminin\","
+                                "\"desc\": \"Recording Frequency (Hz)\","
+                                "\"key\": \"freq\","
+                                "\"steps\": [[1, 12, 2], [12, 32, 12], [32, 128, 32], [128, 2048, 128]]," 
+                                "\"limits\": [1, 2048],"                            
+                                "\"live_widget\": true}"
+                                "]"),
+            "i2c_status": 0,
+            "parameter_names": [],
+            "parameter_short_names": []}, self)
 
         self.on_connect(self)
 

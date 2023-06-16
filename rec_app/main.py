@@ -449,6 +449,9 @@ if (sys == 'Linux'
 # TODO: Broadcasting values to all units (e.g. room control values)
 
 # TODO: rewrite saver using asyncio
+# TODO: improve asyncio in arduino protocol
+
+# TODO: use generator function for stim protocol instead of numpy arrays to save mem
 
 # TODO: reduce mem with slots https://bas.codes/posts/python-dict-slots (FOR Classes which do not make new attributes)
 # TODO: use shared memory manager to track all shared lists and memory blocks
@@ -468,7 +471,8 @@ if (sys == 'Linux'
 #       (also but not sure: Value Name should the same as the name of the variable)
 # NOTE: asyncio.gather does not return/raise exceptions by default!! 
 #           use return_exception=True kwarg catch output, then print/log expcetions
-# NOTE: to call async def functions from kivy clock use: Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), loop), 5) 
+# NOTE: to call async def functions from kivy clock use: 
+#       Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), loop), 5) 
 #       TODO: make app.async_clock_call function for this?
 
 '''
