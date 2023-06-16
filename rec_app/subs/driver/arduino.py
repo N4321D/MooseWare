@@ -350,13 +350,13 @@ class DummyMicro(EventDispatcher):
 
 class Chip():
     """
-    A class representing a chip device.
+    A class representing a chip device on microcontrollers
 
     Attributes:
         controller (Controller): The controller object to which the chip is connected.
         parent_name (str): The name of the parent device or controller.
         connected (bool): Indicates if the chip is currently connected.
-        status (int): Indicates the current status of the chip.
+        status (int): Indicates the current status of the chip (see vars.py for all status options)
         name (str): The full name of the chip.
         short_name (str): A short name or identifier for the chip.
         i2c_status (int): The status of the I2C connection.
@@ -422,6 +422,48 @@ class Chip():
 
 
 class Controller():
+        """
+    A class representing a controller for microcontroller devices
+
+    Attributes:
+        MAX_MEM (float): The maximum memory buffer that can be used.
+        dtypes (dict): A dictionary specifying the data types for saving.
+        sensors (dict): A dictionary of connected sensors.
+        parameters (set): A set of parameter names.
+        data_dtype_fields (dict): The dtype fields of the current data.
+        name (str): The name of the controller.
+        disconnected (asyncio.Event): An event indicating if the controller is disconnected.
+        connected (asyncio.Event): An event indicating if the controller is connected.
+        starttime (float): The start time of the controller.
+        lasttime (float): The last recorded time.
+        run (bool): Indicates if the controller is running.
+        samplerate (int): The sample rate of the controller.
+        emarate (float): The theoretical maximum of the EMA (Exponential Moving Average) rate.
+        current_rate (int): The current sample rate.
+        buffer_length (int): The length of the buffer.
+        micro (MicroController): The microcontroller object.
+        shared_buffer (SharedBuffer): The shared buffer object.
+
+    Methods:
+        connect_buffer(): Connects the buffer and sets the data structure.
+        set_buffer_dims(data): Sets the dimensions of the buffer.
+        async_start(): Asynchronously starts the controller.
+        start_stop(start=None): Starts or stops the controller.
+        adjust_freq(freq): Adjusts the sample frequency of the controller.
+        _on_connect(dev): Callback function when the controller is connected.
+        on_connect(dev): Callback function when the controller is connected.
+        _on_disconnect(dev): Callback function when the controller is disconnected.
+        on_disconnect(dev): Callback function when the controller is disconnected.
+        on_incoming(): Handles incoming data from the microcontroller.
+        do_idle(data): Processes idle data received from the microcontroller.
+        do_new_data(data): Processes new data received from the microcontroller.
+        save_data(data): Saves the data in memory.
+        do_feedback(data, e): Handles feedback messages received from the microcontroller.
+        set_dev(dev): Sets the connected device information.
+        _do_time(data): Processes the timestamp of the data.
+        _calc_ema(dt): Calculates the Exponential Moving Average (EMA) rate.
+        exit(): Stops the controller and performs cleanup operations.
+    """
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
     MAX_MEM = 200 * 1.024e6
 
