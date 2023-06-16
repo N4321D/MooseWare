@@ -193,17 +193,27 @@ class ChipPanel(MySettingsWithNoMenu):
             # if chip setting has no live widget = True in json assume it is not a live widget
             if item.setdefault('live_widget', False) is True:
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
+            
+            # create values if not exisiting
+            self.config.setdefault(item['section'], item['key'], None)
 
         self.add_json_panel(self.parent_button.chip.name, self.config, 
                             data=json.dumps(json_list))
-
+    
+        # send values to chip
+        [self.on_config_change(self.config, item['section'], item['key'], 
+                              self.config.get(item['section'], item['key']))
+                              for item in json_list]
+        
     def on_config_change(self, config, section, option, value):
         if option == "recording":
             self.parent_button.chip_enabled = config.getboolean(section, option)
+            
         else:
             try:
                 value = literal_eval(value)
-            except:
+            except (ValueError, SyntaxError):
+                # Value is string
                 pass
             self.parent_button.chip.do_config(option, value)
     

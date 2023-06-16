@@ -21,7 +21,7 @@
 #define SCREEN_WIDTH 128    // OLED display width, in pixels
 #define SCREEN_HEIGHT 64    // OLED display height, in pixels
 #define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3C
+#define SCREEN_ADDRESS 0x3C // See datasheet for Address; 0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // interrupt timer libs:
@@ -31,13 +31,13 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 struct adjustableSettings
 {
   // struct with adjustable settings
-  byte sample_analog = 0;                   // set bit [0 - 3] to sample analogue channel
-  float timer_freq_hz = 256;                // 2048.0;      // timer freq in Hz (start freq)
-  float current_timer_freq_hz = 0;          // actual timer freq
-  float min_freq_hz = 1.0;                  // minimal sample frequency in Hz
-  float idle_freq_hz = 2.0;                 // 2048.0;      // timer freq in Hz (start freq)
-  uint loops_before_adjust = 0;             // number of loops too slow or fast before adjusting (is set in set freq)
-  const float TIME_SEC_BEFORE_ADJUST = 1;   // time in seconds before adjusting sample f, change here to set
+  byte sample_analog = 0;                 // set bit [0 - 3] to sample analogue channel
+  float timer_freq_hz = 256;              // 2048.0;      // timer freq in Hz (start freq)
+  float current_timer_freq_hz = 0;        // actual timer freq
+  float min_freq_hz = 1.0;                // minimal sample frequency in Hz
+  float idle_freq_hz = 2.0;               // 2048.0;      // timer freq in Hz (start freq)
+  uint loops_before_adjust = 0;           // number of loops too slow or fast before adjusting (is set in set freq)
+  const float TIME_SEC_BEFORE_ADJUST = 1; // time in seconds before adjusting sample f, change here to set
 };
 
 struct textStr
@@ -84,6 +84,8 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
+char NAME[32] = "RPI - Pico";
+
 #include "other/welcome_text.h"
 
 // Init RPI_PICO_Timer
@@ -126,10 +128,10 @@ void displayText(String txt = "text here",
 void feedback(String txt,
               uint8_t x = 5,
               uint8_t y = 30,
-              bool over_serial=false
-              )
+              bool over_serial = false)
 {
-  if (over_serial) Serial.println(txt);
+  if (over_serial)
+    Serial.println(txt);
 
   displayText(txt, x, y, 1, true, false);
 }
@@ -216,7 +218,7 @@ void sample()
     ptrSensors[i]->getSampledData(sens_json);
   }
 
-  // read analog data   
+  // read analog data
   // TODO: this can be more efficient with dma; write seperate driver for analog
   if (settings.sample_analog & (1 << 0))
     doc_out["A0"] = analogRead(A0);
@@ -364,14 +366,15 @@ void setup()
   }
   display.clearDisplay();
 
-    feedback("Waiting for Serial");
+  feedback(NAME, 5, 0);
+  feedback("Waiting for Serial");
+  
   while (!Serial)
   {
     feedback("Waiting for Serial");
     delay(10);
   }; // wait for serial
   Serial.println(welcome_text);
-
 
   feedback("setting up i2c");
   // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!

@@ -1,5 +1,5 @@
 #line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/other/welcome_text.h"
-static String welcome_text = "\n\n"
+char welcome_text[] = "\n\n"
 "                                                        NEUREFLECT INC.\n"
 "|   |   | /   \\  /   \\ /    /  /   ]  |  |  | /    ||    \\   /   ]  \n"
 "|       ||     ||     (   \\   /  [ |  |  |  ||  o  ||  D  ) /  [      \n"

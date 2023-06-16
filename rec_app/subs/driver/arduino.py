@@ -321,7 +321,15 @@ class DummyMicro(EventDispatcher):
                 json.dumps(
                     {"idle": True,
                      "OIS": {"name": "Optical Intrisic Signal",
-                             "output_text": "",
+                             "control_str": ("[{\"title\": \"Green Led Intensity\","
+                             "\"type\": \"plusminin\","
+                             "\"desc\": \"Power in mA of the green LEDs\","
+                             "\"section\": \"OIS\","
+                             "\"key\": \"amps\","
+                             "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," 
+                             "\"limits\": [0, 65],"                            
+                             "\"live_widget\": true}"
+                             "]"),
                              "i2c_status": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
@@ -388,6 +396,7 @@ class Chip():
     
     def do_config(self, par, value):
         print(par, value, "TODO DO CONFIG in arduino.py -> chip")
+        self.send_cmd({par: value})
 
 
 class Controller():

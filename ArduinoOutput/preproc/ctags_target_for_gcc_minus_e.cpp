@@ -85,7 +85,9 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
-# 88 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+char NAME[32] = "RPI - Pico";
+
+# 90 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);
@@ -127,10 +129,10 @@ void displayText(String txt = "text here",
 void feedback(String txt,
               uint8_t x = 5,
               uint8_t y = 30,
-              bool over_serial=false
-              )
+              bool over_serial = false)
 {
-  if (over_serial) Serial.println(txt);
+  if (over_serial)
+    Serial.println(txt);
 
   displayText(txt, x, y, 1, true, false);
 }
@@ -217,7 +219,7 @@ void sample()
     ptrSensors[i]->getSampledData(sens_json);
   }
 
-  // read analog data   
+  // read analog data
   // TODO: this can be more efficient with dma; write seperate driver for analog
   if (settings.sample_analog & (1 << 0))
     doc_out["A0"] = analogRead(A0);
@@ -359,20 +361,21 @@ void setup()
   Serial.setTimeout(0); // set serial timeout in ms
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if (!display.begin(0x02 /*|< Gen. display voltage from 3.3V*/, 0x3C /*|< See datasheet for Address; 0x3C*/))
+  if (!display.begin(0x02 /*|< Gen. display voltage from 3.3V*/, 0x3C /* See datasheet for Address; 0x3C*/))
   {
     Serial.println((reinterpret_cast<const __FlashStringHelper *>(("Display not connected: SSD1306 allocation failed"))));
   }
   display.clearDisplay();
 
-    feedback("Waiting for Serial");
+  feedback(NAME, 5, 0);
+  feedback("Waiting for Serial");
+
   while (!Serial)
   {
     feedback("Waiting for Serial");
     delay(10);
   }; // wait for serial
   Serial.println(welcome_text);
-
 
   feedback("setting up i2c");
   // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!

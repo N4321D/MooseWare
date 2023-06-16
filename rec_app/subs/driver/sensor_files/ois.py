@@ -330,7 +330,7 @@ class LightSens(Sensor):
                     "key": "ois_ma",
                     # [min of range, max of range, step in range]
                     "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],
-                    "limits": [0, 65],   # [min, max]
+                    "limits": [0, 60],   # [min, max]
                     "live_widget": True
                   },
                  ]

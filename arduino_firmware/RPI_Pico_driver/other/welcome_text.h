@@ -1,4 +1,4 @@
-static String welcome_text = "\n\n"
+char welcome_text[] = "\n\n"
 "                                                        NEUREFLECT INC.\n"
 "|   |   | /   \\  /   \\ /    /  /   ]  |  |  | /    ||    \\   /   ]  \n"
 "|       ||     ||     (   \\   /  [ |  |  |  ||  o  ||  D  ) /  [      \n"
