@@ -186,7 +186,7 @@ class TempSens(Sensor):
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
                 },
                 {"title": "Unit",
                 "type": "options",
@@ -203,7 +203,7 @@ class TempSens(Sensor):
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record,
+        return {"record": self.record,
                 "temp_unit": self.current_unit,
                 }
 

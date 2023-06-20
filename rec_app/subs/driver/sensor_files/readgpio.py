@@ -153,36 +153,10 @@ class ReadGpio(Sensor):
                   "type": "bool",
                   "desc": "Record data from GPIO ports",
                   "section": self.name,
-                  "key": "recording",
-                }] # + [
-                #   {# gpio pins
-                #    "title": f"GPIO {pin}: IN",
-                #    "type": "bool",
-                #    "desc": "record from this pin",
-                #    "section": self.name,
-                #    "key": str(pin),
-                #    } for pin in self.gpio_pins_in] + [
-                #   {# gpio pins
-                #    "title": f"GPIO {pin}: OUT",
-                #    "type": "bool",
-                #    "desc": "record from this pin",
-                #    "section": self.name,
-                #    "key": str(pin),
-                #    } for pin in self.gpio_pins_out_saved
-                #    ] 
+                  "key": "record",
+                }] 
             
         return panel
-    
-    # def do_config(self, par, value):
-    #     """
-    #     changes config based on input
-    #     from settings panel
-    #     """
-    #     print(par, value)
-    #     if par in self.gpio_pins_in and value is 0:
-    #         self.select_read_pins(self.gpio_pins_in.remove(par))
-    #     if par in self.gpio_pins_in and value is 1:
-    #         self.select_read_pins(self.gpio_pins_in.remove(par))
 
 
 if __name__ == "__main__":

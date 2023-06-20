@@ -240,7 +240,7 @@ class Sensor():
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record}
+        return {"record": self.record}
     
 
     def do_config(self, par, value):

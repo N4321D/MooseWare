@@ -105,7 +105,7 @@ class PressSens(Sensor):
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
             },
             {# pressure units
             "title": "Unit",

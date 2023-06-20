@@ -270,6 +270,8 @@ class RecScreen(Scr):
         self.Button.on_release = self.button_release
     
         self.app.IO.bind(sensor_status=self.ois_updates)
+        self.app.IO.bind(plot_micro=lambda *x: setattr(self.ids['microbutt'], 'text', 
+                                                       self.app.IO.plot_micro))
 
         # bind ois_ma to change OIS function
         self.app.rec_vars.bind(ois_ma=lambda inst, val: self.plusminbut('ledma', val))
@@ -542,4 +544,5 @@ class RecScreen(Scr):
         self.ids['graf2'].utc = utc
 
     def toggle_micro(self, micro):
+        self.ids['chip_widget'].create_buttons()
         self.app.IO.toggle_micro(micro)

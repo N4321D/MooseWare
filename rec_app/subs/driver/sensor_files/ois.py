@@ -321,7 +321,7 @@ class LightSens(Sensor):
                   "type": "bool",
                   "desc": "Record data from this chip",
                     "section": self.name,
-                    "key": "recording",
+                    "key": "record",
                   },
                  {"title": "Green Led Intensity",
                   "type": "plusminin",

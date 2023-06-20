@@ -211,7 +211,7 @@ class HumidityTemperature(Sensor):
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
                 },
                 {"title": "Unit",
                 "type": "options",

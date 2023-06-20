@@ -1,10 +1,11 @@
-from typing import Any
 import serial
 import serial_asyncio
 from serial.tools import list_ports
 
 import asyncio
 import json
+from json import JSONDecodeError
+
 import time
 
 from subs.recording.buffer import SharedBuffer
@@ -13,7 +14,6 @@ from subs.driver.sensor_files.chip import Chip
 
 import numpy as np
 
-from json import JSONDecodeError
 
 from kivy.event import EventDispatcher
 from kivy.app import App
@@ -50,9 +50,6 @@ class IOProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         self.save(data)
-
-        # stop callbacks again immediately
-        # self.pause_reading()
 
     def save(self, data):
         self.sub_buffer.extend(data)
@@ -147,7 +144,7 @@ class Arduino():
             try:
                 self.device = next(list_ports.grep(self.DEVICES))
                 port = self.device.device
-                log("connecting to: {self.device}", "info")
+                log(f"connecting to: {self.device}", "info")
 
                 await self._setup_reader(self.device)
                 print(f"connected to {self.device.manufacturer} "
@@ -189,7 +186,7 @@ class Arduino():
         self.protocol.on_write_pause, self.protocol.on_write_resume = self.on_write_pause, self.on_write_resume
 
         self.name = f"{dev.manufacturer} - {dev.product}"
-        self.on_connect(dev)
+        await self.on_connect(dev)
 
     def do(self, *args, **kwargs):
         '''
@@ -216,7 +213,7 @@ class Arduino():
             return self.recv_buff.pop(0)
         
 
-    def on_connect(self, dev):
+    async def on_connect(self, dev):
         """
         called when connected
         """
@@ -269,7 +266,7 @@ class DummyMicro(EventDispatcher):
 
         Clock.schedule_once(self.on_connect, 0)
 
-    def on_connect(self, *args, **kwargs):
+    async def on_connect(self, *args, **kwargs):
         pass
 
     def on_disconnect(self, *args, **kwargs):
@@ -334,6 +331,12 @@ class DummyMicro(EventDispatcher):
                              "i2c_status": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
+                )
+            )
+            self.recv_buff.append(
+                json.dumps(
+                    {"idle": True,
+                     "CTRL": {"name": "test"}}
                 )
             )
         self.do()
@@ -408,7 +411,7 @@ class Controller():
         self.sensors = {}
         self.parameters = {}
         self.data_dtype_fields = {}
-        self.name = ""
+        self.name = None
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
         self.starttime = 0
@@ -496,27 +499,35 @@ class Controller():
         self.micro.write(json.dumps({"CTRL": {"freq": freq}}))
         self.current_rate = freq
 
-    def _on_connect(self, dev):
-        print(f"CONNECTED TO: {self.micro.name}")
-        self.name = self.micro.name
+    async def _on_connect(self, dev):
         self.connect_buffer()
 
         self.sensors["CTRL"] = Chip(
                 "CTRL", 
                 {"name": "Controller",
-                 "control_str": ("[{\"title\": \"Recording Frequency\","
-                                "\"type\": \"plusminin\","
-                                "\"desc\": \"Recording Frequency (Hz)\","
-                                "\"key\": \"freq\","
-                                "\"steps\": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]]," 
-                                "\"limits\": [1, 2048],"                            
-                                "\"live_widget\": true}"
-                                "]"),
+                 "control_str": json.dumps([
+                     {
+                    "title": "Controller Name",
+                    "type": "string",
+                    "desc": "set / change the name of the controller",
+                    "key": "name",
+                    },
+                     {"title": "Recording Frequency",
+                    "type": "plusminin",
+                    "desc": "Recording Frequency (Hz)",
+                    "key": "freq",
+                    "steps": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]], 
+                    "limits": [1, 2048],                            
+                    "live_widget": True}]),
                  "i2c_status": 0,
                  "parameter_names": [],
                  "parameter_short_names": []}, 
             self, 
             send_cmd=self._send_cmd)
+
+        while self.name is None:
+            await asyncio.sleep(0.1)
+        self.sensors['CTRL'].name = self.name
 
         self.on_connect(self)
 
@@ -556,6 +567,9 @@ class Controller():
 
         for name, chip_d in data.items():
             self.sensors.setdefault(name, Chip(name, chip_d, self)).update(chip_d)
+
+            if name == "CTRL":
+                [setattr(self, k, v) for k, v in chip_d.items()]
 
         self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items()
                            for par in chip.parameter_short_names 

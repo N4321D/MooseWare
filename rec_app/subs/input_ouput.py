@@ -426,11 +426,13 @@ class InputOutput(EventDispatcher):
     def _update_plot_pars(self, *_):
         """
         Check connected sensors and status
-
-        # TODO: dont copy to dict but directly link to shared values? 
         """
         if self.plot_micro != "Internal":
             dev = self.micro_controllers[self.plot_micro]
+            if dev.name != self.plot_micro:
+                self.micro_controllers[dev.name] = self.micro_controllers.pop(self.plot_micro)
+                self.plot_micro = dev.name
+    
             sensors = {k: v for k, v in dev.sensors.items()
                        if v.connected}
             pars = dev.parameters
@@ -623,8 +625,9 @@ class InputOutput(EventDispatcher):
         del self.micro_controllers[micro.name]
 
     def toggle_micro(self, micro, *args):
-        self.plot_micro = micro
-        self._update_plot_pars()
+        if self.plot_micro != micro:
+            self.plot_micro = micro
+            self._update_plot_pars()
 
     # NETWORK FUNCTIONS:
       # Data gather functions:

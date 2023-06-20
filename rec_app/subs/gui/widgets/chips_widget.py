@@ -203,7 +203,9 @@ class ChipPanel(MySettingsWithNoMenu):
             # create values if not exisiting
             if not self.config.has_section(item['section']):
                 self.config.add_section(item['section'])
-            self.config.setdefault(item['section'], item['key'], 0)
+            self.config.setdefault(item['section'], item['key'], 
+                                   getattr(self.parent_button.chip, item['key']) if hasattr(self.parent_button.chip, item['key'])
+                                   else 0)
 
         self.add_json_panel(self.parent_button.chip.name, self.config, 
                             data=json.dumps(json_list))
@@ -217,8 +219,9 @@ class ChipPanel(MySettingsWithNoMenu):
                             for item in self.parent_button.chip.json_panel()]
                 
     def on_config_change(self, config, section, option, value):
-        if option == "recording":
-            self.parent_button.chip_enabled = config.getboolean(section, option)
+        if option == "record":
+            value = config.getboolean(section, option)
+            self.parent_button.chip_enabled = value# config.getboolean(section, option)
             
         else:
             try:
@@ -226,7 +229,8 @@ class ChipPanel(MySettingsWithNoMenu):
             except (ValueError, SyntaxError):
                 # Value is string
                 pass
-            self.parent_button.chip.do_config(option, value)
+
+        self.parent_button.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
         """

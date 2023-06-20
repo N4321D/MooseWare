@@ -39,7 +39,7 @@ class Chip():
         self.control_panel = [{"title": "Record",
                      "type": "bool",
                      "desc": "Record data from this device",
-                     "key": "recording",
+                     "key": "record",
                   }] + (json.loads(chip_dict.get("control_str") or "[]")
                  )
         # add section for saving settings
@@ -49,7 +49,7 @@ class Chip():
         
     
     def return_default_options(self):
-        return {"recording": self.record}
+        return {"record": self.record}
 
     def __setattr__(self, name: str, value) -> None:
         if hasattr(self, name) and getattr(self, name) != value:

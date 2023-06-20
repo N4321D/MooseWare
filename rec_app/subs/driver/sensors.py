@@ -41,7 +41,6 @@ from subs.driver.sensor_files.motion import MoSens
 from subs.driver.sensor_files.pressure import PressSens, PressExt
 from subs.driver.sensor_files.humidity import HumidityTemperature
 from subs.driver.sensor_files.lightstrip import LightStrip
-from subs.driver.sensor_files.gas import GasSens
 from subs.driver.sensor_files.readgpio import ReadGpio
 
 chip_d = {}     # dictionary that includes all chips
