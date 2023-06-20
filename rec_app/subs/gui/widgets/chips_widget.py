@@ -67,8 +67,9 @@ class ChipLabel(Button):
     chip_name = ""
     chip_enabled = BooleanProperty(True)
 
-    def __init__(self, chip, short_name, app, **kwargs):
+    def __init__(self, chip, short_name, app, box, **kwargs):
         super().__init__(**kwargs)
+        self.box=box
         self.app = app
 
         config = ConfigParser().get_configparser("app_config")
@@ -114,12 +115,11 @@ class ChipLabel(Button):
 
     def open_panel(self, *args):
         self.on_release = self.close_panel
-        self.parent.parent.add_widget(self.settings)
+        self.box.parent.add_widget(self.settings)
     
     def close_panel(self, *args):
         self.on_release = self.open_panel
-        print(self.chip_name)
-        self.parent.parent.remove_widget(self.settings)
+        self.box.parent.remove_widget(self.settings)
 
 class ChipWidget(BoxLayout):
     """
@@ -127,6 +127,7 @@ class ChipWidget(BoxLayout):
     """
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.chip_labels = {}
         self.app = App.get_running_app()
         self.sensor_status = self.app.IO.sensor_status
         
@@ -136,7 +137,8 @@ class ChipWidget(BoxLayout):
 
     def create_buttons(self, *args):
         self.clear_widgets()
-        self.chip_labels = {name: ChipLabel(self.app.IO.sensors[name], name, self.app) 
+        self.chip_labels.clear()
+        self.chip_labels = {name: ChipLabel(self.app.IO.sensors[name], name, self.app, self) 
                                             for name in self.app.IO.sensors}
 
         # add widgets sorted on chip name
@@ -179,7 +181,6 @@ class ChipWidget(BoxLayout):
             if self.chip_labels[chip].background_color != bg_col:
                 self.chip_labels[chip].background_color = bg_col
 
-    
 class ChipPanel(MySettingsWithNoMenu):
     """
     Settings panel for each chip
@@ -207,11 +208,14 @@ class ChipPanel(MySettingsWithNoMenu):
         self.add_json_panel(self.parent_button.chip.name, self.config, 
                             data=json.dumps(json_list))
     
+        self.update_chip_val()
+    
+    def update_chip_val(self, *args):
         # send values to chip
         [self.on_config_change(self.config, item['section'], item['key'], 
-                              self.config.get(item['section'], item['key']))
-                              for item in json_list]
-        
+                            self.config.get(item['section'], item['key']))
+                            for item in self.parent_button.chip.json_panel()]
+                
     def on_config_change(self, config, section, option, value):
         if option == "recording":
             self.parent_button.chip_enabled = config.getboolean(section, option)

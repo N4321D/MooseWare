@@ -302,6 +302,7 @@ void control(const char *key, JsonVariant value)
     settings.timer_freq_hz = freq;
     adjustFreq(freq);
   }
+
   if (strcmp(key, "run") == 0)
   {
     START = value.as<bool>();
@@ -367,7 +368,7 @@ void setup()
   }
   display.clearDisplay();
 
-  feedback(NAME, 5, 0);
+  feedback(NAME, 5, 20);
   feedback("Waiting for Serial");
 
   while (!Serial)

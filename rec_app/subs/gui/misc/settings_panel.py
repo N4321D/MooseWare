@@ -76,28 +76,13 @@ _settings_panel = {
         "key": "recording_name",
     },
 
-    {"title": "Recording Parameters",
-        "type": "title",
-    },
-
-    {# guiApp.rec_vars.startrate
-     "title": "Recording Rate (Hz.)",
-        "type": "options",
-        "desc": "Speed of the Recording",
-        "section": "recording",
-        "key": "startrate",
-        "options": ["1", "2", "4", "16", "32", "64", "128", "256", "512", "768", "1024", "2048"]
-    },
+    # {"title": "Recording Parameters",
+    #     "type": "title",
+    # },
 
     {"title": "Save Parameters",
         "type": "title",
     },
-    # {# guiApp.rec_vars.save_data: Save button
-    #  "title": "Save Data",
-    #     "type": "bool",
-    #     "section": "recording",
-    #     "key": "save_data",
-    # },
     {# guiApp.rec_vars.filename_prefix
      "title": "Filename Prefix",
         "type": "string",

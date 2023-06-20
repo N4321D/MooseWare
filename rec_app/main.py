@@ -121,7 +121,7 @@ class RecVars(EventDispatcher):
 
     # TODO LINK PARS TO SAVER IN app.IO
 
-    startrate = ConfigParserProperty(256, 'recording', "startrate", "app_config", val_type=int)
+    # startrate = ConfigParserProperty(256, 'recording', "startrate", "app_config", val_type=int)
     data_length = ConfigParserProperty(3600, 'recording', "data_length", "app_config", val_type=int)                    # length of data in memory in sec.
     save_data = ConfigParserProperty(True, 'recording', "save_data", "app_config", val_type=val_type_loader)
     filename_prefix = ConfigParserProperty('data', 'recording', "filename_prefix", "app_config", val_type=str)
@@ -136,7 +136,7 @@ class RecVars(EventDispatcher):
         self.app = App.get_running_app()
         self.val_dict = val_dict
 
-        self.bind(startrate=lambda inst, val: self.set_val('startrate', val))
+        # self.bind(startrate=lambda inst, val: self.set_val('startrate', val))
         self.bind(save_data=lambda inst, val: self.set_val('save_data', val))
         self.bind(filename_prefix=lambda inst, val: self.set_val('filename_prefix', val))
         self.bind(max_file_size=lambda inst, val: self.set_val('max_file_size', val))
@@ -368,57 +368,57 @@ sys = system()
 
 if (sys == 'Linux'
     or (__name__ == "__main__")):     # needed for multiprocessing to not spawn multiple windows on mac & win (or start from run.py)
-    try:
+    # try:
         # check certificates and serial
-        pem = f"./keys/{'server' if SERVER else 'client'}.pem"
-        cert_check = Encryption()
-        cert_check.load_all(pem, "./keys/ca.cer")
-        cert_check.check_certificates()
+    pem = f"./keys/{'server' if SERVER else 'client'}.pem"
+    cert_check = Encryption()
+    cert_check.load_all(pem, "./keys/ca.cer")
+    cert_check.check_certificates()
 
 
-        if not SERVER:
-            # check rpi serial
-            check_serial() 
-            pass            
+    if not SERVER:
+        # check rpi serial
+        check_serial() 
+        pass            
 
-        async def mainCoro():
-            global app  
-            # start GUI
-            # guiApp.TESTING = False
-            app = guiApp()        
-            await app.async_run()
+    async def mainCoro():
+        global app  
+        # start GUI
+        # guiApp.TESTING = False
+        app = guiApp()        
+        await app.async_run()
 
-        asyncio.run(mainCoro())
+    asyncio.run(mainCoro())
 
-        # shutdown on exit
-        if not SERVER:
-            # os.system("sudo shutdown -h now")
-            pass
+    # shutdown on exit
+    if not SERVER:
+        # os.system("sudo shutdown -h now")
+        pass
 
 
-    # NOTE: enable for real version (prevents hard crash)
-    except Exception as e:
-        import time
-        log(f"{type(e).__name__}: {e}", "exception")
+    # # NOTE: enable for real version (prevents hard crash)
+    # except Exception as e:
+    #     import time
+    #     log(f"{type(e).__name__}: {e}", "exception")
         
-        from kivy.core.window import Window
-        if not SERVER:
-            time.sleep(3)
-            app.stop()
-            Window.close()
+    #     from kivy.core.window import Window
+    #     if not SERVER:
+    #         time.sleep(3)
+    #         app.stop()
+    #         Window.close()
             
-            # os.system("sudo reboot")
+    #         # os.system("sudo reboot")
 
-        else:
-            # reset all chips just in case
-            from subs.driver.sensors import chip_d
-            for chip in chip_d.values():
-                chip.reset()
-                chip.init()
+    #     else:
+    #         # reset all chips just in case
+    #         from subs.driver.sensors import chip_d
+    #         for chip in chip_d.values():
+    #             chip.reset()
+    #             chip.init()
 
-            # print("REBOOT")
-            app.stop()
-            Window.close()
+    #         # print("REBOOT")
+    #         app.stop()
+    #         Window.close()
 
 
 
