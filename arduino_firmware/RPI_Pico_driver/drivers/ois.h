@@ -29,7 +29,7 @@ public:
         control_str = "[{\"title\": \"Green Led Intensity\","
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
-            "\"key\": \"ois_ma\","
+            "\"key\": \"amps\","
             "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," // [min of range, max of range, step in range]
             "\"limits\": [0, 60],"                                 // [min, max]
             "\"live_widget\": true}"

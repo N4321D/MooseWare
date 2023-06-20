@@ -422,7 +422,7 @@ class Chip():
 
 
 class Controller():
-        """
+    """
     A class representing a controller for microcontroller devices
 
     Attributes:
