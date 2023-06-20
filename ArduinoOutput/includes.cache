@@ -2,12 +2,12 @@
   {
     "Sourcefile": null,
     "Include": "",
-    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/cores/rp2040"
+    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/cores/rp2040"
   },
   {
     "Sourcefile": null,
     "Include": "",
-    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/variants/rpipico"
+    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/variants/rpipico"
   },
   {
     "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
@@ -17,7 +17,12 @@
   {
     "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
     "Include": "Wire.h",
-    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/libraries/Wire/src"
+    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/Wire/src"
+  },
+  {
+    "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
+    "Include": "EEPROM.h",
+    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/EEPROM/src"
   },
   {
     "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
@@ -37,7 +42,7 @@
   {
     "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
     "Include": "SPI.h",
-    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/libraries/SPI/src"
+    "Includepath": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/SPI/src"
   },
   {
     "Sourcefile": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/sketch/RPI_Pico_driver.ino.cpp",
@@ -50,7 +55,12 @@
     "Includepath": null
   },
   {
-    "Sourcefile": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/libraries/Wire/src/Wire.cpp",
+    "Sourcefile": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/Wire/src/Wire.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/EEPROM/src/EEPROM.cpp",
     "Include": "",
     "Includepath": null
   },
@@ -95,7 +105,7 @@
     "Includepath": null
   },
   {
-    "Sourcefile": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.2.0/libraries/SPI/src/SPI.cpp",
+    "Sourcefile": "/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.0/libraries/SPI/src/SPI.cpp",
     "Include": "",
     "Includepath": null
   }

@@ -112,8 +112,6 @@ public:
     void getInfo(JsonObject js)
     {
         js["name"] = NAME;
-        // js["parameter_names"] = PARAMETER_NAMES;
-        // js["parameter__short_names"] = PARAMETER_SHORT_NAMES;
         js["control_str"] = control_str;
         js["i2c_status"] = i2c_error;
         js["record"] = record;

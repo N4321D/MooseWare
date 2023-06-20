@@ -14,6 +14,8 @@
 #include <Wire.h>        // i2c library
 #include <Arduino.h>
 
+#include <EEPROM.h> // library to save in flash
+
 // display
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
@@ -45,6 +47,7 @@ struct textStr
   // struct with all text things
   const char *idle = "Standby...";
   const char *rec = "Recording...";
+  const char *defaultName = "RPI - Pico";
 };
 
 textStr texts;
@@ -84,7 +87,7 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
-char NAME[32] = "RPI - Pico";
+char NAME[32];
 
 #include "other/welcome_text.h"
 
@@ -236,6 +239,13 @@ void idle()
 
   feedback(texts.idle);
 
+  // send setup pars
+  doc_out.clear();
+  doc_out["idle"] = true;
+  JsonObject sens_json = doc_out.createNestedObject("CTRL");
+  sens_json["name"] = NAME;
+  sendData();
+
   // test connected sensors
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
@@ -246,7 +256,7 @@ void idle()
     ptrSensors[i]->getInfo(sens_json);
     sendData();
   };
-  delay(10);
+  delay(100);
 }
 
 void run()
@@ -301,13 +311,49 @@ void control(const char *key, JsonVariant value)
     settings.timer_freq_hz = freq;
     adjustFreq(freq);
   }
-  
+
   if (strcmp(key, "run") == 0)
   {
     START = value.as<bool>();
     START ? run() : idle();
   }
+  if (strcmp(key, "name") == 0)
+  {
+    // strcpy(NAME, value.as<const char*>());
+    // feedback(NAME, 5, 20);
+    setName(value.as<const char *>());
+  }
 }
+
+void setName(const char *name)
+{
+  strcpy(NAME, name);
+  feedback(NAME, 5, 20);
+  // Save the name to EEPROM
+  EEPROM.put(0, NAME);
+  EEPROM.commit();
+};
+
+void loadName(){
+  // Saved data
+  char loadedData[sizeof(NAME)];
+  EEPROM.begin(sizeof(NAME));
+  EEPROM.get(0, loadedData);
+
+  // Check if the loaded data is empty or uninitialized
+  bool isEmpty = true;
+  for (int i = 0; i < sizeof(NAME); i++)
+  {
+    if (loadedData[i] != '\0')
+    {
+      isEmpty = false;
+      break;
+    }
+  }
+
+  // Use the loaded data if not empty, otherwise use the default value
+  setName(isEmpty ? texts.defaultName : loadedData);
+};
 
 void readInput()
 {
@@ -367,15 +413,16 @@ void setup()
   }
   display.clearDisplay();
 
-  feedback(NAME, 5, 20);
   feedback("Waiting for Serial");
-  
+
   while (!Serial)
   {
     feedback("Waiting for Serial");
     delay(10);
   }; // wait for serial
   Serial.println(welcome_text);
+
+  loadName();
 
   feedback("setting up i2c");
   // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!
