@@ -200,12 +200,19 @@ class ChipPanel(MySettingsWithNoMenu):
             if item.setdefault('live_widget', False) is True:
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
             
+                        
             # create values if not exisiting
+            default_val = None
+            if "default_value" in item:
+                default_val = item.pop('default_value')
+            else:
+                default_val = (getattr(self.parent_button.chip, item['key']) 
+                if hasattr(self.parent_button.chip, item['key']) else 0)
+
             if not self.config.has_section(item['section']):
                 self.config.add_section(item['section'])
-            self.config.setdefault(item['section'], item['key'], 
-                                   getattr(self.parent_button.chip, item['key']) if hasattr(self.parent_button.chip, item['key'])
-                                   else 0)
+                
+            self.config.setdefault(item['section'], item['key'], default_val)
 
         self.add_json_panel(self.parent_button.chip.name, self.config, 
                             data=json.dumps(json_list))

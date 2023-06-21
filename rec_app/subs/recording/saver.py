@@ -234,9 +234,13 @@ class Saver():
         gets data for saving from shared memory
 
         """
+        try:
+            last_pos = self.data_structure.get('saved', par)
+            n_items = self.shared_buffer.get_n_items('added', 'saved', par)
+        except TypeError:
+            # data is not saved yet
+            return None, None
 
-        last_pos = self.data_structure.get('saved', par)
-        n_items = self.shared_buffer.get_n_items('added', 'saved', par)
 
         # limit newest pos to last saved plus max items so that data stays in sync
         if n_items > self.BLOCK_SIZE:

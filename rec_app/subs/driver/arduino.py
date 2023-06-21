@@ -320,14 +320,13 @@ class DummyMicro(EventDispatcher):
                 json.dumps(
                     {"idle": True,
                      "OIS": {"name": "Optical Intrisic Signal",
-                             "control_str": ("[{\"title\": \"Green Led Intensity\","
-                             "\"type\": \"plusminin\","
-                             "\"desc\": \"Power in mA of the green LEDs\","
-                             "\"key\": \"amps\","
-                             "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," 
-                             "\"limits\": [0, 65],"                            
-                             "\"live_widget\": true}"
-                             "]"),
+                             "control_str": json.dumps([{"title": "Green Led Intensity",
+                             "type":"plusminin",
+                             "desc": "Power in mA of the green LEDs",
+                             "key": "amps",
+                             "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]], 
+                             "limits": [0, 65],                            
+                             "live_widget": True}]),
                              "i2c_status": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }

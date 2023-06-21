@@ -8,7 +8,8 @@ also returns x and y to plot the stimulus and the number of pulses
 
 """
 import numpy as np
-
+import math
+import random
 
 class Stimulation():
     protocol = []
@@ -93,5 +94,91 @@ class Stimulation():
 
         return (np.array(wave), np.array(wave_amp)), n_pulse
 
-s = Stimulation()
-s.protocol
+
+class Stimulation1():
+    def __init__(self) -> None:
+        self.int_methods = {
+            'lin': self.linear_interpolate, 
+            'exp': self.exponential_interpolate, 
+            'log': self.logarithmic_interpolate, 
+            'random': self.random_interpolate,
+            }  # avaiable interpolation methods
+
+    def create_stim(self,
+                    stim_Strt_T=1,
+                    stim_End_T=10,
+                    stim_method='lin',
+                    int_Strt_T=10,
+                    int_End_T=1,
+                    int_method='lin',
+                    amp_Strt=0,
+                    amp_End=100,
+                    amp_method='lin',
+                    n_pulse=10,
+                    **kwargs) -> tuple:
+        """
+        Creates a callable that yields the next stimulation step.
+
+        Args:
+            stim_Strt_T (float): Start time of the stimulation (in seconds).
+            stim_End_T (float): End time of the stimulation (in seconds).
+            stim_method (str): Method for generating the stimulation time steps ('lin', 'exp', 'log', or 'random').
+            int_Strt_T (float): Start time of the inter-stimulus interval (in seconds).
+            int_End_T (float): End time of the inter-stimulus interval (in seconds).
+            int_method (str): Method for generating the inter-stimulus interval time steps ('lin', 'exp', 'log', or 'random').
+            amp_Strt (float): Start amplitude of the stimulation (between 0 and 1).
+            amp_End (float): End amplitude of the stimulation (between 0 and 1).
+            amp_method (str): Method for generating the amplitude steps ('lin', 'exp', 'log', or 'random').
+            n_pulse (int): Number of pulses in the stimulation sequence.
+
+        Returns:
+            callable: A callable that yields the next stimulation step as a tuple (duration, amplitude).
+
+        """
+
+        if (err_meth:= {stim_method, int_method, amp_method}.difference(self.int_methods)):
+            raise ValueError(
+                f"Invalid method(s): {', '.join(err_meth)}. "
+                "Available methods are 'lin', 'exp', 'log', and 'random'.")
+
+        on_time = self.int_methods[stim_method](stim_Strt_T, stim_End_T, n_pulse)
+        off_time = self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse)
+        amp = self.int_methods[amp_method](amp_Strt, amp_End, n_pulse)
+
+
+        for i in range(n_pulse):
+            yield (next(on_time), next(off_time), next(amp))
+
+
+    def linear_interpolate(self, start_value, end_value, num_steps):
+        step_size = (end_value - start_value) / (num_steps - 1)
+        for i in range(num_steps):
+            yield start_value + (step_size * i)
+
+    def exponential_interpolate(self, start_value, end_value, num_steps):
+        ratio = end_value / start_value
+        exponent = math.pow(ratio, 1 / (num_steps - 1))
+        for i in range(num_steps):
+            yield start_value * math.pow(exponent, i)
+    
+    def logarithmic_interpolate(self, start_value, end_value, num_steps):
+        ratio = math.log(end_value / start_value)
+        increment = ratio / (num_steps - 1)
+        for i in range(num_steps):
+            yield start_value * math.exp(increment * i)
+
+    def random_interpolate(self, start_value, end_value, num_steps):
+        for _ in range(num_steps):
+            yield random.uniform(start_value, end_value)
+    
+    def calc_duration(self, start_stim, end_stim, stim_method, start_int, end_int, int_method, n_pulses):
+        on_time = self.int_methods[stim_method](start_stim, end_stim, n_pulses)
+        off_time = self.int_methods[int_method](start_int, end_int, n_pulses)
+        return sum(on_time) + sum(off_time)
+    
+
+if __name__ == "__main__":
+    s = Stimulation()
+    s.protocol
+
+    s1 = Stimulation1()

@@ -40,6 +40,7 @@ class Chip():
                      "type": "bool",
                      "desc": "Record data from this device",
                      "key": "record",
+                     "default_value": True,
                   }] + (json.loads(chip_dict.get("control_str") or "[]")
                  )
         # add section for saving settings
