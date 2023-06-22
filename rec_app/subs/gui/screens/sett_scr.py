@@ -67,8 +67,6 @@ kv_str = """
     on_leave:
         fm.main_loop_event.cancel() # stop refreshing file manager
 
-    Label:     # crashes if not here
-
     StdButton:
         id: appsettings_button
         size_hint: 0.2, 0.1
