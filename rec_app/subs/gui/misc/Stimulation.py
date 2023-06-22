@@ -13,9 +13,27 @@ import random
 
 from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.event import EventDispatcher
+from kivy.properties import BooleanProperty
+from kivy.uix.gridlayout import GridLayout
 
-import time
+kv_str = r"""
+<StimWidget>:
+    rows: 1
+    size: root.size
 
+    Button:
+        text: "Create\nStim"
+        on_release: root.stim_control.create_stim()
+
+    Button:
+        text: "Stop\nStim" if root.stim_control.run else "Start\nStim"
+        on_release: root.stim_control.stop_stim() if root.stim_control.run else root.stim_control.start_stim()
+    
+    Button:
+        text: "Reset\nStim"
+        on_release: root.stim_control.reset_stim()
+"""
 
 class Stimulation():
     protocol = []
@@ -193,10 +211,11 @@ class StimGenerator():
         return sum(on_time) + sum(off_time)
 
 
-class StimController(StimGenerator):
+class StimController(StimGenerator, EventDispatcher):
+    run = BooleanProperty(False)
     def __init__(self,) -> None:
         super().__init__()
-        self.run = True
+        self.stim_generator = None
         self.last_stim = (None, None, None)
         self.stim_pars = dict(
             stim_Strt_T=1,
@@ -219,9 +238,10 @@ class StimController(StimGenerator):
         self.duration = self.calc_duration(**self.stim_pars)
 
     def start_stim(self):
-        self.run = True
-        self.last_stim = (None, None, None)
-        self.do_next_stim()
+        if self.stim_generator is not None:
+            self.run = True
+            self.last_stim = (None, None, None)
+            self.do_next_stim()
 
     def do_next_stim(self, *args):
         if self.run and self.stim_generator:
@@ -256,34 +276,21 @@ class StimController(StimGenerator):
         """
         print(f"stim for {duration} seconds, {amp}% amplitude")
 
+class StimWidget(GridLayout):
+    stim_control = StimController()
+
+    def __init__(self, **kwargs) -> None:
+        Builder.load_string(kv_str)
+        super().__init__(**kwargs)
+
+
 
 if __name__ == "__main__":
     from kivy.app import App
     
     class MyApp(App):
-        MACADDRESS = "00:00:00:00:00"
-        stim = StimController()
         def build(self):
-            return Builder.load_string(
-"""
-BoxLayout:
-    Button:
-        text: "create stim"
-        on_release: app.stim.create_stim()
-
-    Button:
-        text: "start stim"
-        on_release: app.stim.start_stim()
-
-    Button:
-        text: "stop stim"
-        on_release: app.stim.stop_stim()
-    
-    Button:
-        text: "reset stim"
-        on_release: app.stim.reset_stim()
-
-""")
+            return StimWidget()
 
     app = MyApp()
     app.run()
