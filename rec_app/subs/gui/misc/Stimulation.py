@@ -60,7 +60,7 @@ kv_str = r"""
         pos_hint: {'x': 0.8, 'top': 0.25}
         text: 'Create Stimulus'
         on_release:
-            root.stim_control.create_stim()
+            root.create_stim()
 
     StdButton:
         id: closepanel
@@ -499,6 +499,10 @@ class StimPanel(FloatLayout):
         self.setstimpar = stimwidget.setstimpar
         super().__init__(**kwargs)
  
+    def create_stim(self):
+        self.stimwidget.stim_control.create_stim()
+        self.stimwidget.stim_panel.ids['stim_graph'].plot_data = self.stim_control.wave
+
 class StimWidget(GridLayout):
     stim_control = StimController()
     stim_panel = None
@@ -524,6 +528,7 @@ class StimWidget(GridLayout):
             self.stim_panel = None
 
 
+
 if __name__ == "__main__":
 
     from kivy.app import App
@@ -534,6 +539,7 @@ if __name__ == "__main__":
             Builder.load_string(
 r"""
 #:set STIM_PAR_HEIGHT 0.9  # height of stimpar buttons
+#:set MO (1,1,1,1)
 
 <DROPB@DropDownB>: # general DropDown, set types to change (types: ['1','2'])
     id: selplot
