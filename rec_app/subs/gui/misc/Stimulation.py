@@ -390,12 +390,26 @@ class StimGenerator():
         off_time = sum(self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1))
         return on_time + off_time
     
-    def create_wave(self, wave_generator):
+    def create_wave(self, 
+                    **stim_pars):
+        """
+        Generates a waveform as a numpy array with x and y values for plotting block pulses.
+
+        Args:
+            wave_generator (generator): A generator that yields tuples representing stimulation steps,
+                                    with each tuple containing (on time, off time, amplitude).
+
+        Returns:
+            numpy.ndarray: A numpy array with x and y values representing the waveform.
+
+        """
+        wave_generator = self._create_stim(**stim_pars)
         pulse = np.fromiter(wave_generator, dtype=[('on', '<f4'), ('off', '<f4'), ('amp', '<f4')])
 
         num_steps = pulse.shape[0]
         wave_out = np.zeros(num_steps * 4, dtype=[('x', 'f'), ('y', 'f')])
         
+        # TODO: VECTORIZE THIS FOR LOOP USE CUMSUM FOR T
         t = 0
         for i, (on, off, amp) in enumerate(pulse):
             wave_out['x'][[4 * i, 4 * i + 1]] = t       # start pulse at 0, pulse goes to amp at start
@@ -406,9 +420,6 @@ class StimGenerator():
             wave_out['y'][[4 * i + 1, 4 * i + 2]] = amp    # pulse goes to amp at start
             
         return wave_out
-
-
-
 
 
 class StimController(StimGenerator, EventDispatcher):
@@ -439,6 +450,7 @@ class StimController(StimGenerator, EventDispatcher):
         self.stim_generator = self._create_stim(**self.stim_pars)
         self.last_stim = (None, None, None)
         self.stim_pars['duration'] = self.calc_duration(**self.stim_pars)
+        self.wave = self.create_wave(**stim_pars)
 
     def start_stim(self):
         if self.stim_generator is not None:
@@ -495,9 +507,7 @@ class StimWidget(GridLayout):
         self.stimpars = self.stim_control.stim_pars
         Builder.load_string(kv_str)
         super().__init__(**kwargs)
-
         Clock.schedule_once(self.open_panel, 1)
-
 
     def setstimpar(self, key, value):
         self.stimpars[key] = value
@@ -506,6 +516,7 @@ class StimWidget(GridLayout):
         if self.stim_panel is None:
             self.stim_panel = StimPanel(self)
             self.add_widget(self.stim_panel)
+            self.stim_panel.ids['stim_graph'].plot_data = self.stim_control.wave
     
     def close_panel(self, *args):
         if self.stim_panel is not None:
