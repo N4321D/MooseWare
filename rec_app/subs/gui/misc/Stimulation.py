@@ -50,7 +50,7 @@ kv_str = r"""
     # pos: (root.pos[0],  root.pos[1] + 0.1 * root.size[1])
 
     Graph3:
-        id: graf3
+        id: stim_graph
         size_hint: 0.7, 0.42
         pos_hint: {'x': 0.07, 'top': 0.5}          # relative sizes 0-1
 
@@ -188,7 +188,7 @@ kv_str = r"""
         text: str(root.stim_control.stim_pars['n_pulse'])
         input_filter: 'int'
         on_focus:
-            self.focusaction(root.setstimpar, 'n_pulse', min(int(self.text), 1000000))
+            self.focusaction(root.setstimpar, 'n_pulse', min(int(self.text), 0xFFFF))
 
 <StimWidget>:
     rows: 1
@@ -389,6 +389,26 @@ class StimGenerator():
         on_time = sum(self.int_methods[stim_method](stim_Strt_T, stim_End_T, n_pulse))
         off_time = sum(self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1))
         return on_time + off_time
+    
+    def create_wave(self, wave_generator):
+        pulse = np.fromiter(wave_generator, dtype=[('on', '<f4'), ('off', '<f4'), ('amp', '<f4')])
+
+        num_steps = pulse.shape[0]
+        wave_out = np.zeros(num_steps * 4, dtype=[('x', 'f'), ('y', 'f')])
+        
+        t = 0
+        for i, (on, off, amp) in enumerate(pulse):
+            wave_out['x'][[4 * i, 4 * i + 1]] = t       # start pulse at 0, pulse goes to amp at start
+            t += on                                      # add on time
+            wave_out['x'][[4 * i + 2, 4 * i + 3]] = t   # end of pulse at amp, # end of pulse back to 0
+            t += off  # add off time
+            
+            wave_out['y'][[4 * i + 1, 4 * i + 2]] = amp    # pulse goes to amp at start
+            
+        return wave_out
+
+
+
 
 
 class StimController(StimGenerator, EventDispatcher):
