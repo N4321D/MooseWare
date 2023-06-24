@@ -450,7 +450,7 @@ class StimController(StimGenerator, EventDispatcher):
         self.stim_generator = self._create_stim(**self.stim_pars)
         self.last_stim = (None, None, None)
         self.stim_pars['duration'] = self.calc_duration(**self.stim_pars)
-        self.wave = self.create_wave(**stim_pars)
+        self.wave = self.create_wave(**self.stim_pars)
 
     def start_stim(self):
         if self.stim_generator is not None:
@@ -501,7 +501,8 @@ class StimPanel(FloatLayout):
  
     def create_stim(self):
         self.stimwidget.stim_control.create_stim()
-        self.stimwidget.stim_panel.ids['stim_graph'].plot_data = self.stim_control.wave
+        print('create stim')
+        self.stimwidget.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
 
 class StimWidget(GridLayout):
     stim_control = StimController()
@@ -520,7 +521,8 @@ class StimWidget(GridLayout):
         if self.stim_panel is None:
             self.stim_panel = StimPanel(self)
             self.add_widget(self.stim_panel)
-            self.stim_panel.ids['stim_graph'].plot_data = self.stim_control.wave
+            self.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+
     
     def close_panel(self, *args):
         if self.stim_panel is not None:
