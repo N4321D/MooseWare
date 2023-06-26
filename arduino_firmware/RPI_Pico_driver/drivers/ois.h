@@ -1,5 +1,5 @@
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
-
+#include <i2csensor.h>
 class OISSensor : public I2CSensor
 {
 private:
@@ -131,7 +131,7 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        js["SIG"] = (float)sampled_data[1] / 0xFFFF;
+        js["SIG"] = (float)sampled_data[1] / 0xFFFF; 
         js["BGR"] = (float)sampled_data[0] / 0xFFFF;
         js["STIM"] = stim_amp;
     }

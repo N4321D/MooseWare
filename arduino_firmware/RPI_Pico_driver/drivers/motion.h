@@ -3,7 +3,7 @@
  * 
  * */ 
 
-// #include "i2csensor.h"
+#include <i2csensor.h>
 
 class MOTSensor : public I2CSensor
 {
