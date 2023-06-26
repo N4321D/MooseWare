@@ -428,14 +428,16 @@ if (sys == 'Linux'
 # HIGH
 # TODO: update logger to print/save a certain level of exceptions with traceback when the exception is 
 #       inputted instead of a string, use trackback.format_exception (see app.IO)
+
 # TODO: do autostim in utc time if app.root.UTC is True, (e.g. replace datetime.now for datetime.utcnow  or  datetime.utcfromtimestamp(dtime.timestamp()))
 #       or pull time from central clock
 
-# TODO: central settings class with all settings and readouts (from chips recorder etc)
 # TODO: can you disable chips now or not with new setup
 # TODO: Why does autostim not stimulate?
 # TODO: move slice when plotting so that decimation always selects same points with new data?
+
 # TODO: subclass sensors so that not all other get the subclass parameters (class variables), e.g. OIS has pixel_no par from Lightstrip
+
 # TODO: Stop keep awake (sometimes keeps going, maybe when pressing stop before stop autostim)
 # TODO: Deal with live parameters of sensors: how to track and change them (e.g. OIS). 
 #       Now they have to be separate set in rs.chip_d if not running or sent to recorder when running
@@ -443,24 +445,15 @@ if (sys == 'Linux'
 
 # NORMAL
 # TODO: test if using generator to get items/values from dict in for loops etc is faster for functions here or (*map(f, iter),)
-# TODO: make sure exit is clean, when pressing exit when running: it is clean after stopping rec, but not if stopping when no recording was started at all
+
 # TODO: Fix network stuff in IO
 # TODO: NETWORK FILE MANAGER (push/ pull files)
 # TODO: Broadcasting values to all units (e.g. room control values)
 
-# TODO: rewrite saver using asyncio
-# TODO: improve asyncio in arduino protocol
-
-# TODO: use generator function for stim protocol instead of numpy arrays to save mem
-
-# TODO: reduce mem with slots https://bas.codes/posts/python-dict-slots (FOR Classes which do not make new attributes)
-# TODO: use shared memory manager to track all shared lists and memory blocks
-# TODO: Settings for hardware button
 # TODO: use map instead of creating list and appending to it
 # TODO: settings: reset to defaults button delete settings.ini or parts of settings.ini?
 
 # TODO: Build Test Script (check output of all functions if changed?) -> ptyhon tests
-# TODO: Check todos inline/inscript (search for # TODO)
 
 # LOW PRIORITY
 # TODO: multiple sms no for alerts (funcitonality is there but needs input from
@@ -472,7 +465,7 @@ if (sys == 'Linux'
 # NOTE: asyncio.gather does not return/raise exceptions by default!! 
 #           use return_exception=True kwarg catch output, then print/log expcetions
 # NOTE: to call async def functions from kivy clock use: 
-#       Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), loop), 5) 
+#       Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), asyncio.get_event_loop()), 5) 
 #       TODO: make app.async_clock_call function for this?
 
 '''

@@ -771,11 +771,16 @@ class FileManager(FloatLayout):
                 or "/media/" in part.mountpoint   # RPI
                 ):
                 drive = part._asdict()
-                drive.update(
-                    {'usage': psutil.disk_usage(part.mountpoint)._asdict()})
-                drive['name'] = f"USB{usb_i}: {convert_bytes(drive['usage']['total'])}"
-                usb_i += 1
-                drives[drive['name']] = drive
+                try:
+                    drive.update(
+                        {'usage': psutil.disk_usage(part.mountpoint)._asdict()})
+                    drive['name'] = f"USB{usb_i}: {convert_bytes(drive['usage']['total'])}"
+                    usb_i += 1
+                    drives[drive['name']] = drive
+                    
+                except PermissionError:
+                    # needed for Windows
+                    pass
 
         return drives
 

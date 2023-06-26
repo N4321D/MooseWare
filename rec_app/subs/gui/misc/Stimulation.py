@@ -23,6 +23,8 @@ from kivy.uix.floatlayout import FloatLayout
 from subs.gui.widgets.Graph import Graph
 from subs.gui.buttons.TextIn import TIn
 
+from kivy.app import App
+
 
 kv_str = r"""
 <Graph3@Graph>:
@@ -36,15 +38,14 @@ kv_str = r"""
     text: 'method'
     par: ""
 
-<StimPanel@FloatLayout>: 
+<StimPanel@FloatLayout>:
     id: stimpanel           
     canvas.before:
         Color:
-            rgba: 0.1, 0.1, 0.1, 0.7
+            rgba: 0.1, 0.1, 0.1, 0.8
         Rectangle:
             pos: self.pos
             size: self.size
-    
     
     # size: root.size[0], 0.9 * root.size[1]
     # pos: (root.pos[0],  root.pos[1] + 0.1 * root.size[1])
@@ -102,6 +103,7 @@ kv_str = r"""
         id: linlog_on
         pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.1}
         par: 'stim_method'
+        text: root.stim_control.stim_pars[self.par]#
         types: root.stim_control.int_methods
         on_text:
             root.stim_control.stim_pars[self.par] = self.text
@@ -132,6 +134,7 @@ kv_str = r"""
         id: linlog_off
         pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.2}
         par: 'int_method'
+        text: root.stim_control.stim_pars[self.par]
         types: root.stim_control.int_methods
         on_text:
             root.stim_control.stim_pars[self.par] = self.text
@@ -162,6 +165,7 @@ kv_str = r"""
         pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.3}
         types: root.stim_control.int_methods
         par: 'amp_method'
+        text: root.stim_control.stim_pars[self.par]
         on_text:
             root.stim_control.stim_pars[self.par] = self.text
     
@@ -493,6 +497,7 @@ class StimController(StimGenerator, EventDispatcher):
 
 class StimPanel(FloatLayout):
     def __init__(self, stimwidget, **kwargs):
+        self.app = App.get_running_app()
         self.stimwidget = stimwidget
         self.stimpars = stimwidget.stimpars
         self.stim_control = stimwidget.stim_control
@@ -503,30 +508,60 @@ class StimPanel(FloatLayout):
         self.stimwidget.stim_control.create_stim()
         print('create stim')
         self.stimwidget.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+    
+    def on_touch_down(self, touch):
+        """
+        Handle touch down events. Defined here to blcok touches to underlying
+        widgets (see kivy ModalView as example)
+        
+        Parameters
+        ----------
+        touch : kivy.input.Touche
+            Touch event instance.
+        
+        Returns
+        -------
+        bool
+            Returns True if the touch was within the widget, to prevent further processing
+            of touch events and activate the widget.
+            Returns False if the touch was outside of the widget, to allow interaction with
+            other widgets that are not below the panel.
+        
+        """
+        if self.collide_point(*touch.pos):
+            super().on_touch_down(touch)
+        else:
+            return False
+        return True
 
 class StimWidget(GridLayout):
     stim_control = StimController()
     stim_panel = None
+    stim_panel_parent = None
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, stim_panel_parent=None, **kwargs) -> None:
         self.stimpars = self.stim_control.stim_pars
         Builder.load_string(kv_str)
         super().__init__(**kwargs)
-        Clock.schedule_once(self.open_panel, 1)
+        self.stim_panel_parent = stim_panel_parent
 
     def setstimpar(self, key, value):
+        if isinstance(value, str):
+            value = float(value)
         self.stimpars[key] = value
 
     def open_panel(self, *args):
-        if self.stim_panel is None:
+        if self.stim_panel is None and self.stim_panel_parent is not None:
             self.stim_panel = StimPanel(self)
-            self.add_widget(self.stim_panel)
+            self.stim_panel_parent.add_widget(self.stim_panel)
             self.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+        else:
+            print("Error no stim panel parent to add widget to or widget already open")
 
     
     def close_panel(self, *args):
         if self.stim_panel is not None:
-            self.remove_widget(self.stim_panel)
+            self.stim_panel_parent.remove_widget(self.stim_panel)
             self.stim_panel = None
 
 
@@ -557,7 +592,7 @@ r"""
     valign: 'center'
     markup: True
     idName: None   # save id name in here for triggering later
-    send_nw: True  # can be set to false to disable sending for specific buttons
+    send_nw: False  # can be set to false to disable sending for specific buttons
 
 <TIn>:
     size_hint: (.1, .07)

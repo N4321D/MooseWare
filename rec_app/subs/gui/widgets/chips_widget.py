@@ -16,9 +16,11 @@ from kivy.uix.button import Button
 from kivy.lang import Builder
 
 from subs.gui.widgets.custom_settings import MySettingsWithNoMenu
+from subs.gui.misc.Stimulation import StimWidget
 from kivy.config import ConfigParser
 
 from subs.driver.sensors import chip_d
+
 
 from kivy.properties import BooleanProperty
 
@@ -54,8 +56,8 @@ kv_str = """
             width: 2
             rectangle: self.x, self.y, self.width, self.height
 
-    size_hint: (0.5, 0.5)
-    pos_hint: {"x": 0.25, "y":0.25}
+    size_hint: (0.7, 0.6)
+    pos_hint: {"x": 0.15, "y":0.2}
 
 """
 

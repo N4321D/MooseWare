@@ -259,12 +259,12 @@ class DummyMicro(EventDispatcher):
 
     def __init__(self,  **kwargs) -> None:
         self.__dict__.update(kwargs)
-
         self.data_event = Clock.schedule_interval(self._gen_data, self._rec_dt)
         self.data_event.cancel()
         self.idle_event = Clock.schedule_interval(self._gen_idle, 2)
 
-        Clock.schedule_once(self.on_connect, 0)
+        # Clock.schedule_once(self.on_connect, 0)
+        Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(self.on_connect(self), asyncio.get_event_loop()), 0) 
 
     async def on_connect(self, *args, **kwargs):
         pass
@@ -319,14 +319,21 @@ class DummyMicro(EventDispatcher):
             self.recv_buff.append(
                 json.dumps(
                     {"idle": True,
+                     "CTRL":{"name": self.name},
                      "OIS": {"name": "Optical Intrisic Signal",
-                             "control_str": json.dumps([{"title": "Green Led Intensity",
+                             "control_str": json.dumps([{"title": "Blue Light Stimulation",
+                             "type":"stim",
+                             "desc": "Create / Start / Stop blue light stimulation protocol",
+                             "key": "stim",
+                             "live_widget": True},
+                             {"title": "Green Led Intensity",
                              "type":"plusminin",
                              "desc": "Power in mA of the green LEDs",
                              "key": "amps",
                              "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]], 
                              "limits": [0, 65],                            
-                             "live_widget": True}]),
+                             "live_widget": True},
+                             ]),
                              "i2c_status": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
@@ -431,12 +438,11 @@ class Controller():
             self.micro = DummyMicro(do=self.on_incoming,
                                     on_connect=self._on_connect,
                                     on_disconnect=self._on_disconnect,)
+
         else:
             self.micro = Arduino(do=self.on_incoming,
                                  on_connect=self._on_connect,
                                  on_disconnect=self._on_disconnect,
-                                 # on_write_pause=lambda *_: self.text_event.cancel(),
-                                 # on_write_resume=lambda *_: self.text_event(),
                                  )
         self.disconnected = self.micro.disconnected
         self.connected = self.micro.connected
@@ -500,7 +506,6 @@ class Controller():
 
     async def _on_connect(self, dev):
         self.connect_buffer()
-
         self.sensors["CTRL"] = Chip(
                 "CTRL", 
                 {"name": "Controller",
@@ -572,7 +577,7 @@ class Controller():
 
         self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items()
                            for par in chip.parameter_short_names 
-                           if (chip.i2c_status == 0 and chip.record)}   
+                           if (chip.i2c_status == 0 and chip.record and hasattr(chip, 'parameter_short_names'))}   
 
     def do_new_data(self, data):
         data_unpacked = self._do_time(data)
