@@ -1,4 +1,5 @@
 import json
+from subs.gui.misc.Stimulation import StimController
 
 class Chip():
     """
@@ -26,6 +27,7 @@ class Chip():
     """
     def __init__(self, short_name, chip_dict, controller, **kwargs) -> None:
         self.controller = controller
+        self.stim_controls = None
         self.parent_name = controller.name if controller is not None else ""      
         self.connected = True
         self.status = 1                  # indicates what chip is doing (see vars.py sensor status)
@@ -43,9 +45,13 @@ class Chip():
                      "default_value": True,
                   }] + (json.loads(chip_dict.get("control_str") or "[]")
                  )
+        
         # add section for saving settings
-        [i.update({"section": f"{self.parent_name}: {self.name}"})
-         for i in self.control_panel]
+        for i in self.control_panel:
+            i["section"] = f"{self.parent_name}: {self.name}"
+            if i['type'] == "stim":
+                self.stim_control = StimController()
+                self.stim_control.do_stim = self.do_stim
         
         
     
@@ -74,3 +80,7 @@ class Chip():
     
     def do_config(self, par, value):
         self.send_cmd({par: value})
+    
+    def do_stim(self, dur, amp):
+        self.send_cmd({'stim': [dur, amp]})
+

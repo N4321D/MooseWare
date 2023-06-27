@@ -190,11 +190,12 @@ class ChipPanel(MySettingsWithNoMenu):
     def __init__(self, parent_button, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent_button = parent_button
+        self.chip = self.parent_button.chip
         self.config = config
-        self._create_self()
+        Clock.schedule_once(self._create_self, 0)
 
     def _create_self(self, *args):
-        json_list = self.parent_button.chip.json_panel()
+        json_list = self.chip.json_panel()
 
         # create live settings (items that can be changed during recording)
         for item in json_list:
@@ -202,7 +203,6 @@ class ChipPanel(MySettingsWithNoMenu):
             if item.setdefault('live_widget', False) is True:
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
             
-                        
             # create values if not exisiting
             default_val = None
             if "default_value" in item:
@@ -216,21 +216,26 @@ class ChipPanel(MySettingsWithNoMenu):
                 
             self.config.setdefault(item['section'], item['key'], default_val)
 
-        self.add_json_panel(self.parent_button.chip.name, self.config, 
+        self.add_json_panel(self.chip.name, self.config, 
                             data=json.dumps(json_list))
     
+        self.interface.container.chip = self.chip
+
         self.update_chip_val()
     
     def update_chip_val(self, *args):
         # send values to chip
         [self.on_config_change(self.config, item['section'], item['key'], 
                             self.config.get(item['section'], item['key']))
-                            for item in self.parent_button.chip.json_panel()]
+                            for item in self.chip.json_panel()]
                 
     def on_config_change(self, config, section, option, value):
         if option == "record":
             value = config.getboolean(section, option)
             self.parent_button.chip_enabled = value# config.getboolean(section, option)
+        
+        elif option == 'stim':
+            print(section, value)
             
         else:
             try:
@@ -239,7 +244,7 @@ class ChipPanel(MySettingsWithNoMenu):
                 # Value is string
                 pass
 
-        self.parent_button.chip.do_config(option, value)
+        self.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
         """
@@ -250,6 +255,7 @@ class ChipPanel(MySettingsWithNoMenu):
         else:
             # clicked outside widget
             self.parent_button.close_panel()
+
             
 
 if __name__ == "__main__":

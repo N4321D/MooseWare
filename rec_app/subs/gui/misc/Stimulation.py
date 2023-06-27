@@ -17,7 +17,7 @@ from kivy.event import EventDispatcher
 from kivy.properties import BooleanProperty, DictProperty
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
-
+from kivy.uix.button import Button
 
 # used in kv builder, do not remove!
 from subs.gui.widgets.Graph import Graph
@@ -69,7 +69,7 @@ kv_str = r"""
         pos_hint: {'x': 0.8, 'top': 0.15}
         text: 'Close Panel'
         on_release:
-            root.stimwidget.close_panel()
+            root.close_panel()
 
     setLab:
         pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT-0.05}
@@ -198,21 +198,6 @@ kv_str = r"""
     rows: 1
     size: root.size
     id: stimwidget
-
-    StdButton:
-        text: "Create\nStim"
-        on_release: root.open_panel()
-
-    StdButton:
-        text: "Stop\nStim" if root.stim_control.run else "Start\nStim"
-        on_release: root.stim_control.stop_stim() if root.stim_control.run else root.stim_control.start_stim()
-    
-    StdButton:
-        text: "Reset\nStim"
-        on_release: root.stim_control.reset_stim()
-    
-    
-    
 """
 
 # LEGACY
@@ -469,7 +454,7 @@ class StimController(StimGenerator, EventDispatcher):
                     self.stim_generator)
                 next_stim_start = on_time + off_time
                 self.next_stim_event = Clock.schedule_once(self.do_next_stim, next_stim_start)
-                self.do_stim(on_time, amp)
+                self.do_stim(1e3 * on_time, amp)
 
             except StopIteration:
                 # end of stim protocol
@@ -494,20 +479,29 @@ class StimController(StimGenerator, EventDispatcher):
             amp (float): amp of stim in %
         """
         print(f"stim for {duration} seconds, {amp}% amplitude")
+    
+    def get_stim_panel(self, *args):
+        stim_panel = StimPanel(self)
+        stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+        return stim_panel
 
 class StimPanel(FloatLayout):
-    def __init__(self, stimwidget, **kwargs):
+    def __init__(self, stim_control, **kwargs):
         self.app = App.get_running_app()
-        self.stimwidget = stimwidget
-        self.stimpars = stimwidget.stimpars
-        self.stim_control = stimwidget.stim_control
-        self.setstimpar = stimwidget.setstimpar
+        # self.stimwidget = stimwidget
+        self.stimpars = stim_control.stim_pars
+        self.stim_control = stim_control
         super().__init__(**kwargs)
  
     def create_stim(self):
-        self.stimwidget.stim_control.create_stim()
+        self.stim_control.create_stim()
         print('create stim')
-        self.stimwidget.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+        self.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+
+    def setstimpar(self, key, value):
+        if isinstance(value, str):
+            value = float(value)
+        self.stimpars[key] = value
     
     def on_touch_down(self, touch):
         """
@@ -534,21 +528,23 @@ class StimPanel(FloatLayout):
             return False
         return True
 
+    def close_panel(self, *args):
+        self.parent.remove_widget(self)
+    
 class StimWidget(GridLayout):
-    stim_control = StimController()
+    stim_control = None
     stim_panel = None
     stim_panel_parent = None
+    button_dict = {}
 
-    def __init__(self, stim_panel_parent=None, **kwargs) -> None:
+    def __init__(self, stim_panel_parent=None, stim_control=None, **kwargs) -> None:
+        self.stim_control = stim_control
         self.stimpars = self.stim_control.stim_pars
         Builder.load_string(kv_str)
         super().__init__(**kwargs)
         self.stim_panel_parent = stim_panel_parent
+        self.create_buttons()
 
-    def setstimpar(self, key, value):
-        if isinstance(value, str):
-            value = float(value)
-        self.stimpars[key] = value
 
     def open_panel(self, *args):
         if self.stim_panel is None and self.stim_panel_parent is not None:
@@ -563,6 +559,26 @@ class StimWidget(GridLayout):
         if self.stim_panel is not None:
             self.stim_panel_parent.remove_widget(self.stim_panel)
             self.stim_panel = None
+    
+    def start_stop_stim(self, start=None):
+        if start is None:
+            start = not self.stim_control.run
+        self.stim_control.start_stim() if start else self.stim_control.stop_stim()
+        if self.button_dict:
+            self.button_dict['StartStop'].text = "Stop\nStim" if start else "Start\nStim"
+    
+    def create_buttons(self, *args):
+        if not self.button_dict:
+            self.button_dict.update(
+            {"Label": Button(text="STIM"),
+            "CreateStim": Button(on_release=self.open_panel,
+                                   text="Create\nStim"),
+             "StartStop": Button(on_release=self.start_stop_stim,
+                                text="Start\nStim"),
+             "ResetStim": Button(on_release=self.stim_control.reset_stim,
+                                  text='Reset\nStim')
+                                  })
+            [self.add_widget(b) for b in self.button_dict.values()]
 
 
 

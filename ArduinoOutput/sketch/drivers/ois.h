@@ -27,7 +27,13 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
 
-        control_str = "[{\"title\": \"Green Led Intensity\","
+        control_str = "["
+            "{\"title\": \"Blue Light Stimulation\","
+            "\"type\": \"stim\","
+            "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
+            "\"key\": \"stim\","
+            "\"live_widget\": true},"
+            "{\"title\": \"Green Led Intensity\","
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
             "\"key\": \"amps\","
@@ -116,7 +122,7 @@ public:
     void start_stim(JsonArray time_amps)
     {
         stim_end = millis() + time_amps[0].as<unsigned long>();
-        byte amp = time_amps[1].as<unsigned short>();
+        byte amp = (byte)((time_amps[1].as<float>() / 100) * 65);
         if (amp > 0)
         {
             set_amps(amp, true);
