@@ -34,19 +34,14 @@ def log(message, level="info"):
 
 # imports
 try:
-    import smbus2 as smbus
+    import smbus   # DO NOT USE SMBUS2
 except ModuleNotFoundError:
-    try:
-        import smbus
-    except ModuleNotFoundError:
-        raise ImportError("\n SMBus not found")
+    raise ImportError("\n SMBus not found")
 
 try:
     import RPi.GPIO as GPIO
 except ModuleNotFoundError:
     ImportError("RPi.GPIO not found")
-
-
 
 import time
 

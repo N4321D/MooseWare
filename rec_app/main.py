@@ -105,7 +105,6 @@ from subs.gui.screens.root_layout import RootLayout
 from subs.updater import Updater
 
 # Other imports:
-from subs.gui.misc.Stimulation import Stimulation
 from subs.driver.button import LedButton
 from subs.gui.widgets.messenger.kivy_messenger import Messenger                 # import sms alert system
 
@@ -250,7 +249,6 @@ class guiApp(App):
 
         # app variables
         self.title = f"{SETTINGS_VAR['Main']['title']}{SETTINGS_VAR['Main']['app_logo']:>25}"
-        self.stim = Stimulation()
 
         self.scrsav_event = Clock.schedule_once(self.screen_saver,
                                                 self.screensaver_timeout.total_seconds())

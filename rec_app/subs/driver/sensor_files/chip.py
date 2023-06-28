@@ -26,7 +26,6 @@ class Chip():
 
     """
     def __init__(self, short_name, chip_dict, controller, **kwargs) -> None:
-        print("init")
         self.controller = controller
         self.stim_control = {}
         self.parent_name = controller.name if controller is not None else ""      

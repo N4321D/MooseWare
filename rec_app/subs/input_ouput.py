@@ -635,14 +635,23 @@ class InputOutput(EventDispatcher):
         """
         (Force) Stop all stimulation by sending stim 0, 0 to all sensors
         """
-        [sc.stop_stim() 
-         for m in self.micro_controllers.values() 
-         for s in m.sensors.values()
-         for sc in s.stim_control.values()]
         
-        [sc.stop_stim() 
-         for s in self.sensors.values()
-         for sc in s.stim_control.values()]
+        for m in self.micro_controllers.values():
+            for s in m.sensors.values():
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
+        
+        
+        for s in self.sensors.values():
+            if hasattr(s, "stim_control"):
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
 
 
     # NETWORK FUNCTIONS:

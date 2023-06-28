@@ -287,7 +287,6 @@ class RecScreen(Scr):
         self.plusminbut("ledma", self.app.rec_vars.ois_ma)
         return
 
-
     def main(self, *args, stop=False):
         if stop:
             return self.event.cancel()
@@ -311,77 +310,6 @@ class RecScreen(Scr):
             self.app.IO.graphs = (self.graph1, self.graph2)
                 
         return self.event()
-
-    def stimchoice(self, *args):
-        # Choose stimulation (reset or continue) and send it to rec
-
-        if self.app.IO.sensor_status.get("OIS:status", [0,])[0] >= 3:
-            # stim running: stop stim
-            return self._stop_stim()
-
-        if not self.app.IO.running or not self.app.stim.protocol:
-            # not recording or no stim protocol
-            log('Error: Not Recording or No Stimulus Defined...', 'warning')
-            return
-
-        if 0 < self.app.stimstat[0] < len(self.app.stim.protocol):
-            # stim started and paused but not finished
-            return self._stim_popup()
-        
-        else:
-            # start stim
-            return self._start_stim()
-
-    def _start_stim(self):
-        # (re-)starts stim protocol
-        self._start_stim_prot(self.app.stim.protocol)
-
-    def _stop_stim(self):
-        # stop protocol when running
-        self.app.IO.chip_command('OIS', 'set_stim_protocol', [(0, 0, 0)])
-
-    def _continue_stim(self):
-         # CONTINUE STIM
-        prot = self.app.stim.protocol[self.app.stimstat[0]:]
-
-        # substract startime to start left over protocol immediately:
-        offset = prot[0][0]
-        prot = [(i[0] - offset, i[1] - offset, i[2]) for i in prot]
-        return self._start_stim_prot(prot)
-    
-    def _do_1_stim(self, reset=False):
-        """
-        only triggers the next stim step in protocol and pauses,
-        NB. Ignores interval defined in stim  protocol between stims
-        use reset=True to restart from strart of protocol
-        """
-
-        prot = self.app.stim.protocol[self.app.stimstat[0]]
-        
-        # correct for offset in on to start immediately:
-        prot = [(0, prot[0][1] - prot[0][0], prot[0][2])]    # prot [(on, off, mA), ....]
-
-        self._start_stim_prot(prot)
-
-    def _stim_popup(self, *args):
-         # Popup (continue, restart, cancel stim)
-        self.app.popup.load_defaults()
-        self.app.popup.title = 'Stimulation Protocol not Finished'
-        self.app.popup.size_hint = 0.5, 0.3
-        self.app.popup.buttons = {'CONTINUE\nSTIM.':
-                                    {"do": self._continue_stim},
-                                    'RESTART\nSTIM.':
-                                    {"do": self._start_stim},
-                                    'CANCEL': {},
-                                    }
-        return self.app.popup.open()
-
-    def _start_stim_prot(self, protocol, *args, **kwargs):
-        """
-        helper function to start a specific stim protocol
-        (sends it to recorder)
-        """
-        self.app.IO.chip_command('OIS', 'set_stim_protocol', protocol)
 
     def plusminbut(self, func, inp):
         """
@@ -489,13 +417,7 @@ class RecScreen(Scr):
                 self.app.IO.add_note(f'Button Pressed for {touch_duration:.2f} seconds')
 
     def ois_updates(self, *args):
-        _i = self.app.IO.sensor_status["OIS:status"][0]
-        self.ids.bluebutt.text = ('STIM', 'STIM', 'START\nSTIM', 'STOP\nSTIM', 'STOP\nSTIM')[_i]
-        self.ids.bluebutt.color = ((0.5, 0.5, 0.5, 0.9), (0.5, 0.5, 0.5, 0.9), WHITE, (1, 0, 0, 1), (1, 0, 0, 1))[_i]   # start with greyed out text
-        self.ids.bluebutt.background_color = (BUT_BGR, BUT_BGR, MO_BGR, BLUE, BLUE)[_i]
-        if not self.app.IO.running:
-            self.ids.bluebutt.disabled = False if _i > 1 else True
-        
+        _i = self.app.IO.sensor_status["OIS:status"][0]        
         # set stim counter
         if _i > 1:
             count = self.app.IO.sensor_status['OIS:stim_count'][0]
@@ -517,11 +439,12 @@ class RecScreen(Scr):
 
     def setup_autostim(self):
         # define what to do at stop and start
-        self.autostim.start_stim = partial(self._do_1_stim, reset=True)
-        self.autostim.stop_stim = self._stop_stim
-        self.autostim.continue_stim = self._do_1_stim
-        self.autostim.custom_protocol = self._start_stim_prot
-    
+        # self.autostim.start_stim = partial(self._do_1_stim, reset=True)
+        # self.autostim.stop_stim = self._stop_stim
+        # self.autostim.continue_stim = self._do_1_stim
+        # self.autostim.custom_protocol = self._start_stim_prot
+        pass
+
     def wake_up(self, state):
         self.nudging = True
         if state is None:

@@ -59,10 +59,6 @@ kv_str = """
 <SetScreen>:
     on_enter: 
         self.selectscreen(self.last_screen)
-        self.main_loop_event()
-    
-    on_leave:
-        self.main_loop_event.cancel()
     
     on_leave:
         fm.main_loop_event.cancel() # stop refreshing file manager
@@ -73,26 +69,26 @@ kv_str = """
         font_size: "20sp"
         pos_hint: {'x': 0.0, 'top': 0.1} #relative sizes 0-1
         text: 'App Settings'
-        on_release: app.open_settings()  # root.selectscreen('senssettings')
-
-    but2x1:
-        id: stimbutt
-        pos_hint: {'x': 0.2, 'top': 0.1} #relative sizes 0-1
-        text: 'Stimulation'
-        on_release: root.selectscreen('stimsettings')
-        state: 'down'
+        on_release: app.open_settings()
 
     but2x1:
         id: filebutt
-        pos_hint: {'x': 0.4, 'top': 0.1} #relative sizes 0-1
+        pos_hint: {'x': 0.2, 'top': 0.1} #relative sizes 0-1
         text: 'File'
+        state: 'down'
         on_release: root.selectscreen('filesettings')
 
     but2x1:
         id: miscbutt
-        pos_hint: {'x': 0.6, 'top': 0.1} #relative sizes 0-1
+        pos_hint: {'x': 0.4, 'top': 0.1} #relative sizes 0-1
         text: ''
         # on_release: root.selectscreen('miscsettings')
+
+    but2x1:
+        id: emptybut
+        pos_hint: {'x': 0.6, 'top': 0.1} #relative sizes 0-1
+        text: ''
+        # on_release: root.selectscreen('filesettings')
 
     but2x1:
         id: secretbutt
@@ -101,188 +97,7 @@ kv_str = """
         on_release: 
             root.selectscreen('secretsettings') if app.ADMIN else 1 # root.selectscreen('sensorsettings')
         # disabled: not app.ADMIN
-
     
-    # STIMSETTINGS
-    Set:
-        STT:
-            id: stimsettings
-            size: root.size[0], 0.9 * root.size[1]
-            pos: (root.pos[0],  root.pos[1] + 0.1 * root.size[1])
-
-            Graph3:
-                id: graf3
-                size_hint: 0.7, 0.42
-                pos_hint: {'x': 0.07, 'top': 0.5}          # relative sizes 0-1
-
-            StdButton:
-                id: createstim
-                size_hint: 0.2, 0.1
-                pos_hint: {'x': 0.8, 'top': 0.15}
-                text: 'Create Stimulus'
-                on_release:
-                    root.createstim(True)
-
-            #
-            #   SET BUTTONS AND INPUTS TO CREATE STIMULUS
-            #
-
-            setLab:
-                pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT-0.05}
-                text: 'Start:'
-
-            setLab:
-                pos_hint: {'right': 0.35, 'top': STIM_PAR_HEIGHT-0.05}
-                text: 'End:'
-
-            setLab:
-                pos_hint: {'right': 0.15, 'top': STIM_PAR_HEIGHT - 0.1}
-                text: 'Pulse:'
-
-            TIn:
-                id: startStim
-                pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT - 0.1} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['stim_Strt_T'])
-                input_filter: 'float'
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'stim_Strt_T', self.time_IO(self.text))
-
-            TIn:
-                id: endStim
-                pos_hint: {'right': 0.35, 'top': STIM_PAR_HEIGHT - 0.1} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['stim_End_T'])
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'stim_End_T', self.time_IO(self.text))
-
-            DROPB:
-                id: linlog_on
-                pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.1}
-                size_hint: (.1, .07)
-                text: 'method'
-                types: ['lin', 'log']
-                on_text:
-                    root.stimpars['stim_method'] = self.text
-
-            setLab:
-                pos_hint: {'right': 0.15, 'top': STIM_PAR_HEIGHT - 0.2}
-                text: 'Interval:'
-
-            TIn:
-                id: startInt
-                pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT-0.2} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['int_Strt_T'])
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'int_Strt_T', self.time_IO(self.text))
-
-            TIn:
-                id: endInt
-                pos_hint: {'right': 0.35, 'top': STIM_PAR_HEIGHT-0.2} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['int_End_T'])
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'int_End_T', self.time_IO(self.text))
-
-            DROPB:
-                id: linlog_off
-                pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.2}
-                size_hint: (.1, .07)
-                text: 'method'
-                types: ['lin', 'log']
-                on_text:
-                    root.stimpars['int_method'] = self.text
-
-            setLab:
-                pos_hint: {'right': 0.15, 'top': STIM_PAR_HEIGHT - 0.3}
-                text: 'Power:'
-
-            TIn:
-                id: startamp
-                pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT - 0.3} #relative sizes 0-1
-                text: '{:d} mA'.format(root.stimpars['amp_Strt'])
-                input_filter: 'int'
-                on_focus:
-                    self.focusaction(root.setstimpar, 'amp_Strt', self.text)
-
-            TIn:
-                id: endamp
-                pos_hint: {'right': 0.35, 'top': STIM_PAR_HEIGHT - 0.3} #relative sizes 0-1
-                text: '{:d} mA'.format(root.stimpars['amp_End'])
-                input_filter: 'int'
-                on_focus:
-                    self.focusaction(root.setstimpar, 'amp_End', self.text)
-
-            DROPB:
-                id: linlog_amp
-                pos_hint: {'right': 0.45, 'top': STIM_PAR_HEIGHT - 0.3}
-                size_hint: (.1, .07)
-                text: 'method'
-                types: ['lin', 'log']
-                on_text:
-                    root.stimpars['amp_method'] = self.text
-
-            setLab:
-                pos_hint: {'right': 0.6, 'top': STIM_PAR_HEIGHT - 0.2}
-                text: 'Duration:'
-
-            TIn:
-                id: durationbox
-                pos_hint: {'right': 0.7, 'top': STIM_PAR_HEIGHT - 0.2} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['duration']) if root.stimpars['duration'] > 0 else ''
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'duration', self.time_IO(self.text))
-
-            setLab:
-                pos_hint: {'right': 0.6, 'top': STIM_PAR_HEIGHT - 0.3}
-                text: 'Pulses:'
-
-            TIn:
-                id: n_pulsebox
-                pos_hint: {'right': 0.7, 'top': STIM_PAR_HEIGHT-0.3} #relative sizes 0-1
-                text: str(int(root.stimpars['n_pulse'])) if root.stimpars['n_pulse'] > 0 else ''
-                input_filter: 'int'
-                on_focus:
-                    self.focusaction(root.setstimpar, 'n_pulse', self.text)
-
-            setLab:
-                pos_hint: {'right': 0.85, 'top': STIM_PAR_HEIGHT - 0.1}
-                text: 'Delay:'
-
-
-            TIn:
-                id: delaybox
-                pos_hint: {'right': 0.95, 'top': STIM_PAR_HEIGHT - 0.1} #relative sizes 0-1
-                text: self.time_IO(root.stimpars['offset'])
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'offset', self.time_IO(self.text))
-
-            setLab:
-                pos_hint: {'right': 0.85, 'top': STIM_PAR_HEIGHT - 0.2}
-                text: 'Repeats:'
-
-            TIn:
-                id: repnbox
-                pos_hint: {'right': 0.95, 'top': STIM_PAR_HEIGHT-0.2} #relative sizes 0-1
-                text: str(root.stimpars['rep_n'])
-                input_filter: 'int'
-                on_focus:
-                    self.focusaction(root.setstimpar, 'rep_n', self.text)
-
-            setLab:
-                pos_hint: {'right': 0.85, 'top': STIM_PAR_HEIGHT - 0.3}
-                text: 'Rep. Int.:'
-
-            TIn:
-                id: repStim_box
-                pos_hint: {'right': 0.95, 'top': STIM_PAR_HEIGHT - 0.3} #relative sizes 0-1
-                text: (self.time_IO(root.stimpars['rep_s'])) if root.stimpars['rep_s'] > 0 else ''
-                input_filter: lambda *x: x[0] if x[0] in "1234567890:." else ""
-                on_focus:
-                    self.focusaction(root.setstimpar, 'rep_s', self.time_IO(self.text))
 
 
     # FILE SETTINGS FOR SAVING ETC
@@ -308,29 +123,6 @@ kv_str = """
             id: miscsettings
             size: root.size[0], 0.9 * root.size[1]
             pos: root.pos[0],  root.pos[1] + 1.1 * root.size[1]
-
-
-            # # TIMEZONE
-            # TzWidget:
-            #     size_hint: (0.3, 0.1)
-            #     pos_hint: {'x': 0.12, 'top': 0.45} #relative sizes 0-1
-            #     disabled: app.SERVER
-            # setLab:
-            #     text: 'Change\\nTimezone:'
-            #     pos_hint: {'right': 0.11, 'top': 0.45}
-            #     disabled: app.SERVER
-            
-            # # WIFI
-            # setLab:
-            #     text: 'Network:'
-            #     pos_hint: {'right': 0.69, 'top': 0.9}     
-            #     disabled: app.SERVER
-            
-            # WifiWidget:
-            #     id: wifi
-            #     size_hint: (0.4, 0.4)
-            #     pos_hint: {"x": 0.6, "y": 0.4}
-            #     disabled: app.SERVER
 
 
     # Secret Settings    
@@ -362,10 +154,10 @@ kv_str = """
                 pos_hint: {'right': 0.2, 'top': 0.5} #relative sizes 0-1
                 size_hint: (.2, .1)
                 text: 'Sensor'
-                types: list(root.sensors.keys())
+                types: list(app.IO.sensors.keys())
                 on_text:
-                    address.text = str(hex(root.sensors[self.text].address))
-                    root.add = str(hex(root.sensors[self.text].address))
+                    address.text = str(hex(app.IO.sensors[self.text].address))
+                    root.add = str(hex(app.IO.sensors[self.text].address))
                     reset.text = 'Reset\\n' + 'Chip'
                     reset.color = WHITE
                     reset.background_color = MO_BGR
@@ -391,7 +183,7 @@ kv_str = """
                 color: GREY
                 on_release:
                     key = self.text[self.text.index('\\n') + 1:]
-                    if key in root.sensors: root.sensors[key].reset()
+                    if key in app.IO.sensors: app.IO.sensors[key].reset()
 
             TIn:
                 id: address
@@ -432,53 +224,18 @@ class SetScreen(Scr):
     bt = StringProperty('')      # byte to 
     
     # parameters to create stimulation
-    stimpars = DictProperty()   # this is the var used  _stimpars is only for saving settings
-    _stimpars = ConfigParserProperty({'stim_Strt_T': 1,
-                                      'stim_End_T': 10,
-                                      'stim_method': 'lin',  # 'lin' or 'log'
-                                      'int_Strt_T': 300,
-                                      'int_End_T': 300,
-                                      'int_method': 'lin',   # 'lin' or 'log'
-                                      'amp_Strt': 30,
-                                      'amp_End': 30,
-                                      'amp_method': 'lin',   # 'lin' or 'log'
-                                      'duration': -1,
-                                      'n_pulse': 10,
-                                      'offset': 0,
-                                      'rep_s': -1,
-                                      'rep_n': 1}, 
-                                      "stimulation", "stimpars", "app_config",
-                                      val_type=val_type_loader)  
-
-    last_screen = "stimsettings"
-
+    last_screen = "filesettings"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Builder.load_string(kv_str)
 
-        # build stimpars:
-        self.stimpars.update(self._stimpars)  # load stimpars
-        # save
-        self.bind(stimpars=lambda *_: setattr(self, "_stimpars", 
-                                               dict(self.stimpars)))
-
         # Dictionary with link to sensors
-        self.sensors = {}
         self.rwi2c = self.app.IO.readwrite
-        self.main_loop_event = Clock.schedule_interval(self.main_loop, 1)
-        self.main_loop_event.cancel()
-
-        Clock.schedule_once(self.__kv_init__, 0)
-    
-    def __kv_init__(self, dt):
-        self.createstim(False)
-
-    def main_loop(self, *args):
-        pass
+        
 
     def selectscreen(self, screen):
-        screens = ('stimsettings', 'filesettings',
+        screens = ('filesettings',
                    'miscsettings', 'secretsettings')
 
         # TODO add widget as attributes and add and remove instead of moving out of screen
@@ -499,47 +256,6 @@ class SetScreen(Scr):
                             
         self.last_screen = screen
 
-    def setstimpar(self, stimpar, value):
-        try:
-            value = min(0xFFFF, float(value))
-            if value <= 0:
-                return
-        except (ValueError, TypeError):
-            return
-
-        if stimpar == 'duration' and value > 0:
-            self.stimpars['n_pulse'] = -1
-
-        elif stimpar == 'n_pulse' and value > 0:
-            self.stimpars['duration'] = -1
-
-        if 'amp' in stimpar or 'rep' in stimpar:
-            value = int(value)
-
-        self.stimpars[stimpar] = value
-
-    def createstim(self, sending):
-        self.app.stimstat = [0, 0, 0] # indicates new stim
-        stim, npul = self.app.stim.chirp(**self.stimpars)
-        if stim:
-            self.ids['graf3'].plot_xy(stim[0] - time.localtime().tm_gmtoff,
-                                      stim[1], linecolor=BLUE)
-
-            if sending:
-                # send to server/client
-                self.app.IO.send(('VAR', ('settings', 'stimpars',
-                                      dict(self.stimpars))))
-                self.app.IO.send(('VAR', ('settings', 'createstim', False)))
-
-            # return calculated stims / duration
-            if self.stimpars['duration'] == -1:
-                self.stimpars['duration'] == stim[0][-1]
-                self.ids['durationbox'].text = self.ids['durationbox'].time_IO(
-                                                    stim[0][-1])
-
-            if self.stimpars['n_pulse'] == -1:
-                self.stimpars['n_pulse'] == npul
-                self.ids['n_pulsebox'].text = str(npul)
 
     def rwbyte(self, mode, address, reg, *args):
         if mode == 'read':

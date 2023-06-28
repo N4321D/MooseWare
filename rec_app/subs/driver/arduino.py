@@ -26,8 +26,6 @@ def log(message, level="info"):
     cls_name = "SERIAL_CONTROLLER"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
-
-
 class IOProtocol(asyncio.Protocol):
     buffer = []
     sub_buffer = bytearray()  # sub buffer to cache incoming data until '\n is found'
@@ -550,6 +548,8 @@ class Controller():
         pass
 
     def on_incoming(self):
+        # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
+        #       get fifo is async or multiprocessing processed?
         while True:
             data = self.micro.get_fifo()
 
@@ -587,12 +587,13 @@ class Controller():
                            if (chip.i2c_status == 0 and chip.record and hasattr(chip, 'parameter_short_names'))}   
 
     def do_new_data(self, data):
-        data_unpacked = self._do_time(data)
+        data_with_time = self._do_time(data)
+        data_unpacked = {}
 
-        # data_unpacked = {}
-        for sens in tuple(data_unpacked):
-            if isinstance(data_unpacked[sens], dict):
-                v = data_unpacked.pop(sens)
+        self._calc_ema(data_with_time.pop('sDt'))
+
+        for sens, v in data_with_time.items():
+            if isinstance(v, dict):
                 _status = v.get("!I2C", 0)
 
                 if sens in self.sensors:
@@ -606,8 +607,10 @@ class Controller():
 
                 else:
                     # upack dictionary
-                    data_unpacked.update({f"{sens}_{k2}": v[k2]
-                                          for k2 in v})
+                    data_unpacked.update({f"{sens}_{k2}": v2
+                                          for k2, v2 in v.items()})
+            else:
+                data_unpacked[sens] = v
 
         if self.buffer_length == 0:
             # create buffer based on incoming data
@@ -617,7 +620,6 @@ class Controller():
             self.data_dtype_fields = self.shared_buffer.buffer[self.name].dtype.fields
 
         self.save_data(data_unpacked)
-        self._calc_ema(data_unpacked['sDt'])
 
 
     def save_data(self, data):
