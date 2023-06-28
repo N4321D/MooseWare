@@ -132,7 +132,7 @@ kv_str = """
         background_color: BUT_BGR
         disabled: not app.IO.running
         on_release:
-            root.stimchoice()
+            app.IO.stop_all_stim()
 
 
     # TIME RANGE

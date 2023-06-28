@@ -144,6 +144,13 @@ class Recorder():
         self.chip_d = {name: chip for name, chip in chip_d.items()
                        if (not chip.disconnected) and chip.record}
         
+        # link stim
+        for chip in self.chip_d.values():
+            if hasattr(chip, "stim_control"):
+                for sc in chip.stim_control.values():
+                    name = str(chip.name)
+                    sc.do_stim = lambda dur, amp: self.q_in.put((name, 'do_stim', (dur, amp), {}))
+                    
     def create_mem_block(self):
         dtypes = [('time', 'f8'), 
                   *[(par, datatypes.get(par, datatypes['default'])) 

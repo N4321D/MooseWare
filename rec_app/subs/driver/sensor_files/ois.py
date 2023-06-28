@@ -32,6 +32,9 @@ del DUMMY
 
 import time
 
+from subs.gui.misc.Stimulation import StimController
+
+
 class LightSens(Sensor):
     '''
 
@@ -75,6 +78,8 @@ class LightSens(Sensor):
     stim_protocol = []
 
     stim_start = None
+
+    stim_control = {"stim": StimController()}
 
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
     shv = {'status': 0,
@@ -227,6 +232,19 @@ class LightSens(Sensor):
         set a stim protocol here to start stim during recording
         """
         self.stim_protocol = protocol
+    
+    def do_stim(self, dur, amp):
+        """
+        do instant stim
+
+        Args:
+            dur (float): duration in ms
+            amp (float): amp in %
+        """
+        print(amp, dur, "STIM")
+        dur /= 1e3
+        amp = (amp / 100) * 65
+        self.set_stim_protocol([(0, dur, amp)])
 
     def stimulate(self, delay=0):
         """
@@ -323,11 +341,18 @@ class LightSens(Sensor):
                     "section": self.name,
                     "key": "record",
                   },
+                  {"title": "Blue Light Stimulation",
+                    "section": self.name,
+
+                    "type":"stim",
+                    "desc": "Create / Start / Stop blue light stimulation protocol",
+                    "key": "stim",},
                  {"title": "Green Led Intensity",
                   "type": "plusminin",
                     "desc": "Power in mA of the green LEDs",
                     "section": "recording",
                     "key": "ois_ma",
+                    "section": self.name,
                     # [min of range, max of range, step in range]
                     "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],
                     "limits": [0, 60],   # [min, max]

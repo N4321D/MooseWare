@@ -19,6 +19,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.app import App
 
+from kivy.uix.screenmanager import Screen
 
 from bisect import bisect
 
@@ -101,6 +102,9 @@ Builder.load_string(
     color: WHITE
     background_color: MO_BGR
 
+<StartStimButton@SettingsButton>:
+    disabled: False if app.IO.running else True
+
 <SettingInWithPlusMinus>:
     Button:
         id: min_button
@@ -125,6 +129,9 @@ class SettingsToggle(ToggleButton):
     pass
 
 class SettingsButton(Button):
+    pass
+
+class StartStimButton(SettingsButton):
     pass
 
 def val_type_loader(inp):
@@ -332,7 +339,7 @@ class SettingStim(SettingItem):
         self.buttons = {
             'create': SettingsButton(text='Create\nStim', 
                                      on_release=self.create_stim),
-            'startstop': SettingsButton(text='Start\nStim', 
+            'startstop': StartStimButton(text='Start\nStim', 
                                         on_release=self.start_stop_stim,
                                         ),
             'reset': SettingsButton(text='Reset\nStim', 
@@ -341,7 +348,6 @@ class SettingStim(SettingItem):
         }
 
         [self.add_widget(b) for b in self.buttons.values()]
-
         Clock.schedule_once(self.add_chip, 0)
 
     def add_chip(self, *args):
@@ -353,9 +359,10 @@ class SettingStim(SettingItem):
         except (ValueError, TypeError):
             pass
         self.stim_control.bind(run=self.change_start_stop_button)
-        # self.value = self.stim_control.stim_pars    
         self.stim_control.bind(stim_pars=lambda *_:self.on_value(None, 
             self.stim_control.stim_pars)) #  save stimpars in config
+    
+        self.current_screen = self.get_current_screen()
 
     def change_start_stop_button(self, *args):
         self.buttons['startstop'].text = ("Stop\nStim" if self.stim_control.run 
@@ -364,7 +371,8 @@ class SettingStim(SettingItem):
     def create_stim(self, button):
         if self.stim_panel is None:
             self.stim_panel = self.stim_control.get_panel()
-        self.get_parent_window().add_widget(self.stim_panel)
+        # self.get_parent_window()
+        self.get_current_screen().add_widget(self.stim_panel)
 
     def start_stop_stim(self, button):
         if self.stim_control.run:
@@ -379,6 +387,14 @@ class SettingStim(SettingItem):
         # do stuff here
         print('change', value)
         super().on_value(instance, value)        
+    
+    def get_current_screen(self, *args):
+        """
+        Returns the current screen instance for this widget.
+        """
+        for screen in self.walk_reverse():
+            if isinstance(screen, Screen):
+                return screen
 
 class MySettingsWithNoMenu(SettingsWithNoMenu):
     def __init__(self, *args, **kargs):
@@ -417,7 +433,6 @@ class SettingsWithSidebar(SettingsWithSidebar):
         """
         _type = self._type_list.get(type(var), "string")
         return _type
-
 
 class SettingOptions_Scrollview(SettingOptions):
     '''
@@ -462,7 +477,6 @@ class SettingOptions_Scrollview(SettingOptions):
         popup_content.add_widget(btn)
         # and open the popup !
         popup.open()
-
 
 if __name__ == "__main__":
     from subs.gui.buttons.Server_Button import Server_Button

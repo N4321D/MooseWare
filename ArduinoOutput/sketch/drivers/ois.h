@@ -31,8 +31,7 @@ public:
             "{\"title\": \"Blue Light Stimulation\","
             "\"type\": \"stim\","
             "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
-            "\"key\": \"stim\","
-            "\"live_widget\": true},"
+            "\"key\": \"stim\"},"
             "{\"title\": \"Green Led Intensity\","
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
@@ -149,7 +148,7 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps(value.as<unsigned short>());
+            set_amps(value.as<unsigned short>(), false);
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }

@@ -639,6 +639,11 @@ class InputOutput(EventDispatcher):
          for m in self.micro_controllers.values() 
          for s in m.sensors.values()
          for sc in s.stim_control.values()]
+        
+        [sc.stop_stim() 
+         for s in self.sensors.values()
+         for sc in s.stim_control.values()]
+
 
     # NETWORK FUNCTIONS:
       # Data gather functions:

@@ -49,9 +49,6 @@ kv_str = r"""
         Rectangle:
             pos: self.pos
             size: self.size
-    
-    # size: root.size[0], 0.9 * root.size[1]
-    # pos: (root.pos[0],  root.pos[1] + 0.1 * root.size[1])
 
     Graph3:
         id: stim_graph
@@ -150,7 +147,7 @@ kv_str = r"""
     SetTimeIn:
         id: startamp
         pos_hint: {'right': 0.25, 'top': STIM_PAR_HEIGHT - 0.3} #relative sizes 0-1
-        text: f'{root.stim_control.stim_pars["amp_Strt"]}%'
+        text: "{}%".format(abs(root.stim_control.stim_pars["amp_Strt"]))
         input_filter: 'int'
         on_focus:
             self.focusaction(root.setstimpar, 'amp_Strt', self.text.replace("%", ""))
@@ -158,7 +155,7 @@ kv_str = r"""
     SetTimeIn:
         id: endamp
         pos_hint: {'right': 0.35, 'top': STIM_PAR_HEIGHT - 0.3} #relative['lin', 'log']
-        text: f'{root.stim_control.stim_pars["amp_End"]}%'
+        text: "{}%".format(abs(root.stim_control.stim_pars["amp_End"]))
         input_filter: 'int'
         on_focus:
             self.focusaction(root.setstimpar, 'amp_End', self.text.replace("%", ""))
@@ -195,7 +192,7 @@ kv_str = r"""
         text: str(root.stim_control.stim_pars['n_pulse'])
         input_filter: 'int'
         on_focus:
-            self.focusaction(root.setstimpar, 'n_pulse', min(int(self.text), 0xFFFF))
+            self.focusaction(root.setstimpar, 'n_pulse', min(abs(int(self.text)), 0xFFFF))
 
 <StimWidget>:
     rows: 1
@@ -340,11 +337,21 @@ class StimGenerator():
                 f"Invalid method(s): {', '.join(err)}. "
                 "Available methods are 'lin', 'exp', 'log', and 'random'.")
 
-        on_time = self.int_methods[stim_method](
-            stim_Strt_T, stim_End_T, n_pulse)
-        off_time = self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1)
-        amp = self.int_methods[amp_method](amp_Strt, amp_End, n_pulse)
+        if n_pulse <= 2:
+            # do not interpolate if 1 or 2 pulses -> no way steps inbetween
+            n_pulse = max(1, n_pulse)
+            on_time = (i for i in (stim_Strt_T, stim_End_T))
+            off_time = (i for i in (int_Strt_T, int_End_T))
+            amp = (i for i in (amp_Strt, amp_End))
 
+        else:
+            # create interpolated generators from start to end
+            on_time = self.int_methods[stim_method](
+                stim_Strt_T, stim_End_T, n_pulse)
+            off_time = self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1)
+            amp = self.int_methods[amp_method](amp_Strt, amp_End, n_pulse)
+
+        # Combine into generator that generates pulse
         for i in range(n_pulse):               
             yield (next(on_time), (next(off_time) if i < n_pulse - 1 else 0), next(amp))
 
@@ -378,8 +385,14 @@ class StimGenerator():
                       int_method='lin', 
                       n_pulse=0, 
                       **kwargs) -> float:
-        on_time = sum(self.int_methods[stim_method](stim_Strt_T, stim_End_T, n_pulse))
-        off_time = sum(self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1))
+        if n_pulse <= 2:
+            # do not interpolate if 1 or 2 pulses -> no way steps inbetween
+            n_pulse = max(1, n_pulse)
+            on_time = sum(i for i in (stim_Strt_T, stim_End_T))
+            off_time = sum(i for i in (int_Strt_T, int_End_T))
+        else:
+            on_time = sum(self.int_methods[stim_method](stim_Strt_T, stim_End_T, n_pulse))
+            off_time = sum(self.int_methods[int_method](int_Strt_T, int_End_T, n_pulse - 1))
         return on_time + off_time
     
     def create_wave(self, 
@@ -400,32 +413,17 @@ class StimGenerator():
 
         num_steps = pulse.shape[0]
         wave_out = np.zeros(num_steps * 4, dtype=[('x', 'f'), ('y', 'f')])
+
+        t = np.zeros((num_steps * 2) + 1)  # + 1 because start at 0
+        t[1::2] = pulse['on']
+        t[2::2] = pulse['off']
+        wave_out['x'] = np.repeat(np.cumsum(t), 2)[:-2]  # skip last part to not plot last off time
+        wave_out['y'][1::4] = pulse['amp'] # pulse goes to amp at start
+        wave_out['y'][2::4] = pulse['amp'] # pulse stays at amp to finish
         
-        t = 0
-        for i, (on, off, amp) in enumerate(pulse):
-            wave_out['x'][[4 * i, 4 * i + 1]] = t       # start pulse at 0, pulse goes to amp at start
-            t += on                                      # add on time
-            wave_out['x'][[4 * i + 2, 4 * i + 3]] = t   # end of pulse at amp, # end of pulse back to 0
-            t += off  # add off time
-            
-            wave_out['y'][[4 * i + 1, 4 * i + 2]] = amp    # pulse goes to amp at start
-
-
-        # Vectorized # TODO: this is almost working but there are some errors
-        # t = np.zeros(num_steps * 2)
-        # t[::2] = pulse['on']
-        # t[1::2] = pulse['off']
-        # print(t)
-        # wave_out['x'] = np.repeat(np.cumsum(t), 2)
-
-        # wave_out['y'][1::4] = pulse['amp'] # pulse goes to amp at start
-        # wave_out['y'][2::4] = pulse['amp'] # pulse stays at amp to finish
-
-        print(wave_out)
         wave_out['x'] -= time.localtime().tm_gmtoff  # start plot on 00:00
 
         return wave_out
-
 
 class StimController(StimGenerator, EventDispatcher):
     run = BooleanProperty(False)
@@ -471,7 +469,7 @@ class StimController(StimGenerator, EventDispatcher):
                     self.stim_generator)
                 next_stim_start = on_time + off_time
                 self.next_stim_event = Clock.schedule_once(self.do_next_stim, next_stim_start)
-                self.do_stim(1e3 * on_time, amp)
+                self.do_stim(int(1e3 * on_time), amp)
 
             except StopIteration:
                 # end of stim protocol
@@ -515,8 +513,10 @@ class StimPanel(FloatLayout):
         self.ids['stim_graph'].plot(self.stim_control.wave)
 
     def setstimpar(self, key, value):
+        if not value:
+            return
         if isinstance(value, str):
-            value = float(value)
+            value = abs(float(value))
         self.stimpars[key] = value
     
     def on_touch_down(self, touch):

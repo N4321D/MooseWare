@@ -147,7 +147,7 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps(value.as<unsigned short>());
+            set_amps(value.as<unsigned short>(), false);
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }
