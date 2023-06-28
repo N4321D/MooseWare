@@ -10,6 +10,7 @@ also returns x and y to plot the stimulus and the number of pulses
 import numpy as np
 import math
 import random
+import time
 
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -24,6 +25,8 @@ from subs.gui.widgets.Graph import Graph
 from subs.gui.buttons.TextIn import TIn
 
 from kivy.app import App
+
+
 
 
 kv_str = r"""
@@ -398,7 +401,6 @@ class StimGenerator():
         num_steps = pulse.shape[0]
         wave_out = np.zeros(num_steps * 4, dtype=[('x', 'f'), ('y', 'f')])
         
-        # TODO: VECTORIZE THIS FOR LOOP USE CUMSUM FOR T
         t = 0
         for i, (on, off, amp) in enumerate(pulse):
             wave_out['x'][[4 * i, 4 * i + 1]] = t       # start pulse at 0, pulse goes to amp at start
@@ -407,7 +409,21 @@ class StimGenerator():
             t += off  # add off time
             
             wave_out['y'][[4 * i + 1, 4 * i + 2]] = amp    # pulse goes to amp at start
-            
+
+
+        # Vectorized # TODO: this is almost working but there are some errors
+        # t = np.zeros(num_steps * 2)
+        # t[::2] = pulse['on']
+        # t[1::2] = pulse['off']
+        # print(t)
+        # wave_out['x'] = np.repeat(np.cumsum(t), 2)
+
+        # wave_out['y'][1::4] = pulse['amp'] # pulse goes to amp at start
+        # wave_out['y'][2::4] = pulse['amp'] # pulse stays at amp to finish
+
+        print(wave_out)
+        wave_out['x'] -= time.localtime().tm_gmtoff  # start plot on 00:00
+
         return wave_out
 
 
@@ -415,12 +431,12 @@ class StimController(StimGenerator, EventDispatcher):
     run = BooleanProperty(False)
     stim_pars = DictProperty(dict(
             stim_Strt_T=1,
-            stim_End_T=6,
+            stim_End_T=10,
             stim_method='lin',
             int_Strt_T=1,
-            int_End_T=0.1,
+            int_End_T=1,
             int_method='lin',
-            amp_Strt=0,
+            amp_Strt=10,
             amp_End=100,
             amp_method='lin',
             n_pulse=10,
@@ -428,6 +444,7 @@ class StimController(StimGenerator, EventDispatcher):
         ))
     
     def __init__(self,) -> None:
+        Builder.load_string(kv_str)
         super().__init__()
         self.stim_generator = None
         self.last_stim = (None, None, None)
@@ -480,23 +497,22 @@ class StimController(StimGenerator, EventDispatcher):
         """
         print(f"stim for {duration} seconds, {amp}% amplitude")
     
-    def get_stim_panel(self, *args):
+    def get_panel(self, *args):
         stim_panel = StimPanel(self)
-        stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
         return stim_panel
 
 class StimPanel(FloatLayout):
     def __init__(self, stim_control, **kwargs):
         self.app = App.get_running_app()
-        # self.stimwidget = stimwidget
         self.stimpars = stim_control.stim_pars
         self.stim_control = stim_control
         super().__init__(**kwargs)
+        self.create_stim()
  
     def create_stim(self):
         self.stim_control.create_stim()
         print('create stim')
-        self.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
+        self.ids['stim_graph'].plot(self.stim_control.wave)
 
     def setstimpar(self, key, value):
         if isinstance(value, str):
@@ -530,57 +546,6 @@ class StimPanel(FloatLayout):
 
     def close_panel(self, *args):
         self.parent.remove_widget(self)
-    
-class StimWidget(GridLayout):
-    stim_control = None
-    stim_panel = None
-    stim_panel_parent = None
-    button_dict = {}
-
-    def __init__(self, stim_panel_parent=None, stim_control=None, **kwargs) -> None:
-        self.stim_control = stim_control
-        self.stimpars = self.stim_control.stim_pars
-        Builder.load_string(kv_str)
-        super().__init__(**kwargs)
-        self.stim_panel_parent = stim_panel_parent
-        self.create_buttons()
-
-
-    def open_panel(self, *args):
-        if self.stim_panel is None and self.stim_panel_parent is not None:
-            self.stim_panel = StimPanel(self)
-            self.stim_panel_parent.add_widget(self.stim_panel)
-            self.stim_panel.ids['stim_graph'].plot(self.stim_control.wave)
-        else:
-            print("Error no stim panel parent to add widget to or widget already open")
-
-    
-    def close_panel(self, *args):
-        if self.stim_panel is not None:
-            self.stim_panel_parent.remove_widget(self.stim_panel)
-            self.stim_panel = None
-    
-    def start_stop_stim(self, start=None):
-        if start is None:
-            start = not self.stim_control.run
-        self.stim_control.start_stim() if start else self.stim_control.stop_stim()
-        if self.button_dict:
-            self.button_dict['StartStop'].text = "Stop\nStim" if start else "Start\nStim"
-    
-    def create_buttons(self, *args):
-        if not self.button_dict:
-            self.button_dict.update(
-            {"Label": Button(text="STIM"),
-            "CreateStim": Button(on_release=self.open_panel,
-                                   text="Create\nStim"),
-             "StartStop": Button(on_release=self.start_stop_stim,
-                                text="Start\nStim"),
-             "ResetStim": Button(on_release=self.stim_control.reset_stim,
-                                  text='Reset\nStim')
-                                  })
-            [self.add_widget(b) for b in self.button_dict.values()]
-
-
 
 if __name__ == "__main__":
 

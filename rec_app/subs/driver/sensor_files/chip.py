@@ -26,8 +26,9 @@ class Chip():
 
     """
     def __init__(self, short_name, chip_dict, controller, **kwargs) -> None:
+        print("init")
         self.controller = controller
-        self.stim_controls = None
+        self.stim_control = {}
         self.parent_name = controller.name if controller is not None else ""      
         self.connected = True
         self.status = 1                  # indicates what chip is doing (see vars.py sensor status)
@@ -50,15 +51,17 @@ class Chip():
         for i in self.control_panel:
             i["section"] = f"{self.parent_name}: {self.name}"
             if i['type'] == "stim":
-                self.stim_control = StimController()
-                self.stim_control.do_stim = self.do_stim
+                par = i['key']   # do not remove otherwise will use the wrong item from dict
+                if par not in self.stim_control:
+                    self.stim_control[par] = StimController()
+                    self.stim_control[par].do_stim = lambda dur, amp: self.do_stim(par, dur, amp)
         
-        
+        self.__setattr__ = self.setattr
     
     def return_default_options(self):
         return {"record": self.record}
 
-    def __setattr__(self, name: str, value) -> None:
+    def setattr(self, name: str, value) -> None:
         if hasattr(self, name) and getattr(self, name) != value:
             if name == 'i2c_status':
                 self.connected = (value == 0)
@@ -81,6 +84,6 @@ class Chip():
     def do_config(self, par, value):
         self.send_cmd({par: value})
     
-    def do_stim(self, dur, amp):
-        self.send_cmd({'stim': [dur, amp]})
+    def do_stim(self, par, dur, amp):
+        self.send_cmd({par: [dur, amp]})
 

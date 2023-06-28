@@ -322,11 +322,10 @@ class DummyMicro(EventDispatcher):
                      "CTRL":{"name": self.name},
                      "OIS": {"name": "Optical Intrisic Signal",
                              "control_str": json.dumps([
-                                 {"title": "Blue Light Stimulation",
+                            {"title": "Blue Light Stimulation",
                                   "type":"stim",
                                   "desc": "Create / Start / Stop blue light stimulation protocol",
-                                  "key": "stim",
-                             "live_widget": True},
+                                  "key": "stim",},
                              {"title": "Green Led Intensity",
                              "type":"plusminin",
                              "desc": "Power in mA of the green LEDs",
@@ -334,6 +333,10 @@ class DummyMicro(EventDispatcher):
                              "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]], 
                              "limits": [0, 65],                            
                              "live_widget": True},
+                            {"title": "Purple Light Stimulation",
+                             "type":"stim",
+                             "desc": "Create / Start / Stop purple light stimulation protocol",
+                             "key": "purple_stim",},
                              ]),
                              "i2c_status": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
@@ -571,7 +574,10 @@ class Controller():
         data.pop("idle")
 
         for name, chip_d in data.items():
-            self.sensors.setdefault(name, Chip(name, chip_d, self)).update(chip_d)
+            if name not in self.sensors:
+                self.sensors[name] = Chip(name, chip_d, self)
+            else:
+                self.sensors[name].update(chip_d)
 
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]

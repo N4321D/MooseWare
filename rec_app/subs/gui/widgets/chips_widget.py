@@ -16,7 +16,6 @@ from kivy.uix.button import Button
 from kivy.lang import Builder
 
 from subs.gui.widgets.custom_settings import MySettingsWithNoMenu
-from subs.gui.misc.Stimulation import StimWidget
 from kivy.config import ConfigParser
 
 from subs.driver.sensors import chip_d
@@ -186,7 +185,7 @@ class ChipWidget(BoxLayout):
 class ChipPanel(MySettingsWithNoMenu):
     """
     Settings panel for each chip
-    """    
+    """
     def __init__(self, parent_button, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent_button = parent_button
@@ -219,8 +218,7 @@ class ChipPanel(MySettingsWithNoMenu):
         self.add_json_panel(self.chip.name, self.config, 
                             data=json.dumps(json_list))
     
-        self.interface.container.chip = self.chip
-
+        self.interface.container.chip = self.chip    # make chip accessible to settings items
         self.update_chip_val()
     
     def update_chip_val(self, *args):
@@ -231,11 +229,9 @@ class ChipPanel(MySettingsWithNoMenu):
                 
     def on_config_change(self, config, section, option, value):
         if option == "record":
-            value = config.getboolean(section, option)
+            # value = config.getboolean(section, option)
+            value = bool(value)
             self.parent_button.chip_enabled = value# config.getboolean(section, option)
-        
-        elif option == 'stim':
-            print(section, value)
             
         else:
             try:

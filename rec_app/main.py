@@ -395,6 +395,7 @@ if (sys == 'Linux'
         # os.system("sudo shutdown -h now")
         pass
 
+    app.IO.stop_all_stims()
 
     # # NOTE: enable for real version (prevents hard crash)
     # except Exception as e:

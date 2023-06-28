@@ -341,6 +341,8 @@ class InputOutput(EventDispatcher):
             if self.rec is not None:
                 self.rec.stop()
 
+            self.stop_all_stims()
+
             for dev_name in self.micro_controllers:
                 self.micro_controllers[dev_name].start_stop(False)
 
@@ -628,6 +630,15 @@ class InputOutput(EventDispatcher):
         if self.plot_micro != micro:
             self.plot_micro = micro
             self._update_plot_pars()
+    
+    def stop_all_stims(self, *args):
+        """
+        (Force) Stop all stimulation by sending stim 0, 0 to all sensors
+        """
+        [sc.stop_stim() 
+         for m in self.micro_controllers.values() 
+         for s in m.sensors.values()
+         for sc in s.stim_control.values()]
 
     # NETWORK FUNCTIONS:
       # Data gather functions:
@@ -962,6 +973,7 @@ class InputOutput(EventDispatcher):
         runs on exit to clean up
         async clean is done in main_coro
         """
+        self.stop_all_stims()
         self.EXIT.set()
         self.stop_recording() if self.running else ...
 

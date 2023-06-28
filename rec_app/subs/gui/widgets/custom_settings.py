@@ -27,7 +27,7 @@ import re
 import ast
 from ast import literal_eval
 
-from subs.gui.misc.Stimulation import StimWidget
+from subs.gui.misc.Stimulation import StimPanel
 
 from cryptography.fernet import Fernet
 
@@ -324,61 +324,61 @@ class SettingInWithPlusMinus(SettingNumeric):
         self.value = str(_val)
     
 class SettingStim(SettingItem):
-    stim_panel = None
-    def __init__(self, live_widget=True, **kwargs):
+    def __init__(self, live_widget=None, **kwargs):
+        self.stim_panel = None
         super().__init__(**kwargs)
-        print("STIM SETTINGS", kwargs)
         self.app = App.get_running_app()
-        self.bind(disabled=lambda x: self.app.IO.running if self.live_widget is False else False)  # disable chip during recording if not defined as live widget in json
         self.config = self.panel.config
         self.buttons = {
             'create': SettingsButton(text='Create\nStim', 
                                      on_release=self.create_stim),
             'startstop': SettingsButton(text='Start\nStim', 
-                                        on_release=self.start_stop_stim),
+                                        on_release=self.start_stop_stim,
+                                        ),
             'reset': SettingsButton(text='Reset\nStim', 
                                     on_release=self.reset_stim),
 
         }
+
         [self.add_widget(b) for b in self.buttons.values()]
 
         Clock.schedule_once(self.add_chip, 0)
-    
+
     def add_chip(self, *args):
         self.chip = self.panel.parent.chip
-        self.stim_control = self.chip.stim_control
-        saved_val = literal_eval(self.value)
-        self.stim_control.stim_pars.update(saved_val)  # loaded saved values
+        self.stim_control = self.chip.stim_control[self.key]
+        try:
+            saved_val = literal_eval(self.value)
+            self.stim_control.stim_pars.update(saved_val)  # loaded saved values
+        except (ValueError, TypeError):
+            pass
         self.stim_control.bind(run=self.change_start_stop_button)
+        # self.value = self.stim_control.stim_pars    
+        self.stim_control.bind(stim_pars=lambda *_:self.on_value(None, 
+            self.stim_control.stim_pars)) #  save stimpars in config
 
     def change_start_stop_button(self, *args):
-        self.buttons['startstop'].text = "Stop\nStim" if self.stim_control.run else "Start\nStim"
+        self.buttons['startstop'].text = ("Stop\nStim" if self.stim_control.run 
+                                          else "Start\nStim")
 
     def create_stim(self, button):
-        print('create_stim')
         if self.stim_panel is None:
-            self.stim_panel = self.stim_control.get_stim_panel()
-        Window.add_widget(self.stim_panel)
-        self.value = self.stim_control.stim_pars    #  save stimpars in config
+            self.stim_panel = self.stim_control.get_panel()
+        self.get_parent_window().add_widget(self.stim_panel)
 
     def start_stop_stim(self, button):
         if self.stim_control.run:
             self.stim_control.stop_stim()
-            print('stop_stim', button.text)
         else:
-            print('start_stim', button.text)
             self.stim_control.start_stim()
     
     def reset_stim(self, button):
         self.stim_control.reset_stim()
-        print('reset')
 
     def on_value(self, instance, value):
         # do stuff here
-        super().on_value(instance, value)
-
-    # TODO: write config changes here with update stim, save it as self.value? (see settingsitem section)
-        
+        print('change', value)
+        super().on_value(instance, value)        
 
 class MySettingsWithNoMenu(SettingsWithNoMenu):
     def __init__(self, *args, **kargs):
@@ -389,7 +389,6 @@ class MySettingsWithNoMenu(SettingsWithNoMenu):
         self.register_type("options", SettingOptions_Scrollview)
         self.register_type("plusminin", SettingInWithPlusMinus)
         self.register_type("stim", SettingStim)
-
 
 class SettingsWithSidebar(SettingsWithSidebar):
     _type_list = {bool: "bool",
@@ -435,7 +434,6 @@ class SettingOptions_Scrollview(SettingOptions):
         
 
         content = GridLayout(cols=1, spacing='5dp')
-        #content.bind(minimum_height=window.setter('height'))
         window.add_widget(content)
         popup_content.add_widget(window)
       
