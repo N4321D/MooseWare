@@ -36,8 +36,8 @@ public:
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
             "\"key\": \"amps\","
-            "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," // [min of range, max of range, step in range]
-            "\"limits\": [0, 60],"                                 // [min, max]
+            "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+            "\"limits\": [0, 100],"    // [min, max]
             "\"live_widget\": true}"
             "]";
     }
