@@ -24,8 +24,13 @@ def log(message, level="info"):
 
 from subs.misc.shared_mem_np_dict import SharedTable, create_shared_np
 import numpy as np
+# from numpy.lib import recfunctions as rfn
+# import numba
+
 import pickle
 from bisect import bisect_left
+
+
 
 class SharedBuffer():
     """
@@ -128,7 +133,7 @@ class SharedBuffer():
             self._make_buffer(par, dtype, shape)
 
         return new_pars
-    
+        
     def get_buf(self,  par, 
                 start=None, end=None, subpar=..., n_items=None,
                 decimated_out_len=None):
@@ -151,6 +156,7 @@ class SharedBuffer():
             start = (end - n_items)
         
         size = self.buffer[par][subpar].shape[0]
+
         start %= size  # rotate over total length for circular buffer
         end %= size
 

@@ -411,7 +411,12 @@ class InputOutput(EventDispatcher):
             # wait for all tasks to finish:
             proc_async_exceptions(await asyncio.gather(*tasks,
                                                        return_exceptions=True))
-            await asyncio.sleep(self.dt['plotting'])
+            
+            plot_dt = self.dt['plotting']
+            if self.secondsback > 300:
+                plot_dt *= 2
+
+            await asyncio.sleep(plot_dt)
 
         return self.exit()
 
@@ -590,6 +595,9 @@ class InputOutput(EventDispatcher):
         # TODO: move the exceptions and functions to different file, maybe driver?
         if par[-1] == 'OIS Signal':
             par.append('OIS Stimulation Current')
+        
+        if par[-1] == "OIS_SIG":
+            par.append('OIS_STIM')
 
         # Get Data
         try:

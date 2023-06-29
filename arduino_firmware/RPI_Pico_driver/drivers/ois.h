@@ -35,8 +35,8 @@ public:
             "\"type\": \"plusminin\","
             "\"desc\": \"Power in mA of the green LEDs\","
             "\"key\": \"amps\","
-            "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," // [min of range, max of range, step in range]
-            "\"limits\": [0, 60],"                                 // [min, max]
+            "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+            "\"limits\": [0, 100],"    // [min, max]
             "\"live_widget\": true}"
             "]";
     }
@@ -120,7 +120,7 @@ public:
     void start_stim(JsonArray time_amps)
     {
         stim_end = millis() + time_amps[0].as<unsigned long>();
-        byte amp = (byte)((time_amps[1].as<float>() / 100) * 65);
+        byte amp = (byte)((time_amps[1].as<float>() / 100) * MAX_AMP);
         if (amp > 0)
         {
             set_amps(amp, true);
@@ -147,7 +147,7 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps(value.as<unsigned short>(), false);
+            set_amps((byte)((value.as<float>() / 100) * MAX_AMP), false);
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }

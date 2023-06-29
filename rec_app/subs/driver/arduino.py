@@ -13,11 +13,13 @@ from subs.recording.buffer import SharedBuffer
 from subs.driver.sensor_files.chip import Chip
 
 import numpy as np
-
+from numpy.lib import recfunctions as rfn
 
 from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
+
+# import numba
 
 # Logger
 from subs.log import create_logger
@@ -405,7 +407,7 @@ class Controller():
         exit(): Stops the controller and performs cleanup operations.
     """
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
-    MAX_MEM = 200 * 1.024e6
+    MAX_MEM = 128e6
 
     # specify dtypes for saving
     dtypes = {
@@ -432,6 +434,7 @@ class Controller():
         self.current_rate = 0            # current sample rate
      
         # length of buffer (will be calculated from buffer_time * startrate)
+        self.line_buffer = np.array([])
         self.buffer_length = 0
         self.__dict__.update(kwargs)
         self.app = App.get_running_app()
@@ -450,6 +453,7 @@ class Controller():
         self.connected = self.micro.connected
 
         self.shared_buffer = SharedBuffer()
+        self.delme = []
 
     def connect_buffer(self):
         self.data_structure = self.shared_buffer.data_structure
@@ -459,18 +463,15 @@ class Controller():
             # clear existing data
             self.shared_buffer.reset(par=self.data_name)
 
-    def set_buffer_dims(self, data):
-        # bytes_per_samplepoint = sum([np.dtype(i[1]).itemsize for i in dtypes])
-        dtypes = list({k: self.dtypes.get(k, self.dtypes[None])
-                       for k in data}.items())
-
-        # make one example row and count nbytes
-        bytes_per_samplepoint = np.empty(1, dtype=dtypes).nbytes
+    def set_buffer_dims(self, *args):
+        bytes_per_samplepoint = self.line_buffer.nbytes
+        
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
-        self.shared_buffer.add_parameter(self.name, dtypes, self.buffer_length)
+        self.shared_buffer.add_parameter(self.name, self.line_buffer.dtype, 
+                                         self.buffer_length)
 
-        self.parameters = set(data.keys())
+        self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
         await self.micro.start()
@@ -587,50 +588,67 @@ class Controller():
                            if (chip.i2c_status == 0 and chip.record and hasattr(chip, 'parameter_short_names'))}   
 
     def do_new_data(self, data):
-        data_with_time = self._do_time(data)
-        data_unpacked = {}
+        data['time'] = self._do_time(data['us'])
 
-        self._calc_ema(data_with_time.pop('sDt'))
-
-        for sens, v in data_with_time.items():
-            if isinstance(v, dict):
-                _status = v.get("!I2C", 0)
-
-                if sens in self.sensors:
-                    self.sensors[sens].i2c_status = _status
-                else:
-                    self.sensors[sens] = Chip(sens, {"i2c_status":  _status}, self)
-
-                if _status > 0:
-                    # handle errors
-                    continue  # do not include sensor in data
-
-                else:
-                    # upack dictionary
-                    data_unpacked.update({f"{sens}_{k2}": v2
-                                          for k2, v2 in v.items()})
-            else:
-                data_unpacked[sens] = v
+        self._calc_ema(data.pop('sDt'))
 
         if self.buffer_length == 0:
+            self.create_line_buffer(data)
+
             # create buffer based on incoming data
-            self.set_buffer_dims(data_unpacked)
+            self.set_buffer_dims()
             
             # save dtype of current data
-            self.data_dtype_fields = self.shared_buffer.buffer[self.name].dtype.fields
+            self.data_dtype_fields = self.line_buffer.dtype.fields
+        
+        
+        _last_chip = ""
+        # unpack dictionary
+        for parname in self.data_dtype_fields:
+            par, *subpar = parname.split("_")
+            val = data.get(par, np.nan)
+            
+            if isinstance(val, dict):
+                # add data to line buffer
+                self.line_buffer[parname] = val.get(subpar[0], np.nan)
+                # get status
+                if par != _last_chip:
+                    self.sensors[par].i2c_status = val.get('status', 0)
+                    _last_chip = par
+            else:
+                # add data to line_buffer
+                self.line_buffer[par] = val
+                
+        self.save_data()
+        
 
-        self.save_data(data_unpacked)
+    def create_line_buffer(self, data):
+        dtypes = []
+        
+        sensors = self.sensors
+        for par, val in data.items():
+            if isinstance(val, dict):
+                _status = val.get("!I2C", 0)
+                if par in sensors:
+                    sensors[par].i2c_status = _status
+                else:
+                    sensors[par] = Chip(par, {"i2c_status":  _status}, self)
+                if  _status == 0:
+                    # if status is ok, add dtype to pars
+                    dtypes += [(f"{par}_{subpar}", 
+                                    self.dtypes.get(subpar, self.dtypes[None]))
+                                          for subpar in val]
+        else:
+            dtypes.append((par, self.dtypes.get(par, self.dtypes[None])))
+        
+        self.line_buffer = np.zeros(1, dtype=dtypes)
 
-
-    def save_data(self, data):
-        # get data or replace with nans
-        data = tuple(data.get(k, np.nan if v[0].kind == 'f' else 0) 
-                for k, v in self.data_dtype_fields.items())
+    def save_data(self,):
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.name,
             # tuple(data.values())
-            data
+            self.line_buffer
         )
 
     def do_feedback(self, data, e):
@@ -651,9 +669,9 @@ class Controller():
         except:
             pass
 
-    def _do_time(self, data):
+    def _do_time(self, us):
         # get microseconds
-        sec = data['us'] * 1e-6
+        sec = us * 1e-6
 
         if self.lasttime is None:
             # adjust starttime to start of rec on arduino
@@ -665,8 +683,8 @@ class Controller():
             self.starttime += (0xFFFF_FFFF / 1e6)
         self.lasttime = sec
 
-        data['time'] = self.starttime + sec
-        return data
+        t = self.starttime + sec
+        return t
 
     def _calc_ema(self, dt):
         if dt == 0:
@@ -687,7 +705,6 @@ class Controller():
         
         except (KeyError):
             value = json.dumps({'CTRL': value})
-            print(f"Sending {value}")
             self.micro.write(value)
 
     def exit(self):
