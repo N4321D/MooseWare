@@ -127,12 +127,11 @@ kv_str = """
         font_size: '16sp'
         pos_hint: {'right': 1, 'top': 0.8}
         size_hint: 0.2, 0.1
-        text: "STIM"
-        color: (0.5, 0.5, 0.5, 0.9) 
-        background_color: BUT_BGR
-        disabled: not app.IO.running
+        text: "STOP\\nSTIMS"
+        color: WHITE
+        background_color: MO_BGR
         on_release:
-            app.IO.stop_all_stim()
+            app.IO.stop_all_stims()
 
 
     # TIME RANGE
