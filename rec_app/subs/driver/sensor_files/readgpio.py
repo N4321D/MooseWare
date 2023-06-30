@@ -41,7 +41,7 @@ class ReadGpio(Sensor):
     gpio_pins_out_saved = {6: False}   # number of pin and start state
 
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                                                    
@@ -112,23 +112,23 @@ class ReadGpio(Sensor):
 
     def whois(self):
         self.disconnected = False
-        self.shv.set(1, 'status', 0)
+        self.shv.set(0, 'status', 0)
         return 0x01
 
     def readself(self):
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
 
         output = {}
         for pin in self.gpio_pins_in:
             output[f'GPIO {pin}'] = GPIO.input(pin)
-        _status = 0 
+        _status = -1 
         
         for pin, state in self.gpio_pins_out_saved.items():
             output[f'GPIO {pin}'] = GPIO.input(pin)
             _status += output[f'GPIO {pin}']
         
         if _status > 0:
-            self.shv.set(4, 'status', 0)
+            self.shv.set(10, 'status', 0)
 
         self.disconnected = False
         

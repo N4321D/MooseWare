@@ -3,22 +3,23 @@
 // - RPI pico has 2 i2c controllers 0 (wire) and 1 (wire1), they can only use specific
 //    ports, refer to pinout which one can use __itimer_which
 //    if mixed up it will crash
-//  - I2C error codes are return as negative values, error codes are:
+//  - I2C error codes are return as negative values in status, error codes are:
 //        0: success.
-//        1: data too long to fit in transmit buffer.
-//        2: received NACK on transmit of address.
-//        3: received NACK on transmit of data.
-//        4: other error.
-//        5: timeout
+//        -1: data too long to fit in transmit buffer.
+//        -2: received NACK on transmit of address.
+//        -3: received NACK on transmit of data.
+//        -4: other error.
+//        -5: timeout
+//        -0x7F: other error
 
-# 14 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 15 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 16 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 
-# 18 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 19 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // display
-# 21 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 22 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 
 
@@ -28,8 +29,8 @@
 Adafruit_SSD1306 display(128 /* OLED display width, in pixels*/, 64 /* OLED display height, in pixels*/, &Wire, -1 /* Reset pin # (or -1 if sharing Arduino reset pin)*/);
 
 // interrupt timer libs:
-# 31 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 32 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 33 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 struct adjustableSettings
 {
@@ -63,10 +64,10 @@ DynamicJsonDocument doc_out(10 * 1024U);
 DynamicJsonDocument doc_in(10 * 1024U);
 
 // // init sensors
-# 66 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 67 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 68 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 69 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 70 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
@@ -90,7 +91,7 @@ bool START = false;
 
 char NAME[32];
 
-# 93 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 94 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);

@@ -25,7 +25,7 @@ from kivy.properties import BooleanProperty
 
 from kivy.clock import Clock
 
-from subs.gui.vars import SENSOR_COLORS, CW_BUT_BGR_EN,CW_BUT_BGR_DIS, CW_BUT_BGR_RES
+from subs.gui.vars import SENSOR_COLORS, CW_BUT_BGR_EN,CW_BUT_BGR_DIS, CW_BUT_BGR_RES, CW_BUT_BGR_LOST
 
 import json
 
@@ -165,8 +165,12 @@ class ChipWidget(BoxLayout):
             # status color
             try:
                 status_color = self.chip_labels[chip].chip.status
+
             except:
                 status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
+            if status_color < -1:
+                status_color = -1
+            
             if self.chip_labels[chip].color != SENSOR_COLORS[status_color]:
                 self.chip_labels[chip].color = SENSOR_COLORS[status_color]
 
@@ -178,6 +182,9 @@ class ChipWidget(BoxLayout):
             
             if _resets and self.app.IO.running:
                 bg_col = (*CW_BUT_BGR_RES[:3], 0.3 if not _live_widget else 0.6)
+            
+            if status_color < 0 and self.app.IO.running:
+                bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
 
             if self.chip_labels[chip].background_color != bg_col:
                 self.chip_labels[chip].background_color = bg_col

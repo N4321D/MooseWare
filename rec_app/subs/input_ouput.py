@@ -630,6 +630,7 @@ class InputOutput(EventDispatcher):
     def connect_micro(self, micro):
         self.micro_controllers[micro.name] = micro
         micro.start_stop(False)   # force stop micro
+        self.plot_micro = micro.name
 
     def disconnect_micro(self, micro):
         del self.micro_controllers[micro.name]

@@ -68,7 +68,7 @@ class LightStrip(Sensor):
     errorout = None
 
         # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            'amb_color': 0                                  # color of light
@@ -132,7 +132,7 @@ class LightStrip(Sensor):
 
     def reset(self):
         # arduino needs ~15s to boot after reset:
-        
+        self.shv.set(0, 'status', 0)
         if time.time() - self.shv.get('t_last_reset', 0) > 30:
             for bit in [1, 0, 1]:
                 GPIO.output(self.resetpin, bit)
@@ -141,10 +141,6 @@ class LightStrip(Sensor):
 
         self.shv.set(self.shv.get('reset_count', 0) + 1, 'reset_count', 0)
         self.shv.set(time.time(), 't_last_reset', 0)
-        self.shv.set(0, 'status', 0)
-
-
-
 
 if __name__ == "__main__":
     l = LightStrip()

@@ -25,6 +25,7 @@ public:
     void init()
     {
         // call to initialize sensor with correct settings
+        STATUS = 5;
         byte out[1] = {0x50};
         writeI2C(ADDRESS, 0x10, out, 1); // set intial data ready & FIFO bits
     }

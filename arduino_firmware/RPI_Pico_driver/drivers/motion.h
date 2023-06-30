@@ -66,6 +66,7 @@ public:
 
         set_lin_sensitivity();
         set_ang_sensitivity();
+        STATUS = 5;
     }
 
     void sample()

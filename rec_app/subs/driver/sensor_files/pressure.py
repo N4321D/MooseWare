@@ -41,7 +41,7 @@ class PressSens(Sensor):
     reset_command = {'reg': 0x11, 'byte': 0x02}       # Reg and value for reset
     
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                                                    
@@ -80,12 +80,12 @@ class PressSens(Sensor):
         self.rw_byte(reg=0x11, byte=0x01, mode='write')
 
     def readPress(self):
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
         # NOTE: do not use rw_bytes to read multiple bytes at once, does not work for pressure sensor
         return self.byte2int([self.rw_byte(reg=i, mode="read") for i in (0x2A, 0x29, 0x28)])
 
     def readTemp(self):
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
         # NOTE: do not use rw_bytes to read multiple bytes at once, does not work for pressure sensor
         return self.byte2int([self.rw_byte(reg=i, mode="read") for i in (0x2C, 0x2B)])
 

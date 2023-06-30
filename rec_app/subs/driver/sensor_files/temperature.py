@@ -78,7 +78,7 @@ class TempSens(Sensor):
     current_unit = 'C'
     
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                                                    

@@ -112,6 +112,8 @@ from subs.gui.widgets.messenger.kivy_messenger import Messenger                 
 from subs.gui.vars import *
 ADMIN = False
 
+import json
+
 class RecVars(EventDispatcher):
     """
     Class which holds all the recording parameters and links them to the config files
@@ -269,8 +271,10 @@ class guiApp(App):
         """
         create settings panel
 
-        """   
+        """ 
+
         for section, json_panel in settings_panel.items():
+            self.config.adddefaultsection(section)
             settings.add_json_panel(section, self.config, data=json_panel)
         
          # Modify button layout

@@ -74,10 +74,10 @@ public:
     {
         /*
          * modes:
-         *   0: "green"
-         *   1: "ir / blue"
+         *   0: "ir"
+         *   1: "green"
          */
-
+        STATUS = green? 5: 10;
         const byte out = green ? 0x87 : 0x97;
         writeI2C(ADDRESS, 0x41, &out, 1);
     }
@@ -124,13 +124,15 @@ public:
         byte amp = (byte)((time_amps[1].as<float>() / 100) * MAX_AMP);
         if (amp > 0)
         {
+            // pulse on
             set_amps(amp, true);
             set_mode(false);
+
         }
         else
         {
+            // pulse off
             set_amps(green_amps, false);
-            set_mode(true);
         }
     }
 

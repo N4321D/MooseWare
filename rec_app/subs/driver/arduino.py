@@ -203,7 +203,7 @@ class Arduino():
         else:
             if isinstance(data, str):
                 data = data.encode()
-            self.protocol.write(data)
+            self.protocol.write(data + b"\n")
 
     def get_fifo(self):
         """
@@ -338,7 +338,7 @@ class DummyMicro(EventDispatcher):
                              "desc": "Create / Start / Stop purple light stimulation protocol",
                              "key": "purple_stim",},
                              ]),
-                             "i2c_status": 0,
+                             "#ST": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
                 )
@@ -502,12 +502,17 @@ class Controller():
         # write start
         self.micro.write(json.dumps({"CTRL": out}))
 
+        self.sensors['CTRL'].status = 5 if self.run else 0
+
     def adjust_freq(self, freq):
         self.samplerate = freq
         self.micro.write(json.dumps({"CTRL": {"freq": freq}}))
         self.current_rate = freq
 
     async def _on_connect(self, dev):
+        while self.name is None:
+            await asyncio.sleep(0.1)
+
         self.connect_buffer()
         self.sensors["CTRL"] = Chip(
                 "CTRL", 
@@ -526,14 +531,12 @@ class Controller():
                     "steps": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]], 
                     "limits": [1, 2048],                            
                     "live_widget": True}]),
-                 "i2c_status": 0,
+                 "#ST": 0,
                  "parameter_names": [],
                  "parameter_short_names": []}, 
             self, 
             send_cmd=self._send_cmd)
 
-        while self.name is None:
-            await asyncio.sleep(0.1)
         self.sensors['CTRL'].name = self.name
 
         self.on_connect(self)
@@ -567,25 +570,31 @@ class Controller():
                     # incoming data
                     self.do_new_data(data)
 
-            except JSONDecodeError as e:
+            except (JSONDecodeError, TypeError) as e:
                 # no a json but feedback message
                 self.do_feedback(data, e)
 
     def do_idle(self, data):
         data.pop("idle")
 
+        if self.name is None and "CTRL" not in data:
+            return # wait for control pars to be received first
+
         for name, chip_d in data.items():
+            status = chip_d.pop('#ST') if '#ST' in chip_d else 0
             if name not in self.sensors:
                 self.sensors[name] = Chip(name, chip_d, self)
+
             else:
                 self.sensors[name].update(chip_d)
 
+            self.sensors[name].status = status
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]
 
-        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items()
+        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items() if (chip.status >= 0 and chip.record and hasattr(chip, 'parameter_short_names'))
                            for par in chip.parameter_short_names 
-                           if (chip.i2c_status == 0 and chip.record and hasattr(chip, 'parameter_short_names'))}   
+                           }   
 
     def do_new_data(self, data):
         data['time'] = self._do_time(data['us'])
@@ -613,7 +622,9 @@ class Controller():
                 self.line_buffer[parname] = val.get(subpar[0], np.nan)
                 # get status
                 if par != _last_chip:
-                    self.sensors[par].i2c_status = val.get('status', 0)
+                    _status = val.get('#ST')
+                    if _status is not None:
+                        self.sensors[par].status = _status
                     _last_chip = par
             else:
                 # add data to line_buffer
@@ -628,12 +639,13 @@ class Controller():
         sensors = self.sensors
         for par, val in data.items():
             if isinstance(val, dict):
-                _status = val.get("!I2C", 0)
+                _status = val.get("#ST")
                 if par in sensors:
-                    sensors[par].i2c_status = _status
+                    if _status is not None:
+                        sensors[par].status = _status
                 else:
-                    sensors[par] = Chip(par, {"i2c_status":  _status}, self)
-                if  _status == 0:
+                    sensors[par] = Chip(par, {"status":  _status if _status is not None else 0}, self)
+                if  _status is None or _status >= 0:
                     # if status is ok, add dtype to pars
                     dtypes += [(f"{par}_{subpar}", 
                                     self.dtypes.get(subpar, self.dtypes[None]))

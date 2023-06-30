@@ -2,13 +2,14 @@
 // - RPI pico has 2 i2c controllers 0 (wire) and 1 (wire1), they can only use specific
 //    ports, refer to pinout which one can use __itimer_which
 //    if mixed up it will crash
-//  - I2C error codes are return as negative values, error codes are:
+//  - I2C error codes are return as negative values in status, error codes are:
 //        0: success.
-//        1: data too long to fit in transmit buffer.
-//        2: received NACK on transmit of address.
-//        3: received NACK on transmit of data.
-//        4: other error.
-//        5: timeout
+//        -1: data too long to fit in transmit buffer.
+//        -2: received NACK on transmit of address.
+//        -3: received NACK on transmit of data.
+//        -4: other error.
+//        -5: timeout
+//        -0x7F: other error
 
 #include <ArduinoJson.h> //Library for json
 #include <Wire.h>        // i2c library

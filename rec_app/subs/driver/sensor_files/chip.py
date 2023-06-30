@@ -12,7 +12,6 @@ class Chip():
         status (int): Indicates the current status of the chip (see vars.py for all status options)
         name (str): The full name of the chip.
         short_name (str): A short name or identifier for the chip.
-        i2c_status (int): The status of the I2C connection.
         record (bool): Indicates whether data from this chip should be recorded.
         control_panel (list): A list of control panel settings for the chip.
         
@@ -30,10 +29,9 @@ class Chip():
         self.stim_control = {}
         self.parent_name = controller.name if controller is not None else ""      
         self.connected = True
-        self.status = 1                  # indicates what chip is doing (see vars.py sensor status)
+        self.status = 0                  # indicates what chip is doing (see vars.py sensor status) negative values are errors
         self.name = short_name
         self.short_name = short_name
-        self.i2c_status = 0
         self.record = True
         self.__dict__.update(kwargs)
         
@@ -62,9 +60,8 @@ class Chip():
 
     def setattr(self, name: str, value) -> None:
         if hasattr(self, name) and getattr(self, name) != value:
-            if name == 'i2c_status':
-                self.connected = (value == 0)
-                self.status = 1 if self.connected else 0
+            if name == 'status':
+                self.connected = (value >= 0)
             else:
                 self.send_cmd({name: value})
         super().__setattr__(name, value)

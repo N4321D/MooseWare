@@ -71,11 +71,11 @@ kv_str = """
         font_size: '15sp'
         pos_hint: {'x': 0.7, 'top': 0.1}
         size_hint: (.2, .1)
-        text: 'Select\\nInput'
+        text: app.IO.plot_micro
         types: ['Internal', *app.IO.micro_controllers]
         text_size: self.size
-        color: WHITE if app.IO.plot_micro != "Internal" else MO
-        background_color: MO_BGR if app.IO.plot_micro != "Internal" else BUT_BGR
+        color: WHITE # if app.IO.plot_micro != "Internal" else MO
+        background_color: MO_BGR # if app.IO.plot_micro != "Internal" else BUT_BGR
         halign: "center"
         valign: "center"
         on_text:

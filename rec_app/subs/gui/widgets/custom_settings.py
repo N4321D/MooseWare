@@ -385,7 +385,6 @@ class SettingStim(SettingItem):
 
     def on_value(self, instance, value):
         # do stuff here
-        print('change', value)
         super().on_value(instance, value)        
     
     def get_current_screen(self, *args):
