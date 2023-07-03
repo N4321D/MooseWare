@@ -7,8 +7,8 @@
  * 
  * 
  * */
-#include <gas.h>
-#include <i2csensor.h>>
+//#include <gas.h>
+//#include <i2csensor.h>>
 
 
 class AmmoniaSensor : public GasSensor
@@ -22,8 +22,10 @@ class AmmoniaSensor : public GasSensor
     AmmoniaSensor(TwoWire &wire_in) : GasSensor(wire_in)
     {
         strcpy(NAME, "Ammonia Resistance Sensor");
-        strcopy(SHORT_NAME, "NH3");
-        ADDRESS = 0x02;
+        strcpy(SHORT_NAME, "NH3");
+        ADDRESS = 0x74;
+        strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
+        strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
 
 
@@ -35,7 +37,7 @@ class AmmoniaSensor : public GasSensor
         inputbuffer[0] = GET_GAS_CONC;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
-        readI2C(ADDRESS, 0, outputbuffer, 9);
+        readI2C(ADDRESS, 0, 9, outputbuffer);
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);
@@ -57,6 +59,7 @@ class AmmoniaSensor : public GasSensor
             else
                 Con = 0.0;
         }
+        //Serial.println(Con);
         return Con;
     }
 
@@ -67,7 +70,7 @@ class AmmoniaSensor : public GasSensor
         inputbuffer[0] = GET_TEMP;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
-        readI2C(ADDRESS, 0, outputbuffer, 9); 
+        readI2C(ADDRESS, 0, 9, outputbuffer);
         if(FucCheckSum(outputbuffer, 8) != outputbuffer[8])
         {
             return 0.0;
@@ -79,6 +82,7 @@ class AmmoniaSensor : public GasSensor
         float Vpd3=3*(float)temp_ADC/1024;
         float Rth = Vpd3*10000/(3-Vpd3);
         float Tbeta = 1/(1/(273.15+25)+1/3380.13*log(Rth/10000))-273.15;
+        //Serial.println(Tbeta);
         return Tbeta;
     }
 
