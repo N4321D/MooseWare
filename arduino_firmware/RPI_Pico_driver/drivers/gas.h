@@ -22,20 +22,16 @@ class GasSensor : public I2CSensor
         byte CHANGE_MODE = 0X78;
         bool mode;
         bool tempComp = false;
+        bool heatingUp;
+        unsigned long endtime;
 
     GasSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
         strcpy(NAME, "Gas Resistance Sensor");
         strcpy(SHORT_NAME, "GAS");
         N_PARS = 2;
-        uint8_t ADDRESS;
         strcpy(PARAMETER_NAMES[0], "Temperature, deg C");
-        strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[0], "Temp");
-        strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
-
-
-
     }
 
 
@@ -77,22 +73,38 @@ class GasSensor : public I2CSensor
 
     void init()
     {
-        changeAcquireMode(true);
+        heatingUp = true;
+        endtime = millis() + 300000;
+        //changeAcquireMode(true);
         //Sets chip to active sampling
-        delay(1000); //Documentation recommends allowing 5 minutes for sensor to get going. If "long time" before last use, recommends up to 24 hrs
+        //delay(1000); //Documentation recommends allowing 5 minutes for sensor to get going. If "long time" before last use, recommends up to 24 hrs
     }
 
 
     void sample()
     {
-       sampled_data[0] = readTempC();
-       Serial.println(String(sampled_data[0]));
-       sampled_data[1] = readGasConcPPM(sampled_data[0]);
-       Serial.println(String(sampled_data[1]));
-       for(byte i=0; i < N_PARS; i++)
-       {
-        if(sampled_data[i] == 0.0) {error_count++;}
-       }
+        if(heatingUp = true)
+        {
+            sampled_data[0] = -1;
+            sampled_data[1] = -1;
+            if(endtime <= millis())
+            {
+                heatingUp = false;
+            }
+            status = 2;
+        }
+        else
+        {
+            sampled_data[0] = readTempC();
+      // Serial.println(String(sampled_data[0]));
+            sampled_data[1] = readGasConcPPM(sampled_data[0]);
+     //  Serial.println(String(sampled_data[1]));
+            status = 5; //Sampling? maybe 0? dont remember
+        }
+        for(byte i=0; i < N_PARS; i++)
+        {
+            if(sampled_data[i] == 0.0) {error_count++;}
+        }
 
     }    
 
@@ -103,13 +115,18 @@ class GasSensor : public I2CSensor
         if (active == true) {tosend = 0x03;}//active data collection
         else {tosend == 0x04;}//must be sampled manually (sleep??)
         uint8_t inputbuffer[6] = {0};
-        uint8_t outputbuffer[9] = {0};
+        uint8_t outputbuffer[9] = {1};
         inputbuffer[0] = CHANGE_MODE;
         inputbuffer[1] = tosend;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        if(!writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol))){Serial.println("Write failure");}
-        if(!readI2C(ADDRESS, 0, 9, outputbuffer)){Serial.println("Read failure");}
-        if (outputbuffer[2] == 1){return true;}
+        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        protocolstatus(_protocol);
+        readI2C(ADDRESS, 0, 9, (uint8_t *)&outputbuffer);
+        readOutput(outputbuffer);
+        if (outputbuffer[2] == 1)
+        {
+            return true;
+        }
         else 
         {
             Serial.println("Mode change failure");
@@ -140,6 +157,7 @@ class GasSensor : public I2CSensor
         if (outputbuffer[8] != FucCheckSum(outputbuffer, 8))
             return 0;
         return outputbuffer[2];
+        ADDRESS = addr;
     }
 
 
@@ -181,10 +199,27 @@ class GasSensor : public I2CSensor
     void dataToJSON(JsonObject js)
     {
         for (byte i=0; i < N_PARS; i++){
-            js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0xFFFF);
+            js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i]);
             
         };
     }
 
+
+    void protocolstatus(protocol _protocol)
+    {
+        for(int x = 0; x <sizeof(_protocol.data); x++)
+        {
+            Serial.println(_protocol.data[x]);
+        }
+        Serial.println(_protocol.check);
+    }
+
+    void readOutput(uint8_t outputbuffer[])
+    {
+     for(int x = 0; x <9; x++)
+        {
+            Serial.println(outputbuffer[x]);
+        }  
+    }
 
 };

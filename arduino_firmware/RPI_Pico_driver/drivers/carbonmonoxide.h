@@ -24,10 +24,13 @@ class CarbonMonoxideSensor : public GasSensor
         strcpy(NAME, "Carbon Monoxide Resistance Sensor");
         strcopy(SHORT_NAME, "CO");
         ADDRESS = 0x04;
+        strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
+        strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
    
 
-    float readGasConcPPM(uint8_t _temp){
+    float readGasConcPPM(uint8_t _temp)
+    {
         float Con = 0.0;
         uint8_t inputbuffer[6] = {0};
         uint8_t outputbuffer[9] = {0};
@@ -56,7 +59,8 @@ class CarbonMonoxideSensor : public GasSensor
         return Con;
     }
 
-    float readTempC(){
+    float readTempC()
+    {
         uint8_t inputbuffer[6] = {0};
         uint8_t outputbuffer[9] = {0};
         inputbuffer[0] = GET_TEMP;

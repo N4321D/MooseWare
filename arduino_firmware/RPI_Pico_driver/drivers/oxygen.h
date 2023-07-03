@@ -7,8 +7,8 @@
  * 
  * 
  * */
-#include <gas.h>
-#include <i2csensor.h>>
+//#include <gas.h>
+//#include <i2csensor.h>>
 
 
 class OxygenSensor : public GasSensor
@@ -22,12 +22,15 @@ class OxygenSensor : public GasSensor
     OxygenSensor(TwoWire &wire_in) : GasSensor(wire_in)
     {
         strcpy(NAME, "Oxygen Resistance Sensor");
-        strcopy(SHORT_NAME, "O2");
+        strcpy(SHORT_NAME, "O2");
         ADDRESS = 0x05;
+        strcpy(PARAMETER_NAMES[1], "Percent by Volume");
+        strcpy(PARAMETER_SHORT_NAMES[1], "% Vol");
     }
  
   
-    float readGasConcPPM(uint8_t _temp){
+    float readGasConcPPM(uint8_t _temp)
+    {
         float Con = 0.0;
         uint8_t inputbuffer[6] = {0};
         uint8_t outputbuffer[9] = {0};
@@ -40,11 +43,12 @@ class OxygenSensor : public GasSensor
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);
             Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
         }
-
+       // Serial.println(Con);
         return Con;
     }
 
-    float readTempC(){
+    float readTempC()
+    {
         uint8_t inputbuffer[6] = {0};
         uint8_t outputbuffer[9] = {0};
         inputbuffer[0] = GET_TEMP;
@@ -62,6 +66,7 @@ class OxygenSensor : public GasSensor
         float Vpd3=3*(float)temp_ADC/1024;
         float Rth = Vpd3*10000/(3-Vpd3);
         float Tbeta = 1/(1/(273.15+25)+1/3380.13*log(Rth/10000))-273.15;
+        //Serial.println(Tbeta);
         return Tbeta;
     }
 
