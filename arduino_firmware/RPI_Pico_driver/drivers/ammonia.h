@@ -16,14 +16,13 @@ class AmmoniaSensor : public GasSensor
     private:
     public:
         //put in stuff here unit?
-        float sampled_data[2];
 
 
     AmmoniaSensor(TwoWire &wire_in) : GasSensor(wire_in)
     {
         strcpy(NAME, "Ammonia Resistance Sensor");
         strcpy(SHORT_NAME, "NH3");
-        ADDRESS = 0x74;
+        ADDRESS = 0x77;
         strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }

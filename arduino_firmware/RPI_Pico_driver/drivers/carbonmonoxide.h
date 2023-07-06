@@ -16,7 +16,6 @@ class CarbonMonoxideSensor : public GasSensor
     private:
     public:
         //put in stuff here unit?
-        int16_t sampled_data[2];
 
 
     CarbonMonoxideSensor(TwoWire &wire_in) : GasSensor(wire_in)

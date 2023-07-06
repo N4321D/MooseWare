@@ -1,5 +1,5 @@
 //Generic protocol for UART serial communication. Should be included in all sensors that need or can use UART communication 
-
+//built for raspberry pi pico on the second UART line (Serial1)
 #include <Arduino.h>
 #include "SoftwareSerial.h"
 #include "HardwareSerial.h"
@@ -55,19 +55,40 @@ public:
 
     }
 
-    bool readUART()
+    bool readUART(byte numBytes, T *data)
     {
-        if(Serial1.available())
+        byte *byte_ptr = (byte *)data; // cast long int pointer to byte pointer
+        if(Serial1.available() > 0)
         {
-            
+            for (int i = 0; i < numBytes; i++)
+            {
+                if (!reverse)
+                {
+                    byte_ptr[i] = Serial1.read();
+                }
+                else
+                {
+                    byte_ptr[numBytes - i - 1] = Serial1.read();
+                };
+            }
+            return true;  
+        }
+        else
+        {
+            return false;
         }
     }
 
-    bool writeUART()
+    bool writeUART()//is there a point to this? isnt this serial printing with extra steps
     {
-        if(Serial1.available())
+        if(Serial1.available() > 0)
         {
-            
+
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
