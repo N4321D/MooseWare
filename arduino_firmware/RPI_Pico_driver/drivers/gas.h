@@ -20,10 +20,11 @@ class GasSensor : public I2CSensor
         byte GET_TEMP = 0x87;
         byte GET_VOLTAGE = 0x91;
         byte CHANGE_MODE = 0X78;
-        bool mode;
+        bool startup = true;
         bool tempComp = false;
         bool heatingUp;
         unsigned long endtime;
+        float sampled_data[2];
 
     GasSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
@@ -73,8 +74,13 @@ class GasSensor : public I2CSensor
 
     void init()
     {
-        heatingUp = true;
-        endtime = millis() + 300000;
+        //changeI2CAddr(0x78);
+        if(startup){
+            heatingUp = true;
+            endtime = millis() + 3000;
+            startup = false;
+        }
+        //ADDRESS = 0x78;
         //changeAcquireMode(true);
         //Sets chip to active sampling
         //delay(1000); //Documentation recommends allowing 5 minutes for sensor to get going. If "long time" before last use, recommends up to 24 hrs
@@ -83,7 +89,8 @@ class GasSensor : public I2CSensor
 
     void sample()
     {
-        if(heatingUp = true)
+
+        if(heatingUp == true)
         {
             sampled_data[0] = -1;
             sampled_data[1] = -1;
@@ -91,15 +98,13 @@ class GasSensor : public I2CSensor
             {
                 heatingUp = false;
             }
-            status = 2;
+            //status = 2;
         }
         else
         {
             sampled_data[0] = readTempC();
-      // Serial.println(String(sampled_data[0]));
             sampled_data[1] = readGasConcPPM(sampled_data[0]);
-     //  Serial.println(String(sampled_data[1]));
-            status = 5; //Sampling? maybe 0? dont remember
+           // status = 5; //Sampling? maybe 0? dont remember
         }
         for(byte i=0; i < N_PARS; i++)
         {
@@ -110,7 +115,7 @@ class GasSensor : public I2CSensor
 
     bool changeAcquireMode(bool active)
     {
-        mode = active;
+        
         byte tosend;
         if (active == true) {tosend = 0x03;}//active data collection
         else {tosend == 0x04;}//must be sampled manually (sleep??)
@@ -134,7 +139,7 @@ class GasSensor : public I2CSensor
         } //validates whether the mode change was successful   
     }
 
-     void reset_procedure()
+    void reset_procedure()
     {
         //?????????
     }
@@ -155,9 +160,17 @@ class GasSensor : public I2CSensor
       //  delay(100);
       //  readData(0, recvbuf, 9);
         if (outputbuffer[8] != FucCheckSum(outputbuffer, 8))
-            return 0;
+        {
+            return false;
+        }
+        else 
+        {
+            Serial.println("Mode change success(?)");
+            return true;
+        }
+        Serial.println(addr);
+        Serial.println(outputbuffer[2]);
         return outputbuffer[2];
-        ADDRESS = addr;
     }
 
 
