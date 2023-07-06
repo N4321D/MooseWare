@@ -62,13 +62,12 @@ kv_str = """
 class ScreenSaver(Screen):
     coord = ListProperty([0.5, 0.5])
 
-
+    max_brightness = ConfigParserProperty(60, "main", "max_brightness", "app_config", val_type=int,
+                                          verify = lambda x: True if 30 <= x <= 100 else False)
     min_brightness = ConfigParserProperty(8, "main", "min_brightness", "app_config", val_type=int, 
                                           verify = lambda x: True if 0 <= x <= 100 else False)
 
 
-    max_brightness = ConfigParserProperty(60, "main", "max_brightness", "app_config", val_type=int,
-                                          verify = lambda x: True if 30 <= x <= 100 else False)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

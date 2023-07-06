@@ -57,7 +57,7 @@ class Sensor():
     out_vars = {}
     datatype = {}
          
-    shv = {'status': 0,  # interger which can be used to describe status of the chip
+    shv = {'status': -1,  # interger which can be used to describe status of the chip
                                            # e.g 0: standby, 1: recording, 2: stimulating
 
            'reset_count': 0,
@@ -120,7 +120,7 @@ class Sensor():
         needs to return {'name of par': value}
         returns float('NaN') as value if disconnected
         """
-        self.status = 2 
+        self.status = 0 
         output = {}
         for key in self.out_vars:
             run = self.out_vars[key]
@@ -157,7 +157,7 @@ class Sensor():
             
             if out is None:
                 # error
-                self.status = 0
+                self.status = -1
                 self.disconnected = True
                 if mode == 'read':
                     out = [self.errorout] * byte if byte else self.errorout
@@ -166,7 +166,7 @@ class Sensor():
             # indicate succesful read/write command if failed earlier
             if self.disconnected:
                 self.disconnected = False
-                self.shv.set(1, 'status', 0)
+                self.shv.set(0, 'status', 0)
         
         return out
 
@@ -195,7 +195,6 @@ class Sensor():
             return int.from_bytes(input_bytes, byteorder=order, signed=signed)
 
     def reset(self):
-        # self.shv.set(0, 'status', 0)
         if self.reset_command["reg"] is not None:
             self.rw_byte(**self.reset_command, mode='write')
         else:
@@ -212,7 +211,7 @@ class Sensor():
         stops sensor
         """
         self._stop()
-        self.shv.set(1, 'status', 0)
+        self.shv.set(0, 'status', 0)
         self.shv.set(0, 'reset_count', 0)
         self.shv.set(0.0, 't_last_reset', 0)
 
@@ -240,7 +239,7 @@ class Sensor():
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record}
+        return {"record": self.record}
     
 
     def do_config(self, par, value):

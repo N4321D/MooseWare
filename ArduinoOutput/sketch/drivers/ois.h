@@ -27,12 +27,17 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
 
-        control_str = "[{\"title\": \"Green Led Intensity\","
+        control_str = "["
+            "{\"title\": \"Blue Light Stimulation\","
+            "\"type\": \"stim\","
+            "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
+            "\"key\": \"stim\"},"
+            "{\"title\": \"Green Led Intensity\","
             "\"type\": \"plusminin\","
-            "\"desc\": \"Power in mA of the green LEDs\","
+            "\"desc\": \"Green LED power in %\","
             "\"key\": \"amps\","
-            "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," // [min of range, max of range, step in range]
-            "\"limits\": [0, 60],"                                 // [min, max]
+            "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+            "\"limits\": [0, 100],"    // [min, max]
             "\"live_widget\": true}"
             "]";
     }
@@ -69,10 +74,10 @@ public:
     {
         /*
          * modes:
-         *   0: "green"
-         *   1: "ir / blue"
+         *   0: "ir"
+         *   1: "green"
          */
-
+        STATUS = green? 5: 10;
         const byte out = green ? 0x87 : 0x97;
         writeI2C(ADDRESS, 0x41, &out, 1);
     }
@@ -116,16 +121,18 @@ public:
     void start_stim(JsonArray time_amps)
     {
         stim_end = millis() + time_amps[0].as<unsigned long>();
-        byte amp = time_amps[1].as<unsigned short>();
+        byte amp = (byte)((time_amps[1].as<float>() / 100) * MAX_AMP);
         if (amp > 0)
         {
+            // pulse on
             set_amps(amp, true);
             set_mode(false);
+
         }
         else
         {
+            // pulse off
             set_amps(green_amps, false);
-            set_mode(true);
         }
     }
 
@@ -143,7 +150,7 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps(value.as<unsigned short>());
+            set_amps((byte)((value.as<float>() / 100) * MAX_AMP), false);
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }

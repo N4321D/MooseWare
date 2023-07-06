@@ -32,6 +32,9 @@ del DUMMY
 
 import time
 
+from subs.gui.misc.Stimulation import StimController
+
+
 class LightSens(Sensor):
     '''
 
@@ -48,11 +51,10 @@ class LightSens(Sensor):
     then use start to trigger) next read value
 
     sensor.status indicates state of the sensor:
-    0: N.C. / Error, sensor lost connection/ os error / ...
-    1: Sensor connected, standby
-    2: Green LED -> Recording
-    3: Green LED -> in Stim prot
-    4: Blue LED -> STIM PROT
+    -1: N.C. / Error, sensor lost connection/ os error / ...
+    0: Sensor connected, standby
+    5: Green LED -> Recording
+    10: Blue LED -> STIM PROT
 
     '''
     # variables
@@ -76,8 +78,10 @@ class LightSens(Sensor):
 
     stim_start = None
 
+    stim_control = {"stim": StimController()}
+
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            # number of completed stim (postition in protocol)
@@ -227,6 +231,19 @@ class LightSens(Sensor):
         set a stim protocol here to start stim during recording
         """
         self.stim_protocol = protocol
+    
+    def do_stim(self, dur, amp):
+        """
+        do instant stim
+
+        Args:
+            dur (float): duration in ms
+            amp (float): amp in %
+        """
+        print(amp, dur, "STIM")
+        dur /= 1e3
+        amp = (amp / 100) * 65
+        self.set_stim_protocol([(0, dur, amp)])
 
     def stimulate(self, delay=0):
         """
@@ -240,7 +257,7 @@ class LightSens(Sensor):
         amp is returned
         """
         if not self.stim_protocol:
-            self.shv.set(2, 'status', 0)
+            self.shv.set(5, 'status', 0)
             return 0
 
         _t = time.time()
@@ -275,7 +292,7 @@ class LightSens(Sensor):
         self.settings['color_mode'] = 'ir'
         self.stim_on = True
         self.current_stimamp = int(self.stim_protocol[0][2])
-        self.shv.set(4, 'status', 0)             # blue led on
+        self.shv.set(10, 'status', 0)             # blue led on
 
     def _stim_off(self):
         # turn stim off return to single shot mode
@@ -290,12 +307,12 @@ class LightSens(Sensor):
             self.shv.set(self.shv.get('stim_count', 0) + 1, 'stim_count', 0)
             self.shv.set(_mA, 'last_stim_mA', 0)
             self.shv.set(_stop - _start, 'last_stim_dur', 0)
-            self.shv.set(3, 'status', 0)
+            self.shv.set(5, 'status', 0)
 
         if not self.stim_protocol:
             # Stim ended
             self.stim_start = None
-            self.shv.set(2, 'status', 0)
+            self.shv.set(5, 'status', 0)
 
         self.current_stimamp = 0
 
@@ -321,13 +338,20 @@ class LightSens(Sensor):
                   "type": "bool",
                   "desc": "Record data from this chip",
                     "section": self.name,
-                    "key": "recording",
+                    "key": "record",
                   },
+                  {"title": "Blue Light Stimulation",
+                    "section": self.name,
+
+                    "type":"stim",
+                    "desc": "Create / Start / Stop blue light stimulation protocol",
+                    "key": "stim",},
                  {"title": "Green Led Intensity",
                   "type": "plusminin",
                     "desc": "Power in mA of the green LEDs",
                     "section": "recording",
                     "key": "ois_ma",
+                    "section": self.name,
                     # [min of range, max of range, step in range]
                     "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],
                     "limits": [0, 60],   # [min, max]

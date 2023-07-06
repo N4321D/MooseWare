@@ -58,7 +58,7 @@ class MoSens(Sensor):
     current_lin_sens = "2 g"
 
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }   
@@ -140,7 +140,7 @@ class MoSens(Sensor):
     #     output = self.byte2int(output, signed=True)
         
     def readself(self):
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
         _read = self.rw_byte(mode="read", reg=0x22, byte=12)
         output = {}
         for ax, lsb, msb in zip(self.out_vars, _read[::2], _read[1::2]):
@@ -169,7 +169,7 @@ class MoSens(Sensor):
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
                 },
                 {"title": "Angular Sensitivity",
                 "type": "options",
@@ -193,7 +193,7 @@ class MoSens(Sensor):
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record,
+        return {"record": self.record,
                 "ang_sensitivity": self.current_ang_sens,
                 "lin_sensitivity": self.current_lin_sens,
         }

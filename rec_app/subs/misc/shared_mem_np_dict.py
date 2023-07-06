@@ -159,6 +159,9 @@ class SharedTable():
         """
         if par is None: par = ...                                # replace None with elipsis for indexing
         index = self.index_lookup.get(index, index)
+        if isinstance(index, str):
+            # lookup failed
+            return
         return self.array[par][index]
             
     

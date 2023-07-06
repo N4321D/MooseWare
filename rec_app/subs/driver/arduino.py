@@ -1,21 +1,25 @@
-from typing import Any
 import serial
 import serial_asyncio
 from serial.tools import list_ports
 
 import asyncio
 import json
+from json import JSONDecodeError
+
 import time
 
 from subs.recording.buffer import SharedBuffer
 
-import numpy as np
+from subs.driver.sensor_files.chip import Chip
 
-from json import JSONDecodeError
+import numpy as np
+from numpy.lib import recfunctions as rfn
 
 from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
+
+# import numba
 
 # Logger
 from subs.log import create_logger
@@ -23,8 +27,6 @@ logger = create_logger()
 def log(message, level="info"):
     cls_name = "SERIAL_CONTROLLER"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
-
-
 
 class IOProtocol(asyncio.Protocol):
     buffer = []
@@ -48,9 +50,6 @@ class IOProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         self.save(data)
-
-        # stop callbacks again immediately
-        # self.pause_reading()
 
     def save(self, data):
         self.sub_buffer.extend(data)
@@ -145,7 +144,7 @@ class Arduino():
             try:
                 self.device = next(list_ports.grep(self.DEVICES))
                 port = self.device.device
-                log("connecting to: {self.device}", "info")
+                log(f"connecting to: {self.device}", "info")
 
                 await self._setup_reader(self.device)
                 print(f"connected to {self.device.manufacturer} "
@@ -187,7 +186,7 @@ class Arduino():
         self.protocol.on_write_pause, self.protocol.on_write_resume = self.on_write_pause, self.on_write_resume
 
         self.name = f"{dev.manufacturer} - {dev.product}"
-        self.on_connect(dev)
+        await self.on_connect(dev)
 
     def do(self, *args, **kwargs):
         '''
@@ -204,7 +203,7 @@ class Arduino():
         else:
             if isinstance(data, str):
                 data = data.encode()
-            self.protocol.write(data)
+            self.protocol.write(data + b"\n")
 
     def get_fifo(self):
         """
@@ -214,7 +213,7 @@ class Arduino():
             return self.recv_buff.pop(0)
         
 
-    def on_connect(self, dev):
+    async def on_connect(self, dev):
         """
         called when connected
         """
@@ -260,14 +259,14 @@ class DummyMicro(EventDispatcher):
 
     def __init__(self,  **kwargs) -> None:
         self.__dict__.update(kwargs)
-
         self.data_event = Clock.schedule_interval(self._gen_data, self._rec_dt)
         self.data_event.cancel()
         self.idle_event = Clock.schedule_interval(self._gen_idle, 2)
 
-        Clock.schedule_once(self.on_connect, 0)
+        # Clock.schedule_once(self.on_connect, 0)
+        Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(self.on_connect(self), asyncio.get_event_loop()), 0) 
 
-    def on_connect(self, *args, **kwargs):
+    async def on_connect(self, *args, **kwargs):
         pass
 
     def on_disconnect(self, *args, **kwargs):
@@ -320,18 +319,34 @@ class DummyMicro(EventDispatcher):
             self.recv_buff.append(
                 json.dumps(
                     {"idle": True,
+                     "CTRL":{"name": self.name},
                      "OIS": {"name": "Optical Intrisic Signal",
-                             "control_str": ("[{\"title\": \"Green Led Intensity\","
-                             "\"type\": \"plusminin\","
-                             "\"desc\": \"Power in mA of the green LEDs\","
-                             "\"key\": \"amps\","
-                             "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 100, 10]]," 
-                             "\"limits\": [0, 65],"                            
-                             "\"live_widget\": true}"
-                             "]"),
-                             "i2c_status": 0,
+                             "control_str": json.dumps([
+                            {"title": "Blue Light Stimulation",
+                                  "type":"stim",
+                                  "desc": "Create / Start / Stop blue light stimulation protocol",
+                                  "key": "stim",},
+                             {"title": "Green Led Intensity",
+                             "type":"plusminin",
+                             "desc": "Power in mA of the green LEDs",
+                             "key": "amps",
+                             "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]], 
+                             "limits": [0, 65],                            
+                             "live_widget": True},
+                            {"title": "Purple Light Stimulation",
+                             "type":"stim",
+                             "desc": "Create / Start / Stop purple light stimulation protocol",
+                             "key": "purple_stim",},
+                             ]),
+                             "#ST": 0,
                              "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
+                )
+            )
+            self.recv_buff.append(
+                json.dumps(
+                    {"idle": True,
+                     "CTRL": {"name": "test"}}
                 )
             )
         self.do()
@@ -346,79 +361,6 @@ class DummyMicro(EventDispatcher):
         """
         if self.recv_buff:
             return self.recv_buff.pop(0)
-
-
-class Chip():
-    """
-    A class representing a chip device on microcontrollers
-
-    Attributes:
-        controller (Controller): The controller object to which the chip is connected.
-        parent_name (str): The name of the parent device or controller.
-        connected (bool): Indicates if the chip is currently connected.
-        status (int): Indicates the current status of the chip (see vars.py for all status options)
-        name (str): The full name of the chip.
-        short_name (str): A short name or identifier for the chip.
-        i2c_status (int): The status of the I2C connection.
-        record (bool): Indicates whether data from this chip should be recorded.
-        control_panel (list): A list of control panel settings for the chip.
-        
-    Methods:
-        return_default_options(): Returns the default options for the chip.
-        __setattr__(name: str, value): Overrides the default setattr behavior to handle attribute changes.
-        send_cmd(val): Sends a command to the chip.
-        update(chip_dict): Updates the chip attributes using a dictionary.
-        json_panel() -> list: Returns the control panel settings in JSON format.
-        do_config(par, value): Performs configuration for the chip.
-
-    """
-    def __init__(self, short_name, chip_dict, controller) -> None:
-        self.controller = controller
-        self.parent_name = self.controller.name
-        self.connected = True
-        self.status = 1                  # indicates what chip is doing (see vars.py sensor status)
-        self.name = short_name
-        self.short_name = short_name
-        self.i2c_status = 0
-        self.record = True
-        self.update(chip_dict)
-        self.control_panel = [{"title": "Record",
-                     "type": "bool",
-                     "desc": "Record data from this device",
-                     "key": "recording",
-                  }] + (json.loads(chip_dict.get("control_str") or "[]")
-                 )
-        # add section for saving settings
-        [i.update({"section": f"{self.parent_name}: {self.name}"})
-         for i in self.control_panel]
-        
-    
-    def return_default_options(self):
-        return {"recording": self.record}
-
-    def __setattr__(self, name: str, value) -> None:
-        if hasattr(self, name) and getattr(self, name) != value:
-            if name == 'i2c_status':
-                self.connected = (value == 0)
-                self.status = 1 if self.connected else 0
-            else:
-                self.send_cmd({name: value})
-        super().__setattr__(name, value)
-
-    def send_cmd(self, val):
-        val = json.dumps({self.short_name: val})
-        print(f"Sending {val}")
-        self.controller.micro.write(val)
-
-    def update(self, chip_dict):
-        self.__dict__.update(chip_dict)
-    
-    def json_panel(self) -> list:
-        return self.control_panel
-    
-    def do_config(self, par, value):
-        print(par, value, "TODO DO CONFIG in arduino.py -> chip")
-        self.send_cmd({par: value})
 
 
 class Controller():
@@ -465,7 +407,7 @@ class Controller():
         exit(): Stops the controller and performs cleanup operations.
     """
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
-    MAX_MEM = 200 * 1.024e6
+    MAX_MEM = 128e6
 
     # specify dtypes for saving
     dtypes = {
@@ -479,18 +421,20 @@ class Controller():
         self.sensors = {}
         self.parameters = {}
         self.data_dtype_fields = {}
-        self.name = ""
+        self.name = None
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
         self.starttime = 0
         self.lasttime = None
 
+        self.record = True               # enable or disable recording from controller
         self.run = False
         self.samplerate = 256            # start sample rate
         self.emarate = 0                 # theoretical max
         self.current_rate = 0            # current sample rate
      
         # length of buffer (will be calculated from buffer_time * startrate)
+        self.line_buffer = np.array([])
         self.buffer_length = 0
         self.__dict__.update(kwargs)
         self.app = App.get_running_app()
@@ -499,17 +443,17 @@ class Controller():
             self.micro = DummyMicro(do=self.on_incoming,
                                     on_connect=self._on_connect,
                                     on_disconnect=self._on_disconnect,)
+
         else:
             self.micro = Arduino(do=self.on_incoming,
                                  on_connect=self._on_connect,
                                  on_disconnect=self._on_disconnect,
-                                 # on_write_pause=lambda *_: self.text_event.cancel(),
-                                 # on_write_resume=lambda *_: self.text_event(),
                                  )
         self.disconnected = self.micro.disconnected
         self.connected = self.micro.connected
 
         self.shared_buffer = SharedBuffer()
+        self.delme = []
 
     def connect_buffer(self):
         self.data_structure = self.shared_buffer.data_structure
@@ -519,18 +463,15 @@ class Controller():
             # clear existing data
             self.shared_buffer.reset(par=self.data_name)
 
-    def set_buffer_dims(self, data):
-        # bytes_per_samplepoint = sum([np.dtype(i[1]).itemsize for i in dtypes])
-        dtypes = list({k: self.dtypes.get(k, self.dtypes[None])
-                       for k in data}.items())
-
-        # make one example row and count nbytes
-        bytes_per_samplepoint = np.empty(1, dtype=dtypes).nbytes
+    def set_buffer_dims(self, *args):
+        bytes_per_samplepoint = self.line_buffer.nbytes
+        
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
-        self.shared_buffer.add_parameter(self.name, dtypes, self.buffer_length)
+        self.shared_buffer.add_parameter(self.name, self.line_buffer.dtype, 
+                                         self.buffer_length)
 
-        self.parameters = set(data.keys())
+        self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
         await self.micro.start()
@@ -542,42 +483,61 @@ class Controller():
             self.run = not self.run
 
         out = {"run": int(self.run)}
+
         if self.run:
+            # Start
             self.lasttime = None
             self.starttime = time.time()
             self.emarate = 0
             out["freq"] = self.samplerate
 
         else:
+            # Stop
             self.starttime = 0
-
+        
+        # clear / reset buffers
         self.buffer_length = 0
         self.micro.recv_buff.clear()
+
+        # write start
         self.micro.write(json.dumps({"CTRL": out}))
+
+        self.sensors['CTRL'].status = 5 if self.run else 0
 
     def adjust_freq(self, freq):
         self.samplerate = freq
         self.micro.write(json.dumps({"CTRL": {"freq": freq}}))
         self.current_rate = freq
 
-    def _on_connect(self, dev):
-        print(f"CONNECTED TO: {self.micro.name}")
-        self.name = self.micro.name
-        self.connect_buffer()
+    async def _on_connect(self, dev):
+        while self.name is None:
+            await asyncio.sleep(0.1)
 
-        self.sensors["CTRL"] = Chip("CTRL", {
-                "name": "Controller",
-                "control_str": ("[{\"title\": \"Recording Frequency\","
-                                "\"type\": \"plusminin\","
-                                "\"desc\": \"Recording Frequency (Hz)\","
-                                "\"key\": \"freq\","
-                                "\"steps\": [[1, 12, 2], [12, 32, 12], [32, 128, 32], [128, 2048, 128]]," 
-                                "\"limits\": [1, 2048],"                            
-                                "\"live_widget\": true}"
-                                "]"),
-            "i2c_status": 0,
-            "parameter_names": [],
-            "parameter_short_names": []}, self)
+        self.connect_buffer()
+        self.sensors["CTRL"] = Chip(
+                "CTRL", 
+                {"name": "Controller",
+                 "control_str": json.dumps([
+                     {
+                    "title": "Controller Name",
+                    "type": "string",
+                    "desc": "set / change the name of the controller",
+                    "key": "name",
+                    },
+                     {"title": "Recording Frequency",
+                    "type": "plusminin",
+                    "desc": "Recording Frequency (Hz)",
+                    "key": "freq",
+                    "steps": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]], 
+                    "limits": [1, 2048],                            
+                    "live_widget": True}]),
+                 "#ST": 0,
+                 "parameter_names": [],
+                 "parameter_short_names": []}, 
+            self, 
+            send_cmd=self._send_cmd)
+
+        self.sensors['CTRL'].name = self.name
 
         self.on_connect(self)
 
@@ -592,6 +552,8 @@ class Controller():
         pass
 
     def on_incoming(self):
+        # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
+        #       get fifo is async or multiprocessing processed?
         while True:
             data = self.micro.get_fifo()
 
@@ -608,63 +570,97 @@ class Controller():
                     # incoming data
                     self.do_new_data(data)
 
-            except JSONDecodeError as e:
+            except (JSONDecodeError, TypeError) as e:
                 # no a json but feedback message
                 self.do_feedback(data, e)
 
     def do_idle(self, data):
         data.pop("idle")
 
-        for name, chip_d in data.items():
-            self.sensors.setdefault(name, Chip(name, chip_d, self)).update(chip_d)
+        if self.name is None and "CTRL" not in data:
+            return # wait for control pars to be received first
 
-        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items()
+        for name, chip_d in data.items():
+            status = chip_d.pop('#ST') if '#ST' in chip_d else 0
+            if name not in self.sensors:
+                self.sensors[name] = Chip(name, chip_d, self)
+
+            else:
+                self.sensors[name].update(chip_d)
+
+            self.sensors[name].status = status
+            if name == "CTRL":
+                [setattr(self, k, v) for k, v in chip_d.items()]
+
+        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items() if (chip.status >= 0 and chip.record and hasattr(chip, 'parameter_short_names'))
                            for par in chip.parameter_short_names 
-                           if (chip.i2c_status == 0 and chip.record)}   
+                           }   
 
     def do_new_data(self, data):
-        data_unpacked = self._do_time(data)
+        data['time'] = self._do_time(data['us'])
 
-        # data_unpacked = {}
-        for sens in tuple(data_unpacked):
-            if isinstance(data_unpacked[sens], dict):
-                v = data_unpacked.pop(sens)
-                _status = v.get("!I2C", 0)
-
-                if sens in self.sensors:
-                    self.sensors[sens].i2c_status = _status
-                else:
-                    self.sensors[sens] = Chip(sens, {"i2c_status":  _status}, self)
-
-                if _status > 0:
-                    # handle errors
-                    continue  # do not include sensor in data
-
-                else:
-                    # upack dictionary
-                    data_unpacked.update({f"{sens}_{k2}": v[k2]
-                                          for k2 in v})
+        self._calc_ema(data.pop('sDt'))
 
         if self.buffer_length == 0:
+            self.create_line_buffer(data)
+
             # create buffer based on incoming data
-            self.set_buffer_dims(data_unpacked)
+            self.set_buffer_dims()
             
             # save dtype of current data
-            self.data_dtype_fields = self.shared_buffer.buffer[self.name].dtype.fields
+            self.data_dtype_fields = self.line_buffer.dtype.fields
+        
+        
+        _last_chip = ""
+        # unpack dictionary
+        for parname in self.data_dtype_fields:
+            par, *subpar = parname.split("_")
+            val = data.get(par, np.nan)
+            
+            if isinstance(val, dict):
+                # add data to line buffer
+                self.line_buffer[parname] = val.get(subpar[0], np.nan)
+                # get status
+                if par != _last_chip:
+                    _status = val.get('#ST')
+                    if _status is not None:
+                        self.sensors[par].status = _status
+                    _last_chip = par
+            else:
+                # add data to line_buffer
+                self.line_buffer[par] = val
+                
+        self.save_data()
+        
 
-        self.save_data(data_unpacked)
-        self._calc_ema(data_unpacked['sDt'])
+    def create_line_buffer(self, data):
+        dtypes = []
+        
+        sensors = self.sensors
+        for par, val in data.items():
+            if isinstance(val, dict):
+                _status = val.get("#ST")
+                if par in sensors:
+                    if _status is not None:
+                        sensors[par].status = _status
+                else:
+                    sensors[par] = Chip(par, {"status":  _status if _status is not None else 0}, self)
+                if  _status is None or _status >= 0:
+                    # if status is ok, add dtype to pars
+                    dtypes += [(f"{par}_{subpar}", 
+                                    self.dtypes.get(subpar, self.dtypes[None]))
+                                          for subpar in val]
+        else:
+            dtypes.append((par, self.dtypes.get(par, self.dtypes[None])))
+        
+        self.line_buffer = np.zeros(1, dtype=dtypes)
 
-
-    def save_data(self, data):
-        # get data or replace with nans
-        data = tuple(data.get(k, np.nan if v[0].kind == 'f' else 0) 
-                for k, v in self.data_dtype_fields.items())
+    def save_data(self,):
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.name,
             # tuple(data.values())
-            data
+            self.line_buffer
         )
 
     def do_feedback(self, data, e):
@@ -685,9 +681,9 @@ class Controller():
         except:
             pass
 
-    def _do_time(self, data):
+    def _do_time(self, us):
         # get microseconds
-        sec = data['us'] * 1e-6
+        sec = us * 1e-6
 
         if self.lasttime is None:
             # adjust starttime to start of rec on arduino
@@ -699,8 +695,8 @@ class Controller():
             self.starttime += (0xFFFF_FFFF / 1e6)
         self.lasttime = sec
 
-        data['time'] = self.starttime + sec
-        return data
+        t = self.starttime + sec
+        return t
 
     def _calc_ema(self, dt):
         if dt == 0:
@@ -711,6 +707,17 @@ class Controller():
         else:
             n = self.samplerate * 60   # ema over 1 min
             self.emarate = (self.emarate - (self.emarate / n)) + ((1 / dt) / n)
+    
+    
+    def _send_cmd(self, value):
+        # process controller commands / config
+        try:
+            self.record = value['record']
+            return
+        
+        except (KeyError):
+            value = json.dumps({'CTRL': value})
+            self.micro.write(value)
 
     def exit(self):
         self.start_stop(False)

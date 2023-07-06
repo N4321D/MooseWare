@@ -100,8 +100,8 @@ class TIn(TextInput):
             # else in min sec etc)
             try:
                 inp = float(inp)
-            except ValueError:
-                return
+            except (ValueError, TypeError):
+                return ""
             #if not isinstance(inp, (int, float)):
             #    return
 

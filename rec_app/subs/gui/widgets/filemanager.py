@@ -777,7 +777,9 @@ class FileManager(FloatLayout):
                     drive['name'] = f"USB{usb_i}: {convert_bytes(drive['usage']['total'])}"
                     usb_i += 1
                     drives[drive['name']] = drive
+      
                 except PermissionError:
+                    # needed for Windows
                     pass
 
         return drives

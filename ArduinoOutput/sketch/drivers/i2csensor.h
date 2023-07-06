@@ -55,7 +55,8 @@ public:
     char PARAMETER_NAMES[MAX_PARS][16];      // name of parameters
     char PARAMETER_SHORT_NAMES[MAX_PARS][5]; // name of parameters
     uint error_count = 0;                    // count errors
-    byte i2c_error = 0;
+    int8_t STATUS = 0;                      // current status 
+    int8_t SENT_STATUS = 0;                 // status that was last reported
     bool connected = true;                  // indicate if sensor is disconnected or not
     bool record = true;                     // indicate if sensor needs to be recorded or not
 
@@ -102,21 +103,22 @@ public:
     void getSampledData(JsonObject js)
     {
         // called by loop
-        if (i2c_error == 0)
+        if (STATUS >= 0)
             dataToJSON(js);
-        else
-            js["!I2C"] = i2c_error;
+        if (STATUS != SENT_STATUS || STATUS < 0){
+            js["#ST"] = STATUS;
+            SENT_STATUS = STATUS;
             dataToJSON(js);
+            };
 
     }
 
     void getInfo(JsonObject js)
     {
         js["name"] = NAME;
-        // js["parameter_names"] = PARAMETER_NAMES;
-        // js["parameter__short_names"] = PARAMETER_SHORT_NAMES;
         js["control_str"] = control_str;
-        js["i2c_status"] = i2c_error;
+        js["#ST"] = STATUS;
+        SENT_STATUS = STATUS;
         js["record"] = record;
 
         JsonArray par_names = js.createNestedArray("parameter_names");
@@ -167,9 +169,10 @@ public:
 
     void test_connection()
     {
+        STATUS = 0;  // reset status
         wire->beginTransmission(ADDRESS);
-        i2c_error = wire->endTransmission();
-        if (i2c_error > 0)
+        STATUS = -wire->endTransmission();
+        if (STATUS < 0)
             connected = false;
         else
             connected = true;
@@ -190,9 +193,10 @@ public:
         byte *byte_ptr = (byte *)data; // cast long int pointer to byte pointer
         wire->beginTransmission(address);
         wire->write(reg);
-        i2c_error = wire->endTransmission();
-        if (i2c_error > 0)
+        byte _err = wire->endTransmission();
+        if (_err > 0)
         {
+            STATUS = -_err;
             return false;
         };
 
@@ -209,6 +213,7 @@ public:
                 byte_ptr[numBytes - i - 1] = wire->read();
             };
         }
+        if (STATUS < 0 && _err == 0) STATUS = 0;
         return true;
     }
 
@@ -224,13 +229,15 @@ public:
     {
         wire->beginTransmission(address);
         wire->write(reg); // specify the register to write to
+        
         for (int i = 0; i < numBytes; i++)
         {
             wire->write(data[i]); // write each byte to the register
         }
-        i2c_error = wire->endTransmission(); // TODO: this only writes the main class vars, how to access vars in subclasses?
-
-        return (i2c_error == 0);
+        byte _err = wire->endTransmission();
+        if (_err > 0) STATUS = -_err;
+        if (STATUS < 0 && _err == 0) STATUS = 0;
+        return (_err == 0);
     }
 
     virtual void reset_procedure()
@@ -246,10 +253,10 @@ public:
     void reset()
     {
         // call to reset sensor, DO NOT OVERWRITE IN SUBCLASS
-        i2c_error = 0;
+        STATUS = 0;
 
         reset_procedure();
-        if (i2c_error == 0)
+        if (STATUS >= 0)
             error_count = 0;
         //init();
     }

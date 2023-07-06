@@ -78,7 +78,7 @@ class TempSens(Sensor):
     current_unit = 'C'
     
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                                                    
@@ -186,7 +186,7 @@ class TempSens(Sensor):
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
                 },
                 {"title": "Unit",
                 "type": "options",
@@ -203,7 +203,7 @@ class TempSens(Sensor):
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record,
+        return {"record": self.record,
                 "temp_unit": self.current_unit,
                 }
 

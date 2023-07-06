@@ -105,13 +105,14 @@ from subs.gui.screens.root_layout import RootLayout
 from subs.updater import Updater
 
 # Other imports:
-from subs.gui.misc.Stimulation import Stimulation
 from subs.driver.button import LedButton
 from subs.gui.widgets.messenger.kivy_messenger import Messenger                 # import sms alert system
 
 # GLOBAL VARS & PARS
 from subs.gui.vars import *
 ADMIN = False
+
+import json
 
 class RecVars(EventDispatcher):
     """
@@ -121,7 +122,7 @@ class RecVars(EventDispatcher):
 
     # TODO LINK PARS TO SAVER IN app.IO
 
-    startrate = ConfigParserProperty(256, 'recording', "startrate", "app_config", val_type=int)
+    # startrate = ConfigParserProperty(256, 'recording', "startrate", "app_config", val_type=int)
     data_length = ConfigParserProperty(3600, 'recording', "data_length", "app_config", val_type=int)                    # length of data in memory in sec.
     save_data = ConfigParserProperty(True, 'recording', "save_data", "app_config", val_type=val_type_loader)
     filename_prefix = ConfigParserProperty('data', 'recording', "filename_prefix", "app_config", val_type=str)
@@ -136,7 +137,7 @@ class RecVars(EventDispatcher):
         self.app = App.get_running_app()
         self.val_dict = val_dict
 
-        self.bind(startrate=lambda inst, val: self.set_val('startrate', val))
+        # self.bind(startrate=lambda inst, val: self.set_val('startrate', val))
         self.bind(save_data=lambda inst, val: self.set_val('save_data', val))
         self.bind(filename_prefix=lambda inst, val: self.set_val('filename_prefix', val))
         self.bind(max_file_size=lambda inst, val: self.set_val('max_file_size', val))
@@ -250,7 +251,6 @@ class guiApp(App):
 
         # app variables
         self.title = f"{SETTINGS_VAR['Main']['title']}{SETTINGS_VAR['Main']['app_logo']:>25}"
-        self.stim = Stimulation()
 
         self.scrsav_event = Clock.schedule_once(self.screen_saver,
                                                 self.screensaver_timeout.total_seconds())
@@ -271,8 +271,10 @@ class guiApp(App):
         """
         create settings panel
 
-        """   
+        """ 
+
         for section, json_panel in settings_panel.items():
+            self.config.adddefaultsection(section)
             settings.add_json_panel(section, self.config, data=json_panel)
         
          # Modify button layout
@@ -368,57 +370,58 @@ sys = system()
 
 if (sys == 'Linux'
     or (__name__ == "__main__")):     # needed for multiprocessing to not spawn multiple windows on mac & win (or start from run.py)
-    try:
+    # try:
         # check certificates and serial
-        pem = f"./keys/{'server' if SERVER else 'client'}.pem"
-        cert_check = Encryption()
-        cert_check.load_all(pem, "./keys/ca.cer")
-        cert_check.check_certificates()
+    pem = f"./keys/{'server' if SERVER else 'client'}.pem"
+    cert_check = Encryption()
+    cert_check.load_all(pem, "./keys/ca.cer")
+    cert_check.check_certificates()
 
 
-        if not SERVER:
-            # check rpi serial
-            check_serial() 
-            pass            
+    if not SERVER:
+        # check rpi serial
+        check_serial() 
+        pass            
 
-        async def mainCoro():
-            global app  
-            # start GUI
-            # guiApp.TESTING = False
-            app = guiApp()        
-            await app.async_run()
+    async def mainCoro():
+        global app  
+        # start GUI
+        # guiApp.TESTING = False
+        app = guiApp()        
+        await app.async_run()
 
-        asyncio.run(mainCoro())
+    asyncio.run(mainCoro())
 
-        # shutdown on exit
-        if not SERVER:
-            # os.system("sudo shutdown -h now")
-            pass
+    # shutdown on exit
+    if not SERVER:
+        # os.system("sudo shutdown -h now")
+        pass
 
+    app.IO.stop_all_stims()
 
-    # NOTE: enable for real version (prevents hard crash)
-    except Exception as e:
-        import time
-        log(f"{type(e).__name__}: {e}", "exception")
+    # # NOTE: enable for real version (prevents hard crash)
+    # except Exception as e:
+    #     import time
+    #     log(f"{type(e).__name__}: {e}", "exception")
         
-        from kivy.core.window import Window
-        if not SERVER:
-            time.sleep(3)
-            app.stop()
-            Window.close()
+    #     from kivy.core.window import Window
+    #     if not SERVER:
+    #         time.sleep(3)
+    #         app.stop()
+    #         Window.close()
             
-            # os.system("sudo reboot")
+    #         # os.system("sudo reboot")
 
-        else:
-            # reset all chips just in case
-            from subs.driver.sensors import chip_d
-            for chip in chip_d.values():
-                chip.reset()
-                chip.init()
+    #     else:
+    #         # reset all chips just in case
+    #         from subs.driver.sensors import chip_d
+    #         for chip in chip_d.values():
+    #             chip.reset()
+    #             chip.init()
 
-            # print("REBOOT")
-            app.stop()
-            Window.close()
+    #         # print("REBOOT")
+    #         app.stop()
+    #         Window.close()
 
 
 
@@ -428,14 +431,16 @@ if (sys == 'Linux'
 # HIGH
 # TODO: update logger to print/save a certain level of exceptions with traceback when the exception is 
 #       inputted instead of a string, use trackback.format_exception (see app.IO)
+
 # TODO: do autostim in utc time if app.root.UTC is True, (e.g. replace datetime.now for datetime.utcnow  or  datetime.utcfromtimestamp(dtime.timestamp()))
 #       or pull time from central clock
 
-# TODO: central settings class with all settings and readouts (from chips recorder etc)
 # TODO: can you disable chips now or not with new setup
 # TODO: Why does autostim not stimulate?
 # TODO: move slice when plotting so that decimation always selects same points with new data?
+
 # TODO: subclass sensors so that not all other get the subclass parameters (class variables), e.g. OIS has pixel_no par from Lightstrip
+
 # TODO: Stop keep awake (sometimes keeps going, maybe when pressing stop before stop autostim)
 # TODO: Deal with live parameters of sensors: how to track and change them (e.g. OIS). 
 #       Now they have to be separate set in rs.chip_d if not running or sent to recorder when running
@@ -443,24 +448,15 @@ if (sys == 'Linux'
 
 # NORMAL
 # TODO: test if using generator to get items/values from dict in for loops etc is faster for functions here or (*map(f, iter),)
-# TODO: make sure exit is clean, when pressing exit when running: it is clean after stopping rec, but not if stopping when no recording was started at all
+
 # TODO: Fix network stuff in IO
 # TODO: NETWORK FILE MANAGER (push/ pull files)
 # TODO: Broadcasting values to all units (e.g. room control values)
 
-# TODO: rewrite saver using asyncio
-# TODO: improve asyncio in arduino protocol
-
-# TODO: use generator function for stim protocol instead of numpy arrays to save mem
-
-# TODO: reduce mem with slots https://bas.codes/posts/python-dict-slots (FOR Classes which do not make new attributes)
-# TODO: use shared memory manager to track all shared lists and memory blocks
-# TODO: Settings for hardware button
 # TODO: use map instead of creating list and appending to it
 # TODO: settings: reset to defaults button delete settings.ini or parts of settings.ini?
 
 # TODO: Build Test Script (check output of all functions if changed?) -> ptyhon tests
-# TODO: Check todos inline/inscript (search for # TODO)
 
 # LOW PRIORITY
 # TODO: multiple sms no for alerts (funcitonality is there but needs input from
@@ -472,7 +468,7 @@ if (sys == 'Linux'
 # NOTE: asyncio.gather does not return/raise exceptions by default!! 
 #           use return_exception=True kwarg catch output, then print/log expcetions
 # NOTE: to call async def functions from kivy clock use: 
-#       Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), loop), 5) 
+#       Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(some_task(), asyncio.get_event_loop()), 5) 
 #       TODO: make app.async_clock_call function for this?
 
 '''

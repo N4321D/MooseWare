@@ -24,6 +24,8 @@ from subs.recording.saver import Saver
 from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars
 from subs.driver.arduino import Controller
 
+from subs.driver.sensor_files.chip import Chip
+
 from subs.recording.buffer import SharedBuffer
 from kivy.properties import (BooleanProperty, NumericProperty,
                              DictProperty, ListProperty,
@@ -199,6 +201,24 @@ class InputOutput(EventDispatcher):
 
         self.create_notes()
 
+        # Create controller for recording with internal sensors
+        self.internalControl = Chip(
+                "CTRL", 
+                {"name": "Controller",
+                 "control_str": ("[{\"title\": \"Recording Frequency\","
+                                "\"type\": \"plusminin\","
+                                "\"desc\": \"Recording Frequency (Hz)\","
+                                "\"key\": \"freq\","
+                                "\"steps\": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]]," 
+                                "\"limits\": [1, 2048]}"
+                                "]"),
+                 "i2c_status": 0,
+                 "parameter_names": [],
+                 "parameter_short_names": []}, 
+            None, send_cmd=self._internal_commands, parent_name="Internal Recording",
+            freq=256,
+            )
+
         # limit seconds back
         def limit_secondsback(_, x):
             x = max(1, min(x, self.app.rec_vars.data_length))
@@ -281,19 +301,20 @@ class InputOutput(EventDispatcher):
         self.add_note(f"Recording Started")
 
         if not self.client_ip:
-            self.rec = Recorder(start_rate=self.app.rec_vars.startrate,
-                                MAX_MEM=MAX_MEM)                                # MAX_MEM is defined in vars.py
+            if self.internalControl.record:
+                self.rec = Recorder(start_rate=self.internalControl.freq,
+                                    MAX_MEM=MAX_MEM)                                # MAX_MEM is defined in vars.py
 
-            # limit viewable data to max buffered data
-            self.app.rec_vars.data_length = int(self.rec.buffer_length
-                                                / self.app.rec_vars.startrate)
+                # limit viewable data to max buffered data
+                self.app.rec_vars.data_length = int(self.rec.buffer_length
+                                                    / self.internalControl.freq)
 
-            self.rec_pr = self.rec.start()
+                self.rec_pr = self.rec.start()
 
             # start micro controllers
             for dev_name in self.micro_controllers:
-                self.micro_controllers[dev_name].samplerate = self.app.rec_vars.startrate
-                self.micro_controllers[dev_name].start_stop(True)
+                if self.micro_controllers[dev_name].record:
+                    self.micro_controllers[dev_name].start_stop(True)
 
             if save:
                 self.sav = Saver(recname=self.recording_name,
@@ -317,7 +338,10 @@ class InputOutput(EventDispatcher):
         has stopped
         """
         if not self.client_ip:
-            self.rec.stop()
+            if self.rec is not None:
+                self.rec.stop()
+
+            self.stop_all_stims()
 
             for dev_name in self.micro_controllers:
                 self.micro_controllers[dev_name].start_stop(False)
@@ -325,8 +349,10 @@ class InputOutput(EventDispatcher):
             if self.sav:
                 self.sav.stop()
 
-            self.rec_pr.join()
-            self.rec_pr = None
+            if self.rec_pr is not None:
+                self.rec_pr.join()
+                self.rec_pr = None
+
             self.add_note(f"Recording stopped")
 
         self.running = False
@@ -343,7 +369,7 @@ class InputOutput(EventDispatcher):
         `chip_command("LED_chip", 'set_led', 30, color='blue')` sets leds on on 
             this driver to 30% blue light 
         """
-        if self.running:
+        if self.running and self.rec is not None:
             self.rec.q_in.put((chip, method, args, kwargs))
 
         else:
@@ -385,7 +411,12 @@ class InputOutput(EventDispatcher):
             # wait for all tasks to finish:
             proc_async_exceptions(await asyncio.gather(*tasks,
                                                        return_exceptions=True))
-            await asyncio.sleep(self.dt['plotting'])
+            
+            plot_dt = self.dt['plotting']
+            if self.secondsback > 300:
+                plot_dt *= 2
+
+            await asyncio.sleep(plot_dt)
 
         return self.exit()
 
@@ -402,16 +433,20 @@ class InputOutput(EventDispatcher):
     def _update_plot_pars(self, *_):
         """
         Check connected sensors and status
-
-        # TODO: dont copy to dict but directly link to shared values? 
         """
         if self.plot_micro != "Internal":
             dev = self.micro_controllers[self.plot_micro]
+            if dev.name != self.plot_micro:
+                self.micro_controllers[dev.name] = self.micro_controllers.pop(self.plot_micro)
+                self.plot_micro = dev.name
+    
             sensors = {k: v for k, v in dev.sensors.items()
                        if v.connected}
             pars = dev.parameters
         else:
+            # internal sensors
             sensors, pars = get_connected_chips_and_pars(filter_pars=True)
+            sensors = {**{"CTRL": self.internalControl}, **sensors}
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
@@ -560,6 +595,9 @@ class InputOutput(EventDispatcher):
         # TODO: move the exceptions and functions to different file, maybe driver?
         if par[-1] == 'OIS Signal':
             par.append('OIS Stimulation Current')
+        
+        if par[-1] == "OIS_SIG":
+            par.append('OIS_STIM')
 
         # Get Data
         try:
@@ -592,13 +630,38 @@ class InputOutput(EventDispatcher):
     def connect_micro(self, micro):
         self.micro_controllers[micro.name] = micro
         micro.start_stop(False)   # force stop micro
+        self.plot_micro = micro.name
 
     def disconnect_micro(self, micro):
         del self.micro_controllers[micro.name]
 
     def toggle_micro(self, micro, *args):
-        self.plot_micro = micro
-        self._update_plot_pars()
+        if self.plot_micro != micro:
+            self.plot_micro = micro
+            self._update_plot_pars()
+    
+    def stop_all_stims(self, *args):
+        """
+        (Force) Stop all stimulation by sending stim 0, 0 to all sensors
+        """
+        
+        for m in self.micro_controllers.values():
+            for s in m.sensors.values():
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
+        
+        
+        for s in self.sensors.values():
+            if hasattr(s, "stim_control"):
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
+
 
     # NETWORK FUNCTIONS:
       # Data gather functions:
@@ -634,7 +697,7 @@ class InputOutput(EventDispatcher):
         - shape:    shape of array (only required if multiple dim)
         """
         data = np.frombuffer(data, dtype=dtype).reshape(shape)
-        _max_len = self.app.rec_vars.startrate * self.app.rec_vars.data_length
+        _max_len = self.rec_pars['samplerate'] * self.app.rec_vars.data_length
 
         if shape is not None:
             max_shape = (_max_len,) + shape[1:]
@@ -933,6 +996,7 @@ class InputOutput(EventDispatcher):
         runs on exit to clean up
         async clean is done in main_coro
         """
+        self.stop_all_stims()
         self.EXIT.set()
         self.stop_recording() if self.running else ...
 
@@ -944,6 +1008,10 @@ class InputOutput(EventDispatcher):
         self.shared_buffer.unlink_all()
 
         [chip.unlink() for chip in self._sensor_status.values()]
+    
+    def _internal_commands(self, value):
+        if "freq" in value:
+            self.internalControl.__dict__['freq'] = value['freq']  # do not use = her to set value -> trigger inf loop
 
 
 # TESTING
@@ -962,7 +1030,6 @@ if __name__ == '__main__':
             class RecVars():
                 pass
             self.rec_vars = RecVars()
-            self.rec_vars.startrate = 25600
             self.rec_vars.data_length = 3600
 
             self.root = self

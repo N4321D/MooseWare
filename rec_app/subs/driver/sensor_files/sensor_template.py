@@ -10,10 +10,10 @@ on RPI: Find address of chips with "i2cdetect -y 1" in terminal
 
 
 sensor.status indicates state of the sensor:
-0: N.C. / Error, sensor lost connection/ os error / ...
-1: Sensor connected, standby
-2: Sensor Recording / active
-3 - x: Extra sensor specific states (stimulating etc)
+-1 - ...: N.C. / Error, sensor lost connection/ os error / ...
+0: Sensor connected, standby
+1: Sensor Recording / active
+2 - x: Extra sensor specific states (stimulating etc)
 """
 
 # create logger
@@ -34,11 +34,14 @@ def log(message, level="info"):
 
 # imports
 try:
-    import smbus
-    import RPi.GPIO as GPIO
-
+    import smbus   # DO NOT USE SMBUS2
 except ModuleNotFoundError:
-    raise ImportError("\n SMBus  or GPIO not found...")
+    raise ImportError("\n SMBus not found")
+
+try:
+    import RPi.GPIO as GPIO
+except ModuleNotFoundError:
+    ImportError("RPi.GPIO not found")
 
 import time
 
@@ -75,7 +78,7 @@ class Sensor():
     datatype = {}
     
     shv = {                                  # shared values 
-           'status': 0,                     # interger which can be used to describe status of the chip e.g 0: standby, 1: recording, 2: stimulating
+           'status': -1,                     # interger which can be used to describe status of the chip e.g 0: standby, 1: recording, 2: stimulating
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                # dict with shared values name (key) and defaults (value) will be replaced with shared table on init
@@ -127,7 +130,7 @@ class Sensor():
         needs to return {'name of par': value}
         returns float('NaN') as value if disconnected
         """
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
         output = {}
         for key in self.out_vars:
             run = self.out_vars[key]
@@ -171,12 +174,12 @@ class Sensor():
                     
             # indicate succesful read/write command if failed before
             if self.disconnected:
-                self.shv.set(1, 'status', 0)
+                self.shv.set(0, 'status', 0)
                 self.disconnected = False
 
         except OSError as e:
             # indicate unsuccessful read/write command
-            self.shv.set(0, 'status', 0)
+            self.shv.set(-1, 'status', 0)
             self.disconnected = True
             if mode == 'read':
                 out = [self.errorout] * byte if byte else self.errorout
@@ -212,7 +215,6 @@ class Sensor():
             return int.from_bytes(input_bytes, byteorder=order, signed=signed)
     
     def reset(self):
-        # self.shv.set(0, 'status', 0)
         if self.reset_command["reg"] is not None:
             self.rw_byte(**self.reset_command, mode='write')
         else:
@@ -227,7 +229,7 @@ class Sensor():
         stops sensor
         """
         self._stop()
-        self.shv.set(1, 'status', 0)
+        self.shv.set(0, 'status', 0)
         self.shv.set(0, 'reset_count', 0)
         self.shv.set(0.0, 't_last_reset', 0)
 
@@ -248,7 +250,7 @@ class Sensor():
                 "type": "bool",
                 "desc": "Record data from this chip",
                 "section": self.name,
-                "key": "recording",
+                "key": "record",
             }
             ]
     
@@ -257,7 +259,7 @@ class Sensor():
         returns dict with default options for kivy settings panel
         """
 
-        return {"recording": self.record}
+        return {"record": self.record}
     
     def do_config(self, par, value):
         """

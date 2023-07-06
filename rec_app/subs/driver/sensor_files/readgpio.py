@@ -41,7 +41,7 @@ class ReadGpio(Sensor):
     gpio_pins_out_saved = {6: False}   # number of pin and start state
 
     # dict with shared values name (key) and defaults (value) will be replaced with shared table on init:
-    shv = {'status': 0,
+    shv = {'status': -1,
            'reset_count': 0,
            't_last_reset': 0.0,
            }                                                                    
@@ -112,23 +112,23 @@ class ReadGpio(Sensor):
 
     def whois(self):
         self.disconnected = False
-        self.shv.set(1, 'status', 0)
+        self.shv.set(0, 'status', 0)
         return 0x01
 
     def readself(self):
-        self.shv.set(2, 'status', 0)
+        self.shv.set(5, 'status', 0)
 
         output = {}
         for pin in self.gpio_pins_in:
             output[f'GPIO {pin}'] = GPIO.input(pin)
-        _status = 0 
+        _status = -1 
         
         for pin, state in self.gpio_pins_out_saved.items():
             output[f'GPIO {pin}'] = GPIO.input(pin)
             _status += output[f'GPIO {pin}']
         
         if _status > 0:
-            self.shv.set(4, 'status', 0)
+            self.shv.set(10, 'status', 0)
 
         self.disconnected = False
         
@@ -153,36 +153,10 @@ class ReadGpio(Sensor):
                   "type": "bool",
                   "desc": "Record data from GPIO ports",
                   "section": self.name,
-                  "key": "recording",
-                }] # + [
-                #   {# gpio pins
-                #    "title": f"GPIO {pin}: IN",
-                #    "type": "bool",
-                #    "desc": "record from this pin",
-                #    "section": self.name,
-                #    "key": str(pin),
-                #    } for pin in self.gpio_pins_in] + [
-                #   {# gpio pins
-                #    "title": f"GPIO {pin}: OUT",
-                #    "type": "bool",
-                #    "desc": "record from this pin",
-                #    "section": self.name,
-                #    "key": str(pin),
-                #    } for pin in self.gpio_pins_out_saved
-                #    ] 
+                  "key": "record",
+                }] 
             
         return panel
-    
-    # def do_config(self, par, value):
-    #     """
-    #     changes config based on input
-    #     from settings panel
-    #     """
-    #     print(par, value)
-    #     if par in self.gpio_pins_in and value is 0:
-    #         self.select_read_pins(self.gpio_pins_in.remove(par))
-    #     if par in self.gpio_pins_in and value is 1:
-    #         self.select_read_pins(self.gpio_pins_in.remove(par))
 
 
 if __name__ == "__main__":

@@ -35,14 +35,12 @@ except Exception as e:
 
 from subs.misc.shared_mem_np_dict import SharedTable
 
-
 # from subs.driver.sensor_files.temperature import TempSens
 from subs.driver.sensor_files.ois import LightSens
 from subs.driver.sensor_files.motion import MoSens
 from subs.driver.sensor_files.pressure import PressSens, PressExt
 from subs.driver.sensor_files.humidity import HumidityTemperature
 from subs.driver.sensor_files.lightstrip import LightStrip
-from subs.driver.sensor_files.gas import GasSens
 from subs.driver.sensor_files.readgpio import ReadGpio
 
 chip_d = {}     # dictionary that includes all chips
@@ -108,6 +106,7 @@ def get_connected_chips_and_pars(filter_pars=False):
 #
 # ========================
 
+
 class ReadWrite():
     """
     used to read and write bytes
@@ -161,6 +160,7 @@ def create_chip_dict(allvars={}):
 
 
 chip_d, shared_vars = create_chip_dict(allvars=vars())
+
 
 # datatypes:
 datatypes = {'default': 'f4',

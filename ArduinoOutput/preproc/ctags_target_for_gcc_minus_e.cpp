@@ -3,20 +3,23 @@
 // - RPI pico has 2 i2c controllers 0 (wire) and 1 (wire1), they can only use specific
 //    ports, refer to pinout which one can use __itimer_which
 //    if mixed up it will crash
-//  - I2C error codes are return as negative values, error codes are:
+//  - I2C error codes are return as negative values in status, error codes are:
 //        0: success.
-//        1: data too long to fit in transmit buffer.
-//        2: received NACK on transmit of address.
-//        3: received NACK on transmit of data.
-//        4: other error.
-//        5: timeout
+//        -1: data too long to fit in transmit buffer.
+//        -2: received NACK on transmit of address.
+//        -3: received NACK on transmit of data.
+//        -4: other error.
+//        -5: timeout
+//        -0x7F: other error
 
-# 14 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 15 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 16 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
+
+# 19 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // display
-# 19 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 22 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 
 
@@ -26,8 +29,8 @@
 Adafruit_SSD1306 display(128 /* OLED display width, in pixels*/, 64 /* OLED display height, in pixels*/, &Wire, -1 /* Reset pin # (or -1 if sharing Arduino reset pin)*/);
 
 // interrupt timer libs:
-# 29 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
-# 30 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 32 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 33 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 struct adjustableSettings
 {
@@ -46,6 +49,7 @@ struct textStr
   // struct with all text things
   const char *idle = "Standby...";
   const char *rec = "Recording...";
+  const char *defaultName = "RPI - Pico";
 };
 
 textStr texts;
@@ -60,10 +64,10 @@ DynamicJsonDocument doc_out(10 * 1024U);
 DynamicJsonDocument doc_in(10 * 1024U);
 
 // // init sensors
-# 63 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
-# 64 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
-# 65 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
-# 66 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 67 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 68 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 69 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 70 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
@@ -85,9 +89,9 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
-char NAME[32] = "RPI - Pico";
+char NAME[32];
 
-# 90 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 94 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);
@@ -237,6 +241,13 @@ void idle()
 
   feedback(texts.idle);
 
+  // send setup pars
+  doc_out.clear();
+  doc_out["idle"] = true;
+  JsonObject sens_json = doc_out.createNestedObject("CTRL");
+  sens_json["name"] = NAME;
+  sendData();
+
   // test connected sensors
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
@@ -247,7 +258,7 @@ void idle()
     ptrSensors[i]->getInfo(sens_json);
     sendData();
   };
-  delay(10);
+  delay(100);
 }
 
 void run()
@@ -302,12 +313,49 @@ void control(const char *key, JsonVariant value)
     settings.timer_freq_hz = freq;
     adjustFreq(freq);
   }
+
   if (strcmp(key, "run") == 0)
   {
     START = value.as<bool>();
     START ? run() : idle();
   }
+  if (strcmp(key, "name") == 0)
+  {
+    // strcpy(NAME, value.as<const char*>());
+    // feedback(NAME, 5, 20);
+    setName(value.as<const char *>());
+  }
 }
+
+void setName(const char *name)
+{
+  strcpy(NAME, name);
+  feedback(NAME, 5, 20);
+  // Save the name to EEPROM
+  EEPROM.put(0, NAME);
+  EEPROM.commit();
+};
+
+void loadName(){
+  // Saved data
+  char loadedData[sizeof(NAME)];
+  EEPROM.begin(sizeof(NAME));
+  EEPROM.get(0, loadedData);
+
+  // Check if the loaded data is empty or uninitialized
+  bool isEmpty = true;
+  for (int i = 0; i < sizeof(NAME); i++)
+  {
+    if (loadedData[i] != '\0')
+    {
+      isEmpty = false;
+      break;
+    }
+  }
+
+  // Use the loaded data if not empty, otherwise use the default value
+  setName(isEmpty ? texts.defaultName : loadedData);
+};
 
 void readInput()
 {
@@ -367,7 +415,6 @@ void setup()
   }
   display.clearDisplay();
 
-  feedback(NAME, 5, 0);
   feedback("Waiting for Serial");
 
   while (!Serial)
@@ -376,6 +423,8 @@ void setup()
     delay(10);
   }; // wait for serial
   Serial.println(welcome_text);
+
+  loadName();
 
   feedback("setting up i2c");
   // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!
