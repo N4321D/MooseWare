@@ -31,11 +31,11 @@ CW_BUT_BGR_LOST = 5, 0, 0, 1                            # sensor connection lost
 
 
 
-SENSOR_COLORS = {-1: GREY,                           # disconnected
-                 0: MO,                             # connected, standby
-                 5: GREEN_BRIGHT,                   # connected, recording
-                 # 2: GREEN_BRIGHT,                   # connected stimulating protocol on, but not stimulating
-                 10: BLUE,                           # STIM on
+SENSOR_COLORS = {-1: GREY,                   # disconnected
+                 0: MO,                      # connected, standby
+                 2: YELLOW,                  # connected starting up (e.g heating up etc.)
+                 5: GREEN_BRIGHT,            # connected, recording
+                 10: BLUE,                   # STIM on
                  }
 
 # OTHER:
@@ -43,7 +43,7 @@ SPLASH_SCREEN_TIMEOUT = 2
 
 # SETTINGS (change able in settings)
 # TODO: replace other vars with these ones
-SETTINGS_VAR = {"Main": {"app_version": "2.50.0",
+SETTINGS_VAR = {"Main": {"app_version": "2.51.0",
                          'title': "MooseWare",
                          'app_logo': '└┘┘┘┘=|◶◶|=└└└└┘',
                          }
