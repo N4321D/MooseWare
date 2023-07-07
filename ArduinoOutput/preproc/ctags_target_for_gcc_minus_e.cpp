@@ -68,12 +68,17 @@ DynamicJsonDocument doc_in(10 * 1024U);
 # 68 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 69 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 70 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 71 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 72 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 73 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
+static AmmoniaSensor ammsensor(Wire1);
+static OxygenSensor o2sensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor};
+static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor,&o2sensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock
@@ -91,7 +96,7 @@ bool START = false;
 
 char NAME[32];
 
-# 94 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 99 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);

@@ -1,6 +1,7 @@
 #line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/ois.h"
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
 
+
 class OISSensor : public I2CSensor
 {
 private:
@@ -139,7 +140,7 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        js["SIG"] = (float)sampled_data[1] / 0xFFFF;
+        js["SIG"] = (float)sampled_data[1] / 0xFFFF; 
         js["BGR"] = (float)sampled_data[0] / 0xFFFF;
         js["STIM"] = stim_amp;
     }

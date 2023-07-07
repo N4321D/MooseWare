@@ -4,8 +4,6 @@
  * 
  * */ 
 
-// #include "i2csensor.h"
-
 class MOTSensor : public I2CSensor
 {
 private:
@@ -40,6 +38,18 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[3], "LX");
         strcpy(PARAMETER_SHORT_NAMES[4], "LY");
         strcpy(PARAMETER_SHORT_NAMES[5], "LZ");
+        control_str = "["
+            "{\"title\": \"Angular Sensitivity\","
+            "\"type\": \"options\","
+            "\"desc\": \"Sensitivity of the angular movement sensor\","
+            "\"key\": \"ang_sens\"},"
+            "\"options\": [\"2.18 rad./s\", \"4.36 rad./s\", \"8.73 rad./s\", \"17.45 rad./s\", \"34.91 rad./s\"],"
+            "{\"title\": \"Linear Sensitivity\","
+            "\"type\": \"options\","
+            "\"desc\": \"Sensitivity of the linear movement sensor\","
+            "\"key\": \"lin_sens\","
+            "\"options\": [\"2 g\", \"4 g\", \"8 g\", \"16 g\",]"
+            "]";
 
     }
 
