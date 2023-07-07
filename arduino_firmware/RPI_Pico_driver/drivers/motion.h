@@ -40,14 +40,14 @@ public:
         control_str = "["
             "{\"title\": \"Angular Sensitivity\","
             "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the angular movement sensor\","
+            "\"desc\": \"Sensitivity of the angular movement sensor in rad/s.\","
             "\"key\": \"a_sens\"},"
-            "\"options\": [\"2.18 rad./s\", \"4.36 rad./s\", \"8.73 rad./s\", \"17.45 rad./s\", \"34.91 rad./s\"],"
+            "\"options\": [2.18, 4.36, 8.73, 17.45, 34.91],"
             "{\"title\": \"Linear Sensitivity\","
             "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the linear movement sensor\","
+            "\"desc\": \"Sensitivity of the linear movement sensor in g\","
             "\"key\": \"l_sens\","
-            "\"options\": [\"2 g\", \"4 g\", \"8 g\", \"16 g\",]"
+            "\"options\": [2, 4, 8, 16,]"
             "]";
 
     }
