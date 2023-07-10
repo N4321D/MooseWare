@@ -635,7 +635,7 @@ class FileManager(FloatLayout):
             return
 
         action_list, txt = [], f"{operation} Please Wait..."
-        self.fb_lbl.text = "{operation}...\nPlease Wait"
+        self.fb_lbl.text = f"{operation}...\nPlease Wait"
 
         if operation == 'Delete':
             def act(src):
