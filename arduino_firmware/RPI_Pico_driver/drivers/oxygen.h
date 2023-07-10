@@ -22,7 +22,7 @@ class OxygenSensor : public GasSensor
     {
         strcpy(NAME, "Oxygen Resistance Sensor");
         strcpy(SHORT_NAME, "O2");
-        ADDRESS = 0x05;
+        ADDRESS = 0x74;
         strcpy(PARAMETER_NAMES[1], "Percent by Volume");
         strcpy(PARAMETER_SHORT_NAMES[1], "% Vol");
     }
