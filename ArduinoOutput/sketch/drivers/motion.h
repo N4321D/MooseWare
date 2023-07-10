@@ -41,14 +41,14 @@ public:
         control_str = "["
             "{\"title\": \"Angular Sensitivity\","
             "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the angular movement sensor\","
-            "\"key\": \"ang_sens\"},"
-            "\"options\": [\"2.18 rad./s\", \"4.36 rad./s\", \"8.73 rad./s\", \"17.45 rad./s\", \"34.91 rad./s\"],"
+            "\"desc\": \"Sensitivity of the angular movement sensor in rad/s.\","
+            "\"key\": \"a_sens\"},"
+            "\"options\": [2.18, 4.36, 8.73, 17.45, 34.91],"
             "{\"title\": \"Linear Sensitivity\","
             "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the linear movement sensor\","
-            "\"key\": \"lin_sens\","
-            "\"options\": [\"2 g\", \"4 g\", \"8 g\", \"16 g\",]"
+            "\"desc\": \"Sensitivity of the linear movement sensor in g\","
+            "\"key\": \"l_sens\","
+            "\"options\": [2, 4, 8, 16,]"
             "]";
 
     }
@@ -125,7 +125,7 @@ public:
     {
         // incoming commandands are processed here
 
-        // set led amps
+        // set sensitivity
         if (strcmp(key, "a_sens") == 0) set_ang_sensitivity(value.as<unsigned short>());
         if (strcmp(key, "l_sens") == 0) set_lin_sensitivity(value.as<unsigned short>());
     }
