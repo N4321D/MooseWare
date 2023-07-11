@@ -121,7 +121,6 @@ public:
                 };
             };
         };
-        Serial.println(lin_sensitivity);
         writeI2C(ADDRESS, 0x10, &lin_sens_bytes[lin_sensitivity], 1);
     }
 

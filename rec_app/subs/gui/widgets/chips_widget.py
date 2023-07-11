@@ -168,6 +168,7 @@ class ChipWidget(BoxLayout):
 
             except:
                 status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
+
             if status_color < -1:
                 status_color = -1
             
@@ -183,7 +184,8 @@ class ChipWidget(BoxLayout):
             if _resets and self.app.IO.running:
                 bg_col = (*CW_BUT_BGR_RES[:3], 0.3 if not _live_widget else 0.6)
             
-            if status_color < 0 and self.app.IO.running:
+            if (status_color < 0 and self.app.IO.running 
+                and self.chip_labels[chip].chip.connected):
                 bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
 
             if self.chip_labels[chip].background_color != bg_col:

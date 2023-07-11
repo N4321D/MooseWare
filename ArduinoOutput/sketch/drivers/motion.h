@@ -92,7 +92,6 @@ public:
     };
 
     // chip specific functions
-
     void set_ang_sensitivity(float sensitivity = 0.0)
     {
         if (sensitivity != 0.0)
@@ -123,7 +122,6 @@ public:
                 };
             };
         };
-        Serial.println(lin_sensitivity);
         writeI2C(ADDRESS, 0x10, &lin_sens_bytes[lin_sensitivity], 1);
     }
 
