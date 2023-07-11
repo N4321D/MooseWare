@@ -458,7 +458,7 @@ class SettingOptions_Scrollview(SettingOptions):
         uid = str(self.uid)
         for option in self.options:
             state = 'down' if option == self.value else 'normal'
-            btn = SettingsToggle(text=option, state=state, group=uid,
+            btn = SettingsToggle(text=str(option), state=state, group=uid,
                                size_hint_y=None, height='40sp')
             btn.bind(on_release=self._set_option)
             content.add_widget(btn)
