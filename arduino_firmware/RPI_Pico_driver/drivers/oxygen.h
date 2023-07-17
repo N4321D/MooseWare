@@ -37,6 +37,7 @@ class OxygenSensor : public GasSensor
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
         readI2C(ADDRESS, 0, 9, outputbuffer);
+        readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);

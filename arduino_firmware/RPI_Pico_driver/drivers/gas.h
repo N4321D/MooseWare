@@ -94,9 +94,11 @@ class GasSensor : public I2CSensor
         {
             sampled_data[0] = -1;
             sampled_data[1] = -1;
+            STATUS = 2; //heating up
             if(endtime <= millis())
             {
                 heatingUp = false;
+                STATUS = 0; //done heating up
             }
             //status = 2;
         }
