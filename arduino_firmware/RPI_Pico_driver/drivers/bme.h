@@ -2,9 +2,9 @@
 // BME Gas Sensor 
 
 
-#include <i2csensor.h>>
+//#include <i2csensor.h>>
 
-class BMEsensor : public I2CSensor
+class BMESensor : public I2CSensor
 {
     private:
     public:
@@ -15,6 +15,7 @@ class BMEsensor : public I2CSensor
         // int16_t sampled_data[2];
         HUM_REG = 0x26;
         TMP_REG = 0x23;
+        float t_fine;
         float sampled_data [4];//temporary solution
 
 
@@ -65,20 +66,43 @@ class BMEsensor : public I2CSensor
     }   
 
 
-    float calcTempC(){
-        var1 = (temp_adc >> 3) - (par_t1 << 1)
-        var2 = (var1 * par_t2) >> 11
-        var3 = ((var1 >> 1) * (var1 >> 1)) >> 12
-        var3 = ((var3) * (par_t3 << 4)) >> 14
-        t_fine = var2 + var3 # + int(math.copysign((((int(abs(120.85) * 100)) << 8) - 128) / 5, 120.85))
-        calc_temp = (((t_fine * 5) + 128) >> 8)
-        if calc_temp < 0:
-            calc_temp = (1 << 32) + calc_temp
-        return calc_temp
+    float calcTempC(uint32_t temp_adc, float par_t1, float par_t2, float par_t3){
+    	float var1 = 0;
+	    float var2 = 0;
+	    float calc_temp = 0;
+
+	/* calculate var1 data */
+	    var1  = ((((float)temp_adc / 16384.0f) - ((float)par_t1 / 1024.0f))* ((float)par_t2));
+
+	/* calculate var2 data */
+	    var2  = (((((float)temp_adc / 131072.0f) - ((float)par_t1 / 8192.0f)) * (((float)temp_adc / 131072.0f) - ((float)par_t1 / 8192.0f))) * ((float)par_t3 * 16.0f));
+
+	/* t_fine value*/
+	    t_fine = (var1 + var2);
+
+	/* compensated temperature data*/
+	    calc_temp  = ((t_fine) / 5120.0f);
+
+	    return calc_temp;
+
     }
 
-    float readGasConcPPM(){
+    float readGasConcPPM(uint16_t gas_res_adc, uint8_t gas_range,){
+	    float calc_gas_res;
+	    float var1 = 0;
+	    float var2 = 0;
+	    float var3 = 0;
 
+	   // const float lookup_k1_range[16] = {0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, -0.8,0.0, 0.0, -0.2, -0.5, 0.0, -1.0, 0.0, 0.0};
+	   // const float lookup_k2_range[16] = {0.0, 0.0, 0.0, 0.0, 0.1, 0.7, 0.0, -0.8,-0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; ?????
+
+	    var1 = (1340.0f + (5.0f * dev->calib.range_sw_err));
+	    var2 = (var1) * (1.0f + lookup_k1_range[gas_range]/100.0f);
+	    var3 = 1.0f + (lookup_k2_range[gas_range]/100.0f);
+
+	    calc_gas_res = 1.0f / (float)(var3 * (0.000000125f) * (float)(1 << gas_range) * (((((float)gas_res_adc) - 512.0f)/var2) + 1.0f));
+
+	    return calc_gas_res;
     }
 
     float readHumidity(){
@@ -89,4 +113,4 @@ class BMEsensor : public I2CSensor
         
     }
 
-    };
+};
