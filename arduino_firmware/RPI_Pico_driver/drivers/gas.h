@@ -75,6 +75,11 @@ class GasSensor : public I2CSensor
     void init()
     {
         //changeI2CAddr(0x78);
+       // test_connection();
+       // if(connected && startup)
+      //  {
+       //     wire->setClock(100000); Not sure if this works yet...
+      //  }
         if(startup){
             heatingUp = true;
             endtime = millis() + 3000;
