@@ -80,6 +80,8 @@ kv_str = """
         valign: "center"
         on_text:
             root.toggle_micro(self.text)
+        on_types:
+            root.micro_disconnect(self.text)
 
 
     Label:
@@ -468,3 +470,7 @@ class RecScreen(Scr):
     def toggle_micro(self, micro):
         self.ids['chip_widget'].create_buttons()
         self.app.IO.toggle_micro(micro)
+
+    def micro_disconnect(self, micro):
+        if micro not in self.ids.microbutt.types: 
+            self.toggle_micro(self.ids.microbutt.types[-1])

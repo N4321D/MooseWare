@@ -253,7 +253,7 @@ class DummyMicro(EventDispatcher):
     disconnected = False
 
     recv_buff = []
-    name = "TEST_MICRO"
+    name = "TEST MICRO"
 
     _rec_dt = 1/256
 
@@ -343,12 +343,12 @@ class DummyMicro(EventDispatcher):
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
                 )
             )
-            self.recv_buff.append(
-                json.dumps(
-                    {"idle": True,
-                     "CTRL": {"name": "test"}}
-                )
-            )
+            # self.recv_buff.append(
+            #     json.dumps(
+            #         {"idle": True,
+            #          "CTRL": {"name": self.name}}
+            #     )
+            # )
         self.do()
 
 

@@ -1,8 +1,8 @@
 #line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/motion.h"
 /**
  * Driver for movement sensor LMS6DS3
- * 
- * */ 
+ *
+ * */
 
 class MOTSensor : public I2CSensor
 {
@@ -39,18 +39,17 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[4], "LY");
         strcpy(PARAMETER_SHORT_NAMES[5], "LZ");
         control_str = "["
-            "{\"title\": \"Angular Sensitivity\","
-            "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the angular movement sensor\","
-            "\"key\": \"ang_sens\"},"
-            "\"options\": [\"2.18 rad./s\", \"4.36 rad./s\", \"8.73 rad./s\", \"17.45 rad./s\", \"34.91 rad./s\"],"
-            "{\"title\": \"Linear Sensitivity\","
-            "\"type\": \"options\","
-            "\"desc\": \"Sensitivity of the linear movement sensor\","
-            "\"key\": \"lin_sens\","
-            "\"options\": [\"2 g\", \"4 g\", \"8 g\", \"16 g\",]"
-            "]";
-
+                      "{\"title\": \"Angular Sensitivity\","
+                      "\"type\": \"options\","
+                      "\"desc\": \"Sensitivity of the angular movement sensor in rad/s.\","
+                      "\"key\": \"asens\","
+                      "\"options\": [2.18, 4.36, 8.73, 17.45, 34.91]},"
+                      "{\"title\": \"Linear Sensitivity\","
+                      "\"type\": \"options\","
+                      "\"desc\": \"Sensitivity of the linear movement sensor in g\","
+                      "\"key\": \"lsens\","
+                      "\"options\": [2, 4, 8, 16]}"
+                      "]";
     }
 
     void init()
@@ -93,16 +92,36 @@ public:
     };
 
     // chip specific functions
-
-    void set_ang_sensitivity(byte sensitivity = 0xff)
-    {   
-        if (sensitivity != 0xff) ang_sensitivity = sensitivity;
+    void set_ang_sensitivity(float sensitivity = 0.0)
+    {
+        if (sensitivity != 0.0)
+        {
+            // find position of value in index
+            for (byte i = 0; i < 6; i++)
+            {
+                if (sensitivity == ang_sens_vals[i])
+                {
+                    ang_sensitivity = i;
+                    break;
+                };
+            };
+        };
         writeI2C(ADDRESS, 0x11, &ang_sens_bytes[ang_sensitivity], 1);
     }
 
     void set_lin_sensitivity(byte sensitivity = 0xff)
     {
-        if (sensitivity != 0xff) lin_sensitivity = sensitivity;
+        if (sensitivity != 0xff){
+            // find position of value in index
+            for (byte i = 0; i < 5; i++)
+            {
+                if (sensitivity == lin_sens_vals[i])
+                {
+                    lin_sensitivity = i;
+                    break;
+                };
+            };
+        };
         writeI2C(ADDRESS, 0x10, &lin_sens_bytes[lin_sensitivity], 1);
     }
 
@@ -115,9 +134,12 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        for (byte i=0; i < N_PARS; i++){
-            if (i<3) js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * ang_sens_vals[ang_sensitivity];
-            else js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * lin_sens_vals[lin_sensitivity] * 2;  // *2 is because range is +/-
+        for (byte i = 0; i < N_PARS; i++)
+        {
+            if (i < 3)
+                js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * ang_sens_vals[ang_sensitivity];
+            else
+                js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * lin_sens_vals[lin_sensitivity] * 2; // *2 is because range is +/-
         };
     }
 
@@ -125,8 +147,10 @@ public:
     {
         // incoming commandands are processed here
 
-        // set led amps
-        if (strcmp(key, "a_sens") == 0) set_ang_sensitivity(value.as<unsigned short>());
-        if (strcmp(key, "l_sens") == 0) set_lin_sensitivity(value.as<unsigned short>());
+        // set sensitivity
+        if (strcmp(key, "asens") == 0)
+            set_ang_sensitivity(value.as<float>());
+        if (strcmp(key, "lsens") == 0)
+            set_lin_sensitivity(value.as<unsigned short>());
     }
 };

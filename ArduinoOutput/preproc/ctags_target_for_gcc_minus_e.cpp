@@ -263,7 +263,7 @@ void idle()
     ptrSensors[i]->getInfo(sens_json);
     sendData();
   };
-  delay(100);
+  delay(10);
 }
 
 void run()
