@@ -63,6 +63,7 @@ class GasSensor : public I2CSensor
         for(j=0;j<(ln-2);j++)
         {
             tempq+=*i;
+            
             i++;
         }
 
