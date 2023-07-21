@@ -70,14 +70,16 @@ DynamicJsonDocument doc_in(JSON_CAP);
 #include "drivers/pressure.h"
 #include "drivers/ammonia.h"
 #include "drivers/oxygen.h"
+#include "drivers/sgp.h"
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
 static AmmoniaSensor ammsensor(Wire1);
 static OxygenSensor o2sensor(Wire1);
+static SGPSensor sgpsensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor,&o2sensor};
+static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor,&o2sensor, &sgpsensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock

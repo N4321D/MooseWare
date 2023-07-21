@@ -63,6 +63,7 @@ class GasSensor : public I2CSensor
         for(j=0;j<(ln-2);j++)
         {
             tempq+=*i;
+            
             i++;
         }
 
@@ -75,6 +76,11 @@ class GasSensor : public I2CSensor
     void init()
     {
         //changeI2CAddr(0x78);
+       // test_connection();
+       // if(connected && startup)
+      //  {
+       //     wire->setClock(100000); Not sure if this works yet...
+      //  }
         if(startup){
             heatingUp = true;
             endtime = millis() + 3000;
@@ -94,9 +100,11 @@ class GasSensor : public I2CSensor
         {
             sampled_data[0] = -1;
             sampled_data[1] = -1;
+            STATUS = 2; //heating up
             if(endtime <= millis())
             {
                 heatingUp = false;
+                STATUS = 0; //done heating up
             }
             //status = 2;
         }

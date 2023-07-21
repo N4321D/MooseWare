@@ -37,10 +37,11 @@ class AmmoniaSensor : public GasSensor
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
         readI2C(ADDRESS, 0, 9, outputbuffer);
+        readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);
-            Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
+           // Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
         }
         if(tempComp == true){
             if (((_temp) > -40) && ((_temp) <= 0))
@@ -70,6 +71,7 @@ class AmmoniaSensor : public GasSensor
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
         readI2C(ADDRESS, 0, 9, outputbuffer);
+       // readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) != outputbuffer[8])
         {
             return 0.0;
@@ -82,6 +84,11 @@ class AmmoniaSensor : public GasSensor
         float Rth = Vpd3*10000/(3-Vpd3);
         float Tbeta = 1/(1/(273.15+25)+1/3380.13*log(Rth/10000))-273.15;
         //Serial.println(Tbeta);
+        if(Tbeta <= -273 && Tbeta >= -274)
+        {
+            error_count ++;
+            return 19.0;
+        }
         return Tbeta;
     }
 

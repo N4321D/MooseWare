@@ -22,7 +22,7 @@ class CarbonMonoxideSensor : public GasSensor
     {
         strcpy(NAME, "Carbon Monoxide Resistance Sensor");
         strcopy(SHORT_NAME, "CO");
-        ADDRESS = 0x04;
+        ADDRESS = 0x77;
         strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
@@ -40,7 +40,7 @@ class CarbonMonoxideSensor : public GasSensor
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);
-            Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
+           // Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
         }
         if(tempComp == true)
         {
