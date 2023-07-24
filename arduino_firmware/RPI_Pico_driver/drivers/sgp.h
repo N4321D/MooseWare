@@ -21,7 +21,7 @@ class SGPSensor : public I2CSensor
 
     SGPSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
-        strcpy(NAME, "Generic Gas Resistance Sensor");
+        strcpy(NAME, "Generic Gas Resistance 3Sensor");
         strcpy(SHORT_NAME, "SGP");        
         ADDRESS = 0x58;
         N_PARS = 1;
