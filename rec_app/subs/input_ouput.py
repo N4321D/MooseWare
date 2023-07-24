@@ -633,7 +633,8 @@ class InputOutput(EventDispatcher):
         self.plot_micro = micro.name
 
     def disconnect_micro(self, micro):
-        del self.micro_controllers[micro.name]
+        if micro.name in self.micro_controllers:
+            del self.micro_controllers[micro.name]
 
     def toggle_micro(self, micro, *args):
         if self.plot_micro != micro:
