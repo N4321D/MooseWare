@@ -22,7 +22,7 @@ class AmmoniaSensor : public GasSensor
     {
         strcpy(NAME, "Ammonia Resistance Sensor");
         strcpy(SHORT_NAME, "NH3");
-        ADDRESS = 0x77;
+        ADDRESS = 0x80;
         strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
@@ -39,7 +39,7 @@ class AmmoniaSensor : public GasSensor
         protocolstatus(_protocol);
         delay(200);
         readI2C(ADDRESS, 0, 9, outputbuffer);
-        readOutput(outputbuffer);
+        //readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {
             Con = (uint16_t)((outputbuffer[2]<<8) | outputbuffer[3]); 
@@ -80,8 +80,8 @@ class AmmoniaSensor : public GasSensor
         }       
 
         uint16_t temp_ADC = (uint16_t)((outputbuffer[2]<<8) | outputbuffer[3]); 
-        Serial.println("TEMP ADC");
-        Serial.println(temp_ADC);
+        //Serial.println("TEMP ADC");
+        //Serial.println(temp_ADC);
        //register is 0x87; need to get ADC value from chip
        // uint16_t temp_ADC = (recvbuf[2] << 8) + recvbuf[3];
         float Vpd3=3*(float)temp_ADC/1024;
