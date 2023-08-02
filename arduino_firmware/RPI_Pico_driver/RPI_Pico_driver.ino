@@ -60,7 +60,7 @@ adjustableSettings settings;
 char jsonString_out[JSON_CAP];
 
 DynamicJsonDocument doc_out(JSON_CAP);
-DynamicJsonDocument doc_in(JSON_CAP);
+DynamicJsonDocument doc_in(1024);
 
 // // init sensors
 #include "drivers/i2csensor.h"
@@ -378,7 +378,7 @@ void readInput()
 
     // If parsing succeeds, do stuff here
     if (!error)
-    { // do stuff here
+    { // process json object
       JsonObject root = doc_in.as<JsonObject>();
       for (JsonPair kv : root)
       {
