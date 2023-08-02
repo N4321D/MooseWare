@@ -1,11 +1,8 @@
-#include "Adafruit_Sensor.h"
-#include "Adafruit_BME680.h"
 // BME Gas Sensor 
-// Currenttly using Adafruit BME680 libraries
 
 //#include <i2csensor.h>>
 
-class MDBME : public I2CSensor
+class BMESensor : public I2CSensor
 {
     private:
     public:
@@ -24,7 +21,7 @@ class MDBME : public I2CSensor
         unsigned long endtime;
 
 
-    MDBME(TwoWire &wire_in) : I2CSensor(wire_in)
+    BMESensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
         bme = Adafruit_BME680();
         strcpy(NAME, "BME680 Gas Resistance Sensor");

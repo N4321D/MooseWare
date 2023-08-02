@@ -81,7 +81,7 @@ static AmmoniaSensor ammsensor(Wire1);
 static CarbonMonoxideSensor cosensor(Wire1);
 //static OxygenSensor o2sensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
-static MDBME bmesensor(Wire1);
+static BMESensor bmesensor(Wire1);
 // create sensor array
 static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor, &cosensor, &sgpsensor, &bmesensor};
 
