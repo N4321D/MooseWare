@@ -1,4 +1,4 @@
-
+ #include "Adafruit_SGP30.h"
  //for sgp30
 //{"CTRL": {"run": 1}}
 
@@ -16,12 +16,15 @@ class SGPSensor : public I2CSensor
         bool startup = true;
         bool heatingUp;
         unsigned long endtime;
-        int16_t sampled_data;
-        uint8_t junk[3];
+        uint16_t sampled_data;
+        int8_t junk[3];
+        Adafruit_SGP30 sgp;
+
 
     SGPSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
-        strcpy(NAME, "Generic Gas Resistance Sensor");
+        sgp = Adafruit_SGP30();
+        strcpy(NAME, "SGP Sensor");
         strcpy(SHORT_NAME, "SGP");        
         ADDRESS = 0x58;
         N_PARS = 1;
@@ -30,68 +33,69 @@ class SGPSensor : public I2CSensor
 
 
     }
-    
+
+
     void init()
     {
+        Serial.println("checkpoint 1");
         if(startup){
             heatingUp = true;
             endtime = millis() + 15000; //15 second heat up time
             startup = false;
         }
-        createInput(initial);
-        writeI2C(ADDRESS, initial, junk, sizeof(junk));
-
+        if(!sgp.begin()){Serial.println("Initialize fail");}
+        //createInput(init);
+        //writeI2C(ADDRESS, init, &input, sizeof(input));
     }
+
 
     void sample()
     {
-        if(heatingUp == true)
+        if(startup){init();}
+        Serial.println("checkpoint 1.5");
+        //if(!sgp.IAQmeasure()){Serial.println("Measure fail");}
+        Serial.println("checkpoint 2");
+        if(heatingUp)
         {
-             STATUS = 2; //heating up
-             //Serial.println("Boot up successful");
-             sampled_data = readGasConcPPM();
-
-            if(endtime <= millis())
-            {
-                heatingUp = false;
-                STATUS = 0; //done heating up
-            }
-            //status = 2;
+            endtime = millis() + 15000;
+            STATUS = 2; //heating up
         }
-        else
+        if(heatingUp && (endtime <= millis()))
         {
-            if(endtime <= millis())
-            {
-                sampled_data = readGasConcPPM();//Commands to get data
-                endtime = millis() + 1000;
-            }
-            // status = 5; //Sampling? maybe 0? dont remember
+            heatingUp = false;
+            STATUS = 0;
+        }
+        if(endtime <= millis())
+        {
+            if(!sgp.IAQmeasure()){Serial.println("Measure fail");}
+            sampled_data = sgp.TVOC;
+            endtime= millis() + 1000;
         }
 
+    }
+
+    void dataToJSON(JsonObject js)
+    {
+        for (byte i=0; i < N_PARS; i++){
+            js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data);
+            
+        };
     }
 
     void reset_procedure() //Note: NOT chpip specific
     {
         //Note this is a general call reset, which, according to the manufacturer's documentation, will work on any chip that supports this generic protocol
-        createInput(reset);
-        writeI2C(ADDRESS, reset, junk, sizeof(junk));
+        //createInput(reset);
+        //writeI2C(ADDRESS, reset, &input, sizeof(input));
     }
 
     int16_t readGasConcPPM()
     {
         int8_t outputbuffer[6]; //input buffer
         createInput(measure);
-        if(writeI2C(ADDRESS, measure, junk, sizeof(junk)))
-        {
-            Serial.println("Successful write of record command");
-        }
-        else{
-            Serial.println("record fail");
-        }
-        readI2C(ADDRESS, measure, 6, outputbuffer);
-        Serial.println(outputbuffer[2]);
-        Serial.println(outputbuffer[3]);
-        return ((outputbuffer[2] << 8) + outputbuffer[3]*1.0);
+        //writeI2C(ADDRESS, measure, &input, sizeof(input));
+        //readI2C(ADDRESS, measure, 6, outputbuffer);
+        return ((outputbuffer[2] << 8) + outputbuffer[3]);
     }
 
 
@@ -117,7 +121,7 @@ class SGPSensor : public I2CSensor
         for(int i =0; i < 2; i++)
         {
             crc ^= data[i];
-            for(uint8_t bit = 8; bit > 0; --bit)
+            for(uint8_t bit = 8; bit > 0; bit--)
             {
                 if(crc & 0x80)
                 {
@@ -132,14 +136,6 @@ class SGPSensor : public I2CSensor
         return crc;
     }
 
-    void dataToJSON(JsonObject js)
-    {
-        for (byte i=0; i < N_PARS; i++){
-            js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data);
-            
-        };
-    }
-
 
     void debug()
     {
@@ -148,4 +144,5 @@ class SGPSensor : public I2CSensor
             Serial.println(junk[y],HEX);
         }
     }
+
 };

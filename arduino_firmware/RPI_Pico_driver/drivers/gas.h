@@ -24,7 +24,7 @@ class GasSensor : public I2CSensor
         bool tempComp = false;
         bool heatingUp;
         unsigned long endtime;
-        float sampled_data[2];
+        uint16_t sampled_data[2];
 
     GasSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
@@ -76,11 +76,11 @@ class GasSensor : public I2CSensor
     void init()
     {
         //changeI2CAddr(0x78);
-       // test_connection();
-       // if(connected && startup)
-      //  {
-       //     wire->setClock(100000); Not sure if this works yet...
-      //  }
+        //test_connection();
+        //if(connected && startup)
+        //{
+         //   wire->setClock(100000); //Not sure if this works yet...
+        //}
         if(startup){
             heatingUp = true;
             endtime = millis() + 3000;
@@ -98,8 +98,8 @@ class GasSensor : public I2CSensor
 
         if(heatingUp == true)
         {
-            sampled_data[0] = -1;
-            sampled_data[1] = -1;
+            sampled_data[0] = 1;
+            sampled_data[1] = 1;
             STATUS = 2; //heating up
             if(endtime <= millis())
             {
@@ -133,9 +133,9 @@ class GasSensor : public I2CSensor
         inputbuffer[1] = tosend;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
-        protocolstatus(_protocol);
+        //protocolstatus(_protocol);
         readI2C(ADDRESS, 0, 9, (uint8_t *)&outputbuffer);
-        readOutput(outputbuffer);
+        //readOutput(outputbuffer);
         if (outputbuffer[2] == 1)
         {
             return true;
@@ -176,8 +176,8 @@ class GasSensor : public I2CSensor
             Serial.println("Mode change success(?)");
             return true;
         }
-        Serial.println(addr);
-        Serial.println(outputbuffer[2]);
+        //Serial.println(addr);
+       // Serial.println(outputbuffer[2]);
         return outputbuffer[2];
     }
 
@@ -200,14 +200,14 @@ class GasSensor : public I2CSensor
         return outputbuffer[2];
     }
 
-    virtual float readGasConcPPM(uint8_t _temp)
+    virtual uint16_t readGasConcPPM(uint8_t _temp)
     {//takes temp as a function of deg C
-        return 0.0;
+        return 0;
     }//For O2, No2, So2, O3, Cl2, divide by 10 
 
-    virtual float readTempC()
+    virtual uint16_t readTempC()
     {
-        return 0.0;
+        return 0;
     }
 
 
@@ -220,7 +220,7 @@ class GasSensor : public I2CSensor
     void dataToJSON(JsonObject js)
     {
         for (byte i=0; i < N_PARS; i++){
-            js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i]);
+            js[PARAMETER_SHORT_NAMES[i]] = (float)(sampled_data[i]);
             
         };
     }
