@@ -278,7 +278,7 @@ void run()
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
     ptrSensors[i]->init();
-    Serial.println("Init for index:"); Serial.print(i);
+    //Serial.println("Init for index:"); Serial.print(i);
   }
   adjustFreq(settings.timer_freq_hz);
 }
@@ -491,9 +491,9 @@ void loop()
   }
 
   // sample here:
-  Serial.println("presampled");
+  //Serial.println("presampled");
   sample();
-  Serial.println("sampled");
+  //Serial.println("sampled");
   sampleDT = micros() - loopStart;
 
   // send data over serial

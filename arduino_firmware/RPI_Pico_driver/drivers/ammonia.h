@@ -22,7 +22,7 @@ class AmmoniaSensor : public GasSensor
     {
         strcpy(NAME, "Ammonia Resistance Sensor");
         strcpy(SHORT_NAME, "NH3");
-        ADDRESS = 0x80;
+        ADDRESS = 0x01;
         strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
@@ -36,7 +36,7 @@ class AmmoniaSensor : public GasSensor
         inputbuffer[0] = GET_GAS_CONC;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
-        protocolstatus(_protocol);
+        //protocolstatus(_protocol);
         delay(200);
         readI2C(ADDRESS, 0, 9, outputbuffer);
         //readOutput(outputbuffer);

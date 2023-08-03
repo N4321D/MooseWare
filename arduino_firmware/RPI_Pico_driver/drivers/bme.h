@@ -13,8 +13,7 @@ class BMESensor : public I2CSensor
         // int16_t sampled_data[2];
         //HUM_REG = 0x26;
         //TMP_REG = 0x23;
-        Adafruit_BME680 bme;
-        float t_fine;
+          float t_fine;
         bool startup = true;
         bool heatingUp;
         float sampled_data [4];//temporary solution
@@ -23,7 +22,7 @@ class BMESensor : public I2CSensor
 
     BMESensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
-        bme = Adafruit_BME680();
+        //wire = &wire_in;
         strcpy(NAME, "BME680 Gas Resistance Sensor");
         strcpy(SHORT_NAME, "BME");
         ADDRESS = 0x77;
@@ -42,13 +41,12 @@ class BMESensor : public I2CSensor
     }
 
     void init(){
-        Serial.println("checkpoint 1");
+        //Serial.println("checkpoint 1");
         if(startup){
             heatingUp = true;
             endtime = millis() + 15000; //15 second heat up time
             startup = false;
         }
-        if(!bme.begin()){Serial.println("Initialize fail");}
         //Set hexadecimal values for Register 74 (controls osrs_t, osrs_p, and mode)
        // beginningregister74 = 0x24;
        
@@ -65,10 +63,9 @@ class BMESensor : public I2CSensor
     }
 
     void sample(){
-        if(startup){init();}
-        Serial.println("checkpoint 1.5");
+       // Serial.println("checkpoint 1.5");
         //if(!sgp.IAQmeasure()){Serial.println("Measure fail");}
-        Serial.println("checkpoint 2");
+       // Serial.println("checkpoint 2");
         if(heatingUp)
         {
             endtime = millis() + 15000;
@@ -81,11 +78,6 @@ class BMESensor : public I2CSensor
         }
         if(endtime <= millis())
         {
-            if(!bme.performReading()){Serial.println("Measure fail");}
-            sampled_data[0] = bme.gas_resistance / 1000.0;
-            sampled_data[1] = bme.temperature;
-            sampled_data[2] = bme.pressure / 100.0;
-            sampled_data[3] = bme.humidity;
             endtime= millis() + 1000;
         }
        //  if (readI2C(ADDRESS, 0, 0, &sampled_data))

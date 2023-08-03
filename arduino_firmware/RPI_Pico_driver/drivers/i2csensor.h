@@ -58,7 +58,6 @@ public:
     int8_t SENT_STATUS = 0;                 // status that was last reported
     bool connected = true;                  // indicate if sensor is disconnected or not
     bool record = true;                     // indicate if sensor needs to be recorded or not
-
     String control_str;
 
     // sensor specific
