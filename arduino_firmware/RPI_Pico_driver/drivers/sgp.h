@@ -18,7 +18,7 @@ class SGPSensor : public I2CSensor
         bool startup = true;
         bool heatingUp;
         bool tVOCmode;
-        bool sampleReady;
+        bool readSample;
         unsigned long endtime;
         unsigned long readDelay;
         uint16_t CO2buffer;
@@ -52,11 +52,12 @@ class SGPSensor : public I2CSensor
             delay(1000);
             heatingUp = true;
             tVOCmode = true;
-            sampleReady = false;
             endtime = millis() + 15000; //15 second heat up time
             startup = false;
             STATUS = 2;
+            readSample = false;
             Serial.println("Startup completed");
+            delay(1000);
         }
         Serial.println("init run");
           //createInput(init);
@@ -69,7 +70,11 @@ class SGPSensor : public I2CSensor
        // init();
        if(!startup)
        {
-            if(endtime <= millis()){STATUS = 0;}
+            if(heatingUp && (endtime <= millis()))
+            {
+                heatingUp = false;
+                STATUS = 0;
+            }
             Wire1.beginTransmission(ADDRESS);  // open com
             Wire1.write(0x20);                      // command start measurement (raw measurement is x2050), NO CRC needed
             Wire1.write(0x08);
@@ -85,8 +90,9 @@ class SGPSensor : public I2CSensor
       
             Serial.print(CO2buffer, DEC);
             Serial.print("\t");
-            Serial.println(CRCs[0], HEX);
-
+            Serial.println(CRCs[0], HEX);                           //*********************
+                                                                    //This method works out, but employs delaym which is problematic; sample loop below fixes this
+                                                                    //*********************
             Serial.print(sampled_data, DEC);
             Serial.print("\t");
             Serial.println(CRCs[1], HEX);
@@ -94,16 +100,14 @@ class SGPSensor : public I2CSensor
             delay(1000);
 
         }
-       // Serial.println("checkpoint 1.5");
-        //if(!sgp.IAQmeasure()){Serial.println("Measure fail");}
-       // Serial.println("checkpoint 2");
-       /* if(heatingUp && (endtime <= millis()))
-        {
-            heatingUp = false;
-            STATUS = 0;
-        }
 
-        if(endtime <= millis() && tVOCmode) //Write Command tVOC
+        //if(heatingUp && (endtime <= millis()))
+        //{
+           // heatingUp = false;
+          //  STATUS = 0;
+        //}
+
+        /*if(endtime <= millis() && tVOCmode) //Write Command tVOC
         {
             //sample: standard measurement of tVOC: calibrated based on H2 and Ethanol signals 
             Wire1.beginTransmission(ADDRESS);
@@ -111,18 +115,10 @@ class SGPSensor : public I2CSensor
             Wire1.write(measure);
             Wire1.endTransmission();
             //Delay of 12 ms needed
-            readDelay = millis() + 12;
+            readDelay = millis() + 20;
             endtime= millis() + 1000;
-            sampleReady = true;
-            Serial.println("Read completed");
-            delay(100);
-            CO2buffer = Wire1.read() <<8;
-            CO2buffer = Wire1.read();
-            CRCs[0] = Wire1.read();
-            sampled_data =Wire1.read() <<8;
-            sampled_data =Wire1.read();
-            sampleReady = false;
-            Serial.println("Write completed");            
+            Serial.println("Write completed");
+            readSample = true;        
         }
 
         if(endtime <= millis() && !tVOCmode) //Write Command Raw
@@ -135,11 +131,11 @@ class SGPSensor : public I2CSensor
             //Delay of 25 ms needed
             readDelay = millis() + 25;
             endtime= millis() + 1000;
-            sampleReady = true;
         }        
-
-        if(readDelay <= millis() && sampleReady) //Read data
+//(readDelay <= millis()) && readSample
+        if(true) //Read data
         {
+            delay(20);
             Serial.println(Wire1.requestFrom(ADDRESS, 6));
             //Wire1.requestFrom(ADDRESS, 6);
             CO2buffer = Wire1.read() <<8;
@@ -147,10 +143,15 @@ class SGPSensor : public I2CSensor
             CRCs[0] = Wire1.read();
             sampled_data =Wire1.read() <<8;
             sampled_data =Wire1.read();
-            sampleReady = false;
-            Serial.println("Write completed");
-        }
-        Serial.println("sample looped");*/
+            Serial.print(CO2buffer, DEC);
+            Serial.print("\t");
+            Serial.println(CRCs[0], HEX);   
+            Serial.print(sampled_data, DEC);
+            Serial.print("\t");
+            Serial.println(CRCs[1], HEX);
+            readSample = false;
+        }*/
+        Serial.println("sample looped");
     }
 
     void dataToJSON(JsonObject js)

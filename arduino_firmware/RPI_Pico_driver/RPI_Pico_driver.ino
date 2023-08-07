@@ -83,7 +83,7 @@ static CarbonMonoxideSensor cosensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
 static BMESensor bmesensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor, &cosensor, &sgpsensor, &bmesensor};
+static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &cosensor, &sgpsensor, &bmesensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock

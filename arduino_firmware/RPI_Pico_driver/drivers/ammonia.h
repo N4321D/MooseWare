@@ -22,7 +22,7 @@ class AmmoniaSensor : public GasSensor
     {
         strcpy(NAME, "Ammonia Resistance Sensor");
         strcpy(SHORT_NAME, "NH3");
-        ADDRESS = 0x01;
+        ADDRESS = 0x76;
         strcpy(PARAMETER_NAMES[1], "Parts per million, PPM");
         strcpy(PARAMETER_SHORT_NAMES[1], "PPM");
     }
