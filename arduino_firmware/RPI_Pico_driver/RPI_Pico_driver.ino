@@ -413,7 +413,7 @@ void setup()
   Wire.setSDA(0);        // Add these lines
   Wire.setSCL(1);        //
   Wire.begin();          //
-  Wire.setClock(100000); // i2c clockspeed (call after begin)
+  Wire.setClock(400000); // i2c clockspeed (call after begin)
   Wire.setTimeout(1);
 
   Serial.begin(100000);
@@ -442,7 +442,7 @@ void setup()
   Wire1.setSDA(2);
   Wire1.setSCL(3);
   Wire1.begin();
-  Wire1.setClock(100000); // i2c clockspeed (call after begin)
+  Wire1.setClock(400000); // i2c clockspeed (call after begin)
   Wire1.setTimeout(1);    // timeout in us
 
   // analog

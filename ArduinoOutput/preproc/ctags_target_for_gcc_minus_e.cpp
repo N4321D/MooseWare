@@ -72,15 +72,19 @@ DynamicJsonDocument doc_in(1024);
 # 72 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 73 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 74 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 75 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 76 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
 static AmmoniaSensor ammsensor(Wire1);
-static OxygenSensor o2sensor(Wire1);
+static CarbonMonoxideSensor cosensor(Wire1);
+//static OxygenSensor o2sensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
+static BMESensor bmesensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor,&o2sensor, &sgpsensor};
+static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor, &cosensor, &sgpsensor, &bmesensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock
@@ -98,7 +102,7 @@ bool START = false;
 
 char NAME[32];
 
-# 101 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 105 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);
@@ -275,6 +279,7 @@ void run()
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
     ptrSensors[i]->init();
+    //Serial.println("Init for index:"); Serial.print(i);
   }
   adjustFreq(settings.timer_freq_hz);
 }
@@ -374,7 +379,7 @@ void readInput()
 
     // If parsing succeeds, do stuff here
     if (!error)
-    { // do stuff here
+    { // process json object
       JsonObject root = doc_in.as<JsonObject>();
       for (JsonPair kv : root)
       {
@@ -412,7 +417,7 @@ void setup()
   Wire.setClock(400000); // i2c clockspeed (call after begin)
   Wire.setTimeout(1);
 
-  Serial.begin(4000000);
+  Serial.begin(100000);
   Serial.setTimeout(0); // set serial timeout in ms
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
@@ -487,7 +492,9 @@ void loop()
   }
 
   // sample here:
+  //Serial.println("presampled");
   sample();
+  //Serial.println("sampled");
   sampleDT = micros() - loopStart;
 
   // send data over serial
