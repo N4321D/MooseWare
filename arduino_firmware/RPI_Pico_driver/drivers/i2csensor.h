@@ -230,7 +230,7 @@ public:
             };
         }
         if (STATUS < 0 && _err == 0) STATUS = 0;
-        // if (_n_zeros  == numBytes) zero_count++;
+        if (_n_zeros  == numBytes) zero_count++;
         return true;
     }
 
