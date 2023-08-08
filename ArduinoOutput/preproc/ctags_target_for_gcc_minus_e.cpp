@@ -210,14 +210,7 @@ void sample()
     if (!ptrSensors[i]->connected || !ptrSensors[i]->record)
       continue;
 
-    // reset if needed
-    if (ptrSensors[i]->error_count) //> settings.loops_before_adjust / 10
-    {
-      ptrSensors[i]->reset();
-      ptrSensors[i]->init(); // do not put in driver, does not work for some reason..
-    }
-
-    ptrSensors[i]->trigger();
+    ptrSensors[i]->check_and_trigger(); // resets and triggers the sensors
   };
 
   // sample sensors

@@ -55,6 +55,10 @@ public:
     char PARAMETER_NAMES[MAX_PARS][16];      // name of parameters
     char PARAMETER_SHORT_NAMES[MAX_PARS][5]; // name of parameters
     uint error_count = 0;                    // count errors
+
+    byte zero_count = 0;                     // count zeros -> if multiple zeroes in a row, reset
+    byte zeros_treshold = 0xfd;              // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
+
     int8_t STATUS = 0;                      // current status 
     int8_t SENT_STATUS = 0;                 // status that was last reported
     bool connected = true;                  // indicate if sensor is disconnected or not
@@ -81,6 +85,11 @@ public:
     {
         // call to initialize sensor with correct settings
     }
+
+    void check_and_trigger(){
+        if (error_count || (zeros_treshold && (zero_count > zeros_treshold))) reset();
+        trigger();
+    };
 
     virtual void trigger()
     {
@@ -193,6 +202,9 @@ public:
         wire->beginTransmission(address);
         wire->write(reg);
         byte _err = wire->endTransmission();
+
+        byte _n_zeros = 0;
+
         if (_err > 0)
         {
             STATUS = -_err;
@@ -206,13 +218,20 @@ public:
             if (!reverse)
             {
                 byte_ptr[i] = wire->read();
+                if (byte_ptr[i] == 0){
+                    _n_zeros++;
+                };
             }
             else
             {
                 byte_ptr[numBytes - i - 1] = wire->read();
+                if (byte_ptr[numBytes - i - 1] == 0){
+                    _n_zeros++;
+                };
             };
         }
         if (STATUS < 0 && _err == 0) STATUS = 0;
+        // if (_n_zeros  == numBytes) zero_count++;
         return true;
     }
 
@@ -253,10 +272,10 @@ public:
     {
         // call to reset sensor, DO NOT OVERWRITE IN SUBCLASS
         STATUS = 0;
-
+        zero_count = 0;    // reset zero count
+        error_count = 0;
+        
         reset_procedure();
-        if (STATUS >= 0)
-            error_count = 0;
-        //init();
+        init();
     }
 };
