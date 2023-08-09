@@ -55,13 +55,13 @@ public:
     char PARAMETER_SHORT_NAMES[MAX_PARS][5]; // name of parameters
     uint error_count = 0;                    // count errors
 
-    byte zero_count = 0;                     // count zeros -> if multiple zeroes in a row, reset
-    byte zeros_treshold = 0xfd;              // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
+    byte zero_count = 0;        // count zeros -> if multiple zeroes in a row, reset
+    byte zeros_treshold = 0xfd; // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
 
-    int8_t STATUS = 0;                      // current status 
-    int8_t SENT_STATUS = 0;                 // status that was last reported
-    bool connected = true;                  // indicate if sensor is disconnected or not
-    bool record = true;                     // indicate if sensor needs to be recorded or not
+    int8_t STATUS = 0;      // current status
+    int8_t SENT_STATUS = 0; // status that was last reported
+    bool connected = true;  // indicate if sensor is disconnected or not
+    bool record = true;     // indicate if sensor needs to be recorded or not
     String control_str;
 
     // sensor specific
@@ -85,8 +85,10 @@ public:
         // call to initialize sensor with correct settings
     }
 
-    void check_and_trigger(){
-        if (error_count || (zeros_treshold && (zero_count > zeros_treshold))) reset();
+    void check_and_trigger()
+    {
+        if (error_count || (zeros_treshold && (zero_count > zeros_treshold)))
+            reset();
         trigger();
     };
 
@@ -112,12 +114,12 @@ public:
         // called by loop
         if (STATUS >= 0)
             dataToJSON(js);
-        if (STATUS != SENT_STATUS || STATUS < 0){
+        if (STATUS != SENT_STATUS || STATUS < 0)
+        {
             js["#ST"] = STATUS;
             SENT_STATUS = STATUS;
             dataToJSON(js);
-            };
-
+        };
     }
 
     void getInfo(JsonObject js)
@@ -152,16 +154,18 @@ public:
     }
 
     // this function processes common functions for all chips
-    // if the command is chip specific it is sent to the chip specific 
+    // if the command is chip specific it is sent to the chip specific
     // procCmd function
-    void doCmd(const char *key, JsonVariant value){
-        if (strcmp(key, "record") == 0){
+    void doCmd(const char *key, JsonVariant value)
+    {
+        if (strcmp(key, "record") == 0)
+        {
             record = value.as<bool>();
         }
-        else{
+        else
+        {
             procCmd(key, value);
-            };
-
+        };
     }
 
     virtual void procCmd(const char *key, JsonVariant value)
@@ -176,7 +180,7 @@ public:
 
     void test_connection()
     {
-        STATUS = 0;  // reset status
+        STATUS = 0; // reset status
         wire->beginTransmission(ADDRESS);
         STATUS = -wire->endTransmission();
         if (STATUS < 0)
@@ -217,20 +221,24 @@ public:
             if (!reverse)
             {
                 byte_ptr[i] = wire->read();
-                if (byte_ptr[i] == 0){
+                if (byte_ptr[i] == 0)
+                {
                     _n_zeros++;
                 };
             }
             else
             {
                 byte_ptr[numBytes - i - 1] = wire->read();
-                if (byte_ptr[numBytes - i - 1] == 0){
+                if (byte_ptr[numBytes - i - 1] == 0)
+                {
                     _n_zeros++;
                 };
             };
         }
-        if (STATUS < 0 && _err == 0) STATUS = 0;
-        if (_n_zeros  == numBytes) zero_count++;
+        if (STATUS < 0 && _err == 0)
+            STATUS = 0;
+        if (_n_zeros == numBytes)
+            zero_count++;
         return true;
     }
 
@@ -246,14 +254,16 @@ public:
     {
         wire->beginTransmission(address);
         wire->write(reg); // specify the register to write to
-        
+
         for (int i = 0; i < numBytes; i++)
         {
             wire->write(data[i]); // write each byte to the register
         }
         byte _err = wire->endTransmission();
-        if (_err > 0) STATUS = -_err;
-        if (STATUS < 0 && _err == 0) STATUS = 0;
+        if (_err > 0)
+            STATUS = -_err;
+        if (STATUS < 0 && _err == 0)
+            STATUS = 0;
         return (_err == 0);
     }
 
@@ -271,9 +281,8 @@ public:
     {
         // call to reset sensor, DO NOT OVERWRITE IN SUBCLASS
         STATUS = 0;
-        zero_count = 0;    // reset zero count
+        zero_count = 0; // reset zero count
         error_count = 0;
-        
         reset_procedure();
         init();
     }

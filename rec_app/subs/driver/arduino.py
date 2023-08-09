@@ -128,7 +128,7 @@ class Arduino():
 
     EXIT = asyncio.Event()                     # exit flag
     SCAN_DT = 1                                   # dt for usb scan
-    DEVICES = r'Adafruit ItsyBitsy M4|Pico.*Board CDC'    # regex to select devices
+    DEVICES = r'Adafruit ItsyBitsy M4|Pico.*Board CDC|Nano 33 BLE'    # regex to select devices
     BAUDRATE = 20_000_000
 
     def __init__(self, **kwargs) -> None:
