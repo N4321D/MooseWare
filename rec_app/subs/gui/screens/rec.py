@@ -274,9 +274,6 @@ class RecScreen(Scr):
         self.app.IO.bind(plot_micro=lambda *x: setattr(self.ids['microbutt'], 'text', 
                                                        self.app.IO.plot_micro))
 
-        # bind ois_ma to change OIS function
-        self.app.rec_vars.bind(ois_ma=lambda inst, val: self.plusminbut('ledma', val))
-
         Clock.schedule_once(self.__kv_init__, 0)
     
     def __kv_init__(self, *_):
@@ -285,7 +282,6 @@ class RecScreen(Scr):
         """
         self.app.root.bind(UTC=lambda *_: self.toggle_utc(self.app.root.UTC))
         self.Button.start_detection()
-        self.plusminbut("ledma", self.app.rec_vars.ois_ma)
         return
 
     def main(self, *args, stop=False):

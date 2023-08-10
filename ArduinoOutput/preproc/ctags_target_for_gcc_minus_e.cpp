@@ -80,7 +80,7 @@ static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
 static AmmoniaSensor ammsensor(Wire1);
 static CarbonMonoxideSensor cosensor(Wire1);
-//static OxygenSensor o2sensor(Wire1);
+// static OxygenSensor o2sensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
 static BMESensor bmesensor(Wire1);
 // create sensor array
@@ -272,7 +272,7 @@ void run()
   for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++)
   {
     ptrSensors[i]->init();
-    //Serial.println("Init for index:"); Serial.print(i);
+    // Serial.println("Init for index:"); Serial.print(i);
   }
   adjustFreq(settings.timer_freq_hz);
 }
@@ -341,7 +341,8 @@ void setName(const char *name)
   EEPROM.commit();
 };
 
-void loadName(){
+void loadName()
+{
   // Saved data
   char loadedData[sizeof(NAME)];
   EEPROM.begin(sizeof(NAME));
@@ -485,9 +486,9 @@ void loop()
   }
 
   // sample here:
-  //Serial.println("presampled");
+  // Serial.println("presampled");
   sample();
-  //Serial.println("sampled");
+  // Serial.println("sampled");
   sampleDT = micros() - loopStart;
 
   // send data over serial

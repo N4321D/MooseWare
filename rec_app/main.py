@@ -131,7 +131,6 @@ class RecVars(EventDispatcher):
     hdf_compression_strenght = ConfigParserProperty(5, 'recording', "hdf_compression_strenght", "app_config", val_type=int)
     hdf_fletcher32 = ConfigParserProperty(True, 'recording', "hdf_fletcher32", "app_config", val_type=val_type_loader)
     hdf_shuffle = ConfigParserProperty(True, 'recording', "hdf_shuffle", "app_config", val_type=val_type_loader)
-    ois_ma = ConfigParserProperty(5, 'recording', "ois_ma", "app_config", val_type=int)
     
     def __init__(self, val_dict, **kwargs):
         self.app = App.get_running_app()
@@ -145,21 +144,6 @@ class RecVars(EventDispatcher):
         self.bind(hdf_compression_strenght=lambda inst, val: self.set_val('hdf_compression_strenght', val))
         self.bind(hdf_fletcher32=lambda inst, val: self.set_val('hdf_fletcher32', val))
         self.bind(hdf_shuffle=lambda inst, val: self.set_val('hdf_shuffle', val))
-        self.bind(ois_ma=lambda inst, val: self.set_val('ois_ma', val))
-
-        # FOR "LIVE" variables also add this:
-        self.bind(ois_ma=self.change_ois)
-    
-    def change_ois(self, inst, val):
-        """
-        temporary solution for live vars:
-        they need to be set in chip_d when not running and via RECORDER 
-        when running. 
-        TODO: find a better way to handle live vars (such as OIS mA)
-        """
-        if self.app:
-            self.app.IO.chip_command('OIS', 'ledcontrol', 'pulse', (val, val))
-
 
     def set_val(self, key, val):
         """

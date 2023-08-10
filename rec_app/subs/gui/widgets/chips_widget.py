@@ -249,7 +249,10 @@ class ChipPanel(MySettingsWithNoMenu):
                 # Value is string
                 pass
 
-        self.chip.do_config(option, value)
+        if self.parent_button.app.IO.plot_micro == "Internal" and self.parent_button.app.IO.running:
+            self.parent_button.app.IO.chip_command(self.chip.name, "do_config", option, value)
+        else:
+            self.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
         """

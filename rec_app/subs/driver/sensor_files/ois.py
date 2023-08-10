@@ -240,7 +240,6 @@ class LightSens(Sensor):
             dur (float): duration in ms
             amp (float): amp in %
         """
-        print(amp, dur, "STIM")
         dur /= 1e3
         amp = (amp / 100) * 65
         self.set_stim_protocol([(0, dur, amp)])
@@ -360,6 +359,9 @@ class LightSens(Sensor):
                  ]
         return panel
 
+    def do_config(self, par, value):
+        if par == "ois_ma":
+            self.ledcontrol("pulse", value)
 
 if __name__ == "__main__":
     l = LightSens()
