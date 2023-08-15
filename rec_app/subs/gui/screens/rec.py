@@ -323,7 +323,6 @@ class RecScreen(Scr):
             # get value
             out = {'time': self.app.IO.secondsback,
                    'zoom': self.app.IO.yzoom,
-                   'ledma': self.app.rec_vars.ois_ma
                    }[func]
 
             # find step size
@@ -361,18 +360,6 @@ class RecScreen(Scr):
                 self.ids['yzoomin'].text = 'auto'
             else:
                 self.ids['yzoomin'].text = f'{self.app.IO.yzoom:.0f} %'
-
-        if func == 'ledma':
-            # limit mA within range:
-            if out < 0:
-                out = 0
-            if out > 60:
-                out = 60
-
-            self.app.rec_vars.ois_ma = out
-            if self.app.IO.running:
-                self.app.IO.add_note(f'Green LED power (mA): {out}')
-            self.app.IO.chip_command('OIS', 'ledcontrol', 'pulse', (out, out))
 
     def change_rec_name(self, name, *args):
         if (self.app.IO.running or not name
