@@ -79,11 +79,11 @@ static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
 static AmmoniaSensor ammsensor(Wire1);
 static CarbonMonoxideSensor cosensor(Wire1);
-//static OxygenSensor o2sensor(Wire1);
+static OxygenSensor o2sensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
 static BMESensor bmesensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &cosensor, &sgpsensor, &bmesensor};
+static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &cosensor, &ammsensor, &o2sensor, &sgpsensor, &bmesensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock
@@ -443,7 +443,7 @@ void setup()
   Wire1.setSCL(3);
   Wire1.begin();
   Wire1.setClock(100000); // i2c clockspeed (call after begin)
-  Wire1.setTimeout(1);    // timeout in us
+  //Wire1.setTimeout(1);    // timeout in us
 
   // analog
   // analogReference(DEFAULT); // set the reference voltage to 3.3V

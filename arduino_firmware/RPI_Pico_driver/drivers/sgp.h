@@ -56,10 +56,10 @@ class SGPSensor : public I2CSensor
             startup = false;
             STATUS = 2;
             readSample = false;
-            Serial.println("Startup completed");
+            //Serial.println("Startup completed");
             delay(1000);
         }
-        Serial.println("init run");
+        //Serial.println("init run");
           //createInput(init);
         //writeI2C(ADDRESS, init, &input, sizeof(input));
     }
@@ -80,7 +80,8 @@ class SGPSensor : public I2CSensor
             Wire1.write(0x08);
             Wire1.endTransmission();   // close transmission, has to be done so that chip starts the measurement
             delay(20);
-            Serial.println(Wire1.requestFrom(ADDRESS, 6)); //READ DATA
+            //Serial.println(Wire1.requestFrom(ADDRESS, 6)); //READ DATA
+            Wire1.requestFrom(ADDRESS, 6);
             CO2buffer = Wire1.read()<<8;
             CO2buffer += Wire1.read();
             CRCs[0] = Wire1.read();
@@ -88,15 +89,15 @@ class SGPSensor : public I2CSensor
             sampled_data += Wire1.read();
             CRCs[1] = Wire1.read();
       
-            Serial.print(CO2buffer, DEC);
-            Serial.print("\t");
-            Serial.println(CRCs[0], HEX);                           //*********************
+            //Serial.print(CO2buffer, DEC);
+           // Serial.print("\t");
+            //Serial.println(CRCs[0], HEX);                           //*********************
                                                                     //This method works out, but employs delaym which is problematic; sample loop below fixes this
                                                                     //*********************
-            Serial.print(sampled_data, DEC);
-            Serial.print("\t");
-            Serial.println(CRCs[1], HEX);
-            Serial.println("Write completed");  
+            //Serial.print(sampled_data, DEC);
+            //Serial.print("\t");
+            //Serial.println(CRCs[1], HEX);
+            //Serial.println("Write completed");  
             delay(1000);
 
         }
@@ -151,7 +152,7 @@ class SGPSensor : public I2CSensor
             Serial.println(CRCs[1], HEX);
             readSample = false;
         }*/
-        Serial.println("sample looped");
+        //Serial.println("sample looped");
     }
 
     void dataToJSON(JsonObject js)
@@ -160,6 +161,7 @@ class SGPSensor : public I2CSensor
             js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data);
             
         };
+        //sampled_data = 0;
     }
 
     void reset_procedure() //Note: NOT chpip specific

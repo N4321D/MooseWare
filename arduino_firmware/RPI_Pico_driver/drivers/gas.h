@@ -83,7 +83,7 @@ class GasSensor : public I2CSensor
         //}
         if(startup){
             heatingUp = true;
-            endtime = millis() + 3000;
+            endtime = millis() + 15000;
             startup = false;
         }
         //ADDRESS = 0x78;
