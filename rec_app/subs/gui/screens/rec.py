@@ -65,23 +65,23 @@ kv_str = """
             root.start_stop()
     
     DROPB:
-        id: microbutt
+        id: interfacebutt
         drop_but_font_size: '15sp'          # must be before types and text
         drop_but_size: '48sp'         # size of drop down buttons 
         font_size: '15sp'
         pos_hint: {'x': 0.7, 'top': 0.1}
         size_hint: (.2, .1)
-        text: app.IO.plot_micro
-        types: ['Internal', *app.IO.micro_controllers]
+        text: app.IO.selected_interface
+        types: ['Internal', *app.IO.interfaces]
         text_size: self.size
-        color: WHITE # if app.IO.plot_micro != "Internal" else MO
-        background_color: MO_BGR # if app.IO.plot_micro != "Internal" else BUT_BGR
+        color: WHITE # if app.IO.selected_interface != "Internal" else MO
+        background_color: MO_BGR # if app.IO.selected_interface != "Internal" else BUT_BGR
         halign: "center"
         valign: "center"
         on_text:
-            root.toggle_micro(self.text)
+            root.toggle_interface(self.text)
         on_types:
-            root.micro_disconnect(self.text)
+            root.interface_disconnect(self.text)
 
 
     Label:
@@ -266,13 +266,13 @@ class RecScreen(Scr):
         self.plotonoff_event = Clock.schedule_once(self.plotonoff, 0)
         
         # hardware button
-        self.Button = self.app.Button
-        self.Button.on_press = self.button_press
-        self.Button.on_release = self.button_release
+        # self.Button = self.app.Button
+        # self.Button.on_press = self.button_press
+        # self.Button.on_release = self.button_release
     
         self.app.IO.bind(sensor_status=self.ois_updates)
-        self.app.IO.bind(plot_micro=lambda *x: setattr(self.ids['microbutt'], 'text', 
-                                                       self.app.IO.plot_micro))
+        self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
+                                                       self.app.IO.selected_interface))
 
         Clock.schedule_once(self.__kv_init__, 0)
     
@@ -281,7 +281,7 @@ class RecScreen(Scr):
         init to run when kivy app is built
         """
         self.app.root.bind(UTC=lambda *_: self.toggle_utc(self.app.root.UTC))
-        self.Button.start_detection()
+        # self.Button.start_detection()
         return
 
     def main(self, *args, stop=False):
@@ -386,19 +386,19 @@ class RecScreen(Scr):
         if auto:
             return self.plotonoff_event()
 
-    def button_press(self, lastpresstime):
-        if not self.nudging:
-            self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, True)
-        else:
-            # stop wakeup protocol when pressing button
-            self.autostim.stop_wakeup_prot()
-            self.nudging = False
+    # def button_press(self, lastpresstime):
+    #     if not self.nudging:
+    #         self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, True)
+    #     else:
+    #         # stop wakeup protocol when pressing button
+    #         self.autostim.stop_wakeup_prot()
+    #         self.nudging = False
 
-    def button_release(self, touch_duration, *args):
-        if not self.nudging:
-            self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, False)
-            if self.app.IO.running:
-                self.app.IO.add_note(f'Button Pressed for {touch_duration:.2f} seconds')
+    # def button_release(self, touch_duration, *args):
+    #     if not self.nudging:
+    #         self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, False)
+    #         if self.app.IO.running:
+    #             self.app.IO.add_note(f'Button Pressed for {touch_duration:.2f} seconds')
 
     def ois_updates(self, *args):
         _i = self.app.IO.sensor_status["OIS:status"][0]        
@@ -450,10 +450,10 @@ class RecScreen(Scr):
         self.ids['graf1'].utc = utc
         self.ids['graf2'].utc = utc
 
-    def toggle_micro(self, micro):
+    def toggle_interface(self, interface):
         self.ids['chip_widget'].create_buttons()
-        self.app.IO.toggle_micro(micro)
+        self.app.IO.toggle_interface(interface)
 
-    def micro_disconnect(self, micro):
-        if micro not in self.ids.microbutt.types: 
-            self.toggle_micro(self.ids.microbutt.types[-1])
+    def interface_disconnect(self, interface):
+        if interface not in self.ids.interfacebutt.types: 
+            self.toggle_interface(self.ids.interfacebutt.types[-1])

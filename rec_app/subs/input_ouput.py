@@ -121,10 +121,10 @@ class InputOutput(EventDispatcher):
     choices = ListProperty([])
     # function to read & write directly to chips
     readwrite = ReadWrite()
-    # dictionary with connected microcontroller
-    micro_controllers = DictProperty({})
+    # dictionary with connected interfaces
+    interfaces = DictProperty({})
     # plot micro or internal sensors
-    plot_micro = StringProperty("Internal")
+    selected_interface = StringProperty("Internal")
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
@@ -257,7 +257,7 @@ class InputOutput(EventDispatcher):
         if self.client is not None:
             tasks.add(self.network_loop())
 
-        tasks.add(self.micro_loop())
+        tasks.add(self.interface_loop())
 
         # async execute all tasks here
         proc_async_exceptions(
@@ -311,10 +311,10 @@ class InputOutput(EventDispatcher):
 
                 self.rec_pr = self.rec.start()
 
-            # start micro controllers
-            for dev_name in self.micro_controllers:
-                if self.micro_controllers[dev_name].record:
-                    self.micro_controllers[dev_name].start_stop(True)
+            # start controllers
+            for dev_name in self.interfaces:
+                if self.interfaces[dev_name].record:
+                    self.interfaces[dev_name].start_stop(True)
 
             if save:
                 self.sav = Saver(recname=self.recording_name,
@@ -343,8 +343,8 @@ class InputOutput(EventDispatcher):
 
             self.stop_all_stims()
 
-            for dev_name in self.micro_controllers:
-                self.micro_controllers[dev_name].start_stop(False)
+            for dev_name in self.interfaces:
+                self.interfaces[dev_name].start_stop(False)
 
             if self.sav:
                 self.sav.stop()
@@ -434,11 +434,11 @@ class InputOutput(EventDispatcher):
         """
         Check connected sensors and status
         """
-        if self.plot_micro != "Internal":
-            dev = self.micro_controllers[self.plot_micro]
-            if dev.name != self.plot_micro:
-                self.micro_controllers[dev.name] = self.micro_controllers.pop(self.plot_micro)
-                self.plot_micro = dev.name
+        if self.selected_interface != "Internal":
+            dev = self.interfaces[self.selected_interface]
+            if dev.name != self.selected_interface:
+                self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
+                self.selected_interface = dev.name
     
             sensors = {k: v for k, v in dev.sensors.items()
                        if v.connected}
@@ -488,13 +488,13 @@ class InputOutput(EventDispatcher):
         - emarate: float, current exponential avg theoretical max sample rate
         """
     
-        if self.plot_micro == "Internal" and self.rec is not None:
+        if self.selected_interface == "Internal" and self.rec is not None:
             _new_pars = {k: self.rec.pars.get(k)[0]
                             for k in self.rec.pars.array.dtype.fields}
             self.rec_pars.update(_new_pars)
 
-        elif self.plot_micro != "Internal" and self.micro_controllers:
-            dev = self.micro_controllers[self.plot_micro]
+        elif self.selected_interface != "Internal" and self.interfaces:
+            dev = self.interfaces[self.selected_interface]
             _new_pars = {
                 "samplerate": dev.current_rate,
                 "emarate": dev.emarate,
@@ -523,8 +523,8 @@ class InputOutput(EventDispatcher):
         [('parameter', graph1, kwargs),
         ('parameter', graph2, kwargs), etc.]
         """
-        if self.plot_micro != "Internal":
-            plot_buff_name = self.plot_micro
+        if self.selected_interface != "Internal":
+            plot_buff_name = self.selected_interface
             
         else:
             plot_buff_name = "data"
@@ -612,33 +612,33 @@ class InputOutput(EventDispatcher):
             log(f"Parameter not in memory or no data yet: {e}", 'warning')
         
 
-    # Micro controllers
-    async def micro_loop(self):
+    # Interfaces
+    async def interface_loop(self):
         if self.app.TESTING:
             _controller = Controller(testing=True,
-                                     on_connect=self.connect_micro,
-                                     on_disconnect=self.disconnect_micro)
+                                     on_connect=self.connect_interface,
+                                     on_disconnect=self.disconnect_interface)
 
         while not self.EXIT.is_set():
             # print("\nCONNECT LOOP " *10)
             # setup micro contoller TODO: move to loop and add function to add mulitple controllers
             
-            _controller = Controller(on_connect=self.connect_micro,
-                                     on_disconnect=self.disconnect_micro)
+            _controller = Controller(on_connect=self.connect_interface,
+                                     on_disconnect=self.disconnect_interface)
             await _controller.async_start()
 
-    def connect_micro(self, micro):
-        self.micro_controllers[micro.name] = micro
-        micro.start_stop(False)   # force stop micro
-        self.plot_micro = micro.name
+    def connect_interface(self, interface):
+        self.interfaces[interface.name] = interface
+        interface.start_stop(False)   # force stop
+        self.selected_interface = interface.name
 
-    def disconnect_micro(self, micro):
-        if micro.name in self.micro_controllers:
-            del self.micro_controllers[micro.name]
+    def disconnect_interface(self, interface):
+        if interface.name in self.interfaces:
+            del self.interfaces[interface.name]
 
-    def toggle_micro(self, micro, *args):
-        if self.plot_micro != micro:
-            self.plot_micro = micro
+    def toggle_interface(self, interface, *args):
+        if self.selected_interface != interface:
+            self.selected_interface = interface
             self._update_plot_pars()
     
     def stop_all_stims(self, *args):
@@ -646,7 +646,7 @@ class InputOutput(EventDispatcher):
         (Force) Stop all stimulation by sending stim 0, 0 to all sensors
         """
         
-        for m in self.micro_controllers.values():
+        for m in self.interfaces.values():
             for s in m.sensors.values():
                 for sc in s.stim_control.values():
                     try:
@@ -1002,7 +1002,7 @@ class InputOutput(EventDispatcher):
         self.stop_recording() if self.running else ...
 
         # stop micro controllers
-        for dev in self.micro_controllers.values():
+        for dev in self.interfaces.values():
             dev.exit()
 
         self.shared_buffer.close_all()
