@@ -56,11 +56,11 @@ Copy / install arduino_firmware folder to RPI pico using arduino ide
 ## Contributing
 Contributions to this code are welcome! If you find bugs or want to add features, please follow these steps:
 
-Fork the repository.
-Create a new branch for your feature or bug fix.
-Make your changes and test them thoroughly.
-Commit your changes and push to your forked repository.
-Open a pull request to the main repository.
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and test them thoroughly.
+4. Commit your changes and push to your forked repository.
+5. Open a pull request to the main repository.
 
 ## License
 
