@@ -3,7 +3,7 @@ from subs.gui.misc.Stimulation import StimController
 
 class Chip():
     """
-    A class representing a chip device on microcontrollers
+    A class representing a chip device on an interface
 
     Attributes:
         controller (Controller): The controller object to which the chip is connected.
