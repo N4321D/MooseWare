@@ -36,8 +36,6 @@ Recording Software
 ## Description 
 Recording software to record from Neureflect inc. patented devices. This repository consists of micro controller drivers for RPI Pico written in C++ (Arduino IDE) and the control / GUI software which can run on multiple devices written in python.
 
-
-
 ## Installation
 ### GUI / Recording Software:
 Install python rec_app with poetry for easy installation:
@@ -47,11 +45,18 @@ Install python rec_app with poetry for easy installation:
 4. to start: make sure the poetry env is activated `poetry shell`, then go to the rec_app folder and run the main.py file
 
 ### Micro controller driver:
-Copy / install arduino_firmware folder to RPI pico using arduino ide
+To use this Arduino sketch, follow these steps:
+
+1. Install the Arduino IDE and the RPI pico board plugins if you haven't already.
+2. Open the Arduino IDE and create a new sketch.
+3. Load the contents of the provided `arduino_send_interrupt` folder into your new sketch.
+4. Install the latest versions of these libraries: "Adafruit_SSD1306", "Adafruit_GFX", "RPi_Pico_TimerInterrupt"  and "ArduinoJson" 
+5. Connect your RPi pico board to your computer.
+6. Select the appropriate board and port from the "Tools" menu.
+7. Upload the sketch to your board.
 
 ## Usage
 ...
-
 
 ## Contributing
 Contributions to this code are welcome! If you find bugs or want to add features, please follow these steps:
