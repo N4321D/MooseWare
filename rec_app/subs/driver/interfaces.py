@@ -13,13 +13,14 @@ from subs.recording.buffer import SharedBuffer
 from subs.driver.sensor_files.chip import Chip
 
 import numpy as np
-from numpy.lib import recfunctions as rfn
 
 from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
 
-# import numba
+# import internal chip stuff
+from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars, get_connected_chips
+
 
 # Logger
 from subs.log import create_logger
@@ -244,7 +245,6 @@ class Arduino():
     def stop(self):
         self.EXIT.set()
 
-
 class DummyMicro(EventDispatcher):
     """
     returns random data for testing
@@ -361,7 +361,6 @@ class DummyMicro(EventDispatcher):
         if self.recv_buff:
             return self.recv_buff.pop(0)
 
-
 class InternalInterface(EventDispatcher):
 
     # TODO Finish this for internal chips
@@ -372,9 +371,19 @@ class InternalInterface(EventDispatcher):
     recv_buff = []
     name = "Internal"
 
+    _internal_control_str = ("[{\"title\": \"Recording Frequency\","
+                                "\"type\": \"plusminin\","
+                                "\"desc\": \"Recording Frequency (Hz)\","
+                                "\"key\": \"freq\","
+                                "\"steps\": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]]," 
+                                "\"limits\": [1, 2048]}"
+                                "]")
+    
+    _recording = False
+
     def __init__(self,  **kwargs) -> None:
         self.__dict__.update(kwargs)
-        self.idle_event = Clock.schedule_interval(self._gen_idle, 2)
+        self.loop_event = Clock.schedule_interval(self.loop, 0.5)
 
         # Clock.schedule_once(self.on_connect, 0)
         Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(self.on_connect(self), 
@@ -399,10 +408,10 @@ class InternalInterface(EventDispatcher):
         cmd = data.get("CTRL")
         if cmd:
             if cmd.get("run") == 1:
-                self.idle_event.cancel()
+                self._recording = True
 
             if cmd.get("run") == 0:
-                self.idle_event()
+                self._recording = False
 
             freq = cmd.get("freq")
             if freq:
@@ -412,49 +421,29 @@ class InternalInterface(EventDispatcher):
                 self.recv_buff.append(f"{freq} Hz\r".encode())
 
 
-    def _gen_data(self, dt):
-        if len(self.recv_buff) < 5:
-            self.recv_buff.append(
-                json.dumps(
-                    {"us": time.time_ns() // 1000 & 0xFFFF_FFFF,
-                     "sDt": int(self._rec_dt * 1e6),
-                     "OIS": {
-                        "SIG": np.random.random(),
-                        "BGR": np.random.randint(0, 1000) / 100000,
-                        "STIM": 0, }
-                     })
-            )
+    def __read_feedback(self):
+        feedback = ... 
+        self.recv_buff.append(
+            feedback)
         self.do()
 
-    def _gen_idle(self, dt):
-        if len(self.recv_buff) < 5:
-            self.recv_buff.append(
-                json.dumps(
-                    {"idle": True,
-                     "CTRL":{"name": self.name},
-                     "OIS": {"name": "Optical Intrisic Signal",
-                             "control_str": json.dumps([
-                            {"title": "Blue Light Stimulation",
-                                  "type":"stim",
-                                  "desc": "Create / Start / Stop blue light stimulation protocol",
-                                  "key": "stim",},
-                             {"title": "Green Led Intensity",
-                             "type":"plusminin",
-                             "desc": "Power in mA of the green LEDs",
-                             "key": "amps",
-                             "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]], 
-                             "limits": [0, 65],                            
-                             "live_widget": True},
-                            {"title": "Purple Light Stimulation",
-                             "type":"stim",
-                             "desc": "Create / Start / Stop purple light stimulation protocol",
-                             "key": "purple_stim",},
-                             ]),
-                             "#ST": 0,
-                             "parameter_names": ["OIS Background", "OIS Signal", "OIS Stimulation mA"],
-                             "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
-                )
+    def loop(self, dt):
+        if self._recording:
+            self._read_feedback()
+        else:
+            self._idle_loop()
+    
+    def _idle_loop(self):
+        self.recv_buff.append(
+            json.dumps(
+                {"idle": True,
+                 "CTRL":{"name": self.name, 
+                         "control_str": self._internal_control_str},
+                 **{chip.short_name: chip.get_idle_status() 
+                        for chip in chip_d.values()}
+                    }
             )
+        )
         self.do()
 
     def do(self, *args, **kwargs):

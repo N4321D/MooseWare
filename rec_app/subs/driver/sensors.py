@@ -97,6 +97,12 @@ def get_connected_chips_and_pars(filter_pars=False):
 
     return chips, pars
 
+def get_connected_chips():
+    """
+    returns the connected chips and a link to the driver
+    """
+    return {chip_name: chip for chip_name, chip in chip_d.items() 
+            if (chip.whois() or (chip.disconnected is False))}
 
 
 

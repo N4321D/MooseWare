@@ -30,6 +30,7 @@ def log(message, level="info"):
 # imports
 from math import sin, tan
 import time
+import json
 
 try:
     from subs.driver.sensor_files.dummy_gpio import bus, GPIO   # do not remove, used by other scripts
@@ -248,3 +249,17 @@ class Sensor():
         from settings panel
         """
         pass
+
+    def get_idle_status(self):
+        """
+        Return idle stats in the same format as the microcontroller chip drivers
+        """
+        return {self.short_name: {
+            "name": self.name,
+            "#ST": -4 if (self.whois() or self.disconnected) else 0,
+            "record": self.record,
+            "par_names": self.out_vars.keys(),
+            "par_short_names": self.out_vars.keys(),
+            "control_str": json.dumps(self.json_panel()),
+            }
+        }

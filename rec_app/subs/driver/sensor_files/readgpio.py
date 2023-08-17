@@ -35,7 +35,7 @@ class ReadGpio(Sensor):
     address = -1                      # cannot be None to include in recordings
     name = 'GPIO Interface'
     short_name = 'GPIO'
-    out_vars = set()
+    out_vars = {}
     gpio_pins_in = {18, }              # number of pin
     gpio_pins_out = {}                 # number of pin and start state
     gpio_pins_out_saved = {6: False}   # number of pin and start state
@@ -107,7 +107,7 @@ class ReadGpio(Sensor):
         self.datatype.clear()
         for pin in (self.gpio_pins_in | 
                     self.gpio_pins_out_saved.keys()):
-            self.out_vars.add(f"GPIO {pin}")
+            self.out_vars[f"GPIO {pin}"] = True
             self.datatype[f"GPIO {pin}"] = 'u1'
 
     def whois(self):

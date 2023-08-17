@@ -44,6 +44,7 @@ except ModuleNotFoundError:
     ImportError("RPi.GPIO not found")
 
 import time
+import json
 
 # set GPIO mode
 GPIO.setmode(GPIO.BCM)
@@ -241,7 +242,7 @@ class Sensor():
 
     def json_panel(self):
         """
-        return json panel with properties for kivy intrenface 
+        return json panel with properties for kivy interface 
         to change in settings panel
         """
         return [{
@@ -267,3 +268,15 @@ class Sensor():
         from settings panel
         """
         pass
+
+    def get_idle_status(self):
+        """
+        Return idle stats in the same format as the microcontroller chip drivers
+        """
+        return {"name": self.name,
+            "#ST": -4 if (self.whois() or self.disconnected) else 0,
+            "record": self.record,
+            "par_names": self.out_vars.keys(),
+            "par_short_names": self.out_vars.keys(),
+            "control_str": json.dumps(self.json_panel()),
+            }

@@ -21,8 +21,8 @@ from subs.misc.shared_mem_np_dict import SharedTable, clear_queue
 # import sensors from driver
 try:
     from subs.driver.sensors import (sensTest, get_pars, chip_d, datatypes,
-                                     get_connected_chips_and_pars, shared_vars,
-                                        ReadWrite, TESTING)
+                                     get_connected_chips_and_pars, get_connected_chips,
+                                     shared_vars, ReadWrite, TESTING)
 
 except Exception as e:
     log("Sensor import error: {}".format(e), "warning")
