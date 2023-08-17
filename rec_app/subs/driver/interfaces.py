@@ -455,12 +455,6 @@ class InternalInterface(EventDispatcher):
                              "parameter_short_names": ["BGR", "SIG", "STIM"]}, }
                 )
             )
-            # self.recv_buff.append(
-            #     json.dumps(
-            #         {"idle": True,
-            #          "CTRL": {"name": self.name}}
-            #     )
-            # )
         self.do()
 
     def do(self, *args, **kwargs):
