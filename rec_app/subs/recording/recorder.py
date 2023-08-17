@@ -20,7 +20,8 @@ from subs.misc.shared_mem_np_dict import SharedTable, clear_queue
 
 # import sensors from driver
 try:
-    from subs.driver.sensors import (sensTest, get_pars, chip_d, datatypes,
+    from subs.driver.sensors import (sensTest, get_pars, chip_d, chip_d_short_name,
+                                     datatypes,
                                      get_connected_chips_and_pars, get_connected_chips,
                                      shared_vars, ReadWrite, TESTING)
 

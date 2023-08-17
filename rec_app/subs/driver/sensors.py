@@ -166,6 +166,7 @@ def create_chip_dict(allvars={}):
 
 
 chip_d, shared_vars = create_chip_dict(allvars=vars())
+chip_d_short_name = {chip.short_name: chip for chip in chip_d.values()}
 
 
 # datatypes:

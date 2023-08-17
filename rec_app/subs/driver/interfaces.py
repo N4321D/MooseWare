@@ -19,7 +19,7 @@ from kivy.app import App
 from kivy.clock import Clock
 
 # import internal chip stuff
-from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars, get_connected_chips
+from subs.recording.recorder import Recorder, chip_d_short_name, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars, get_connected_chips
 
 
 # Logger
@@ -405,20 +405,30 @@ class InternalInterface(EventDispatcher):
     def write(self, data):
         print(f"INTERNAL - writing to sensor: {data}")
         data = json.loads(data)
-        cmd = data.get("CTRL")
-        if cmd:
-            if cmd.get("run") == 1:
-                self._recording = True
 
-            if cmd.get("run") == 0:
-                self._recording = False
+        for chip_name, cmd in data.items():
+            if chip_name == "CTRL":
+                if cmd.get("run") == 1:
+                    self._recording = True
 
-            freq = cmd.get("freq")
-            if freq:
-                # TODO change freq based on incoming current freq of recorder
-                self._rec_dt = 1 / freq
-                self.data_event.timeout = self._rec_dt
-                self.recv_buff.append(f"{freq} Hz\r".encode())
+                if cmd.get("run") == 0:
+                    self._recording = False
+
+                freq = cmd.get("freq")
+                if freq:
+                    # TODO change freq based on incoming current freq of recorder
+                    self._rec_dt = 1 / freq
+                    self.data_event.timeout = self._rec_dt
+                    self.recv_buff.append(f"{freq} Hz\r".encode())
+
+            elif chip_name in chip_d_short_name:
+                if self._recording:
+                    # TODO: send to recorder in queue
+                    ...
+                else:
+                    for par, value in cmd:
+                        chip_d_short_name[chip_name].do_config(par, value)  # send instructions to chip driver
+        # TODO: send data to chips here?
 
 
     def __read_feedback(self):
@@ -440,7 +450,7 @@ class InternalInterface(EventDispatcher):
                  "CTRL":{"name": self.name, 
                          "control_str": self._internal_control_str},
                  **{chip.short_name: chip.get_idle_status() 
-                        for chip in chip_d.values()}
+                        for chip in chip_d_short_name.values()}
                     }
             )
         )
