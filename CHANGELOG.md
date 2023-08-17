@@ -1,4 +1,9 @@
 # Changelog
+17 Aug 2023:
+- added ability to record from microcontrollers
+- ChipWidget:
+    - buttons are automatically created based on which microcontroller is viewed
+    - stim widget is in a chip button now
 
 09 Feb 2023:
 - Filemanager:
