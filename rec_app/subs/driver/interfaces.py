@@ -29,6 +29,10 @@ def log(message, level="info"):
     cls_name = "SERIAL_CONTROLLER"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
+from subs.gui.vars import MAX_MEM
+
+
+
 class IOProtocol(asyncio.Protocol):
     buffer = []
     sub_buffer = bytearray()  # sub buffer to cache incoming data until '\n is found'
@@ -380,10 +384,13 @@ class InternalInterface(EventDispatcher):
                                 "]")
     
     _recording = False
+    _rec_freq = 256
+    _recorder = None        # placeholder for recorder class
+    _rec_pr = None          # placeholder for multiprocessing Process class of recording
 
     def __init__(self,  **kwargs) -> None:
         self.__dict__.update(kwargs)
-        self.loop_event = Clock.schedule_interval(self.loop, 0.5)
+        self.loop_event = Clock.schedule_interval(self._loop, 0.5)
 
         # Clock.schedule_once(self.on_connect, 0)
         Clock.schedule_once(lambda dt: asyncio.run_coroutine_threadsafe(self.on_connect(self), 
@@ -397,47 +404,48 @@ class InternalInterface(EventDispatcher):
         pass
 
     def start(self, *args, **kwargs):
-        pass
+        print("Internal interface start called")
 
     def stop(self, *args, **kwargs):
-        pass
+        print("Internal interface stop called")
 
     def write(self, data):
-        print(f"INTERNAL - writing to sensor: {data}")
-        data = json.loads(data)
+        print(f"{self.name} - writing to sensor: {data}")
 
-        for chip_name, cmd in data.items():
+        for chip_name, cmd in json.loads(data).items():
             if chip_name == "CTRL":
                 if cmd.get("run") == 1:
                     self._recording = True
+                    self._recorder = Recorder(start_rate=self._rec_freq, 
+                                              MAX_MEM=MAX_MEM)
+                    self._rec_pr = self._recorder.start()
 
                 if cmd.get("run") == 0:
                     self._recording = False
+                    if self._recorder is not None:
+                        self._recorder.stop()
+                        self._rec_pr.join()
+                        self._rec_pr = None                    
 
                 freq = cmd.get("freq")
                 if freq:
                     # TODO change freq based on incoming current freq of recorder
-                    self._rec_dt = 1 / freq
-                    self.data_event.timeout = self._rec_dt
+                    self._rec_freq = freq
                     self.recv_buff.append(f"{freq} Hz\r".encode())
 
             elif chip_name in chip_d_short_name:
-                if self._recording:
-                    # TODO: send to recorder in queue
-                    ...
-                else:
-                    for par, value in cmd:
+                for par, value in cmd:
+                    if self._recording:
+                        self._recorder.q_in.put(chip_name, "do_config", (par, value))
+                    else:
                         chip_d_short_name[chip_name].do_config(par, value)  # send instructions to chip driver
-        # TODO: send data to chips here?
 
-
-    def __read_feedback(self):
+    def _read_feedback(self):
         feedback = ... 
-        self.recv_buff.append(
-            feedback)
+        self.recv_buff.append(feedback)
         self.do()
 
-    def loop(self, dt):
+    def _loop(self, dt):
         if self._recording:
             self._read_feedback()
         else:

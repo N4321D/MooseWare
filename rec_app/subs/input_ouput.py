@@ -301,6 +301,15 @@ class InputOutput(EventDispatcher):
         self.add_note(f"Recording Started")
 
         if not self.client_ip:
+            # creaet saver
+            if save:
+                self.sav = Saver(recname=self.recording_name,
+                                 NEW_FILE_INTERVAL=self.new_file_interval)
+                self.sav.start()
+
+            else:
+                self.sav = None
+        
             if self.internalControl.record:
                 self.rec = Recorder(start_rate=self.internalControl.freq,
                                     MAX_MEM=MAX_MEM)                                # MAX_MEM is defined in vars.py
@@ -316,13 +325,7 @@ class InputOutput(EventDispatcher):
                 if self.interfaces[dev_name].record:
                     self.interfaces[dev_name].start_stop(True)
 
-            if save:
-                self.sav = Saver(recname=self.recording_name,
-                                 NEW_FILE_INTERVAL=self.new_file_interval)
-                self.sav.start()
 
-            else:
-                self.sav = None
 
             # update links to shared memory for new parameters
             self.shared_buffer.check_new()
