@@ -413,13 +413,17 @@ class InternalInterface(EventDispatcher):
         print(f"{self.name} - writing to sensor: {data}")
 
         for chip_name, cmd in json.loads(data).items():
+            # unpack outgoing data and send / process it
+            # instruction for Internal controller:
             if chip_name == "CTRL":
+                # start recording
                 if cmd.get("run") == 1:
                     self._recording = True
                     self._recorder = Recorder(start_rate=self._rec_freq, 
                                               MAX_MEM=MAX_MEM)
                     self._rec_pr = self._recorder.start()
 
+                # stop recording
                 if cmd.get("run") == 0:
                     self._recording = False
                     if self._recorder is not None:
@@ -427,12 +431,14 @@ class InternalInterface(EventDispatcher):
                         self._rec_pr.join()
                         self._rec_pr = None                    
 
+                # change recording frequency
                 freq = cmd.get("freq")
                 if freq:
                     # TODO change freq based on incoming current freq of recorder
                     self._rec_freq = freq
-                    self.recv_buff.append(f"{freq} Hz\r".encode())
+                    self.recv_buff.append(f"{freq} Hz\r".encode())                        
 
+            # send to chips:
             elif chip_name in chip_d_short_name:
                 for par, value in cmd:
                     if self._recording:
@@ -441,17 +447,27 @@ class InternalInterface(EventDispatcher):
                         chip_d_short_name[chip_name].do_config(par, value)  # send instructions to chip driver
 
     def _read_feedback(self):
+        """
+        Process feedback from Recorder
+        """
+        # TODO: Finish
         feedback = ... 
         self.recv_buff.append(feedback)
         self.do()
 
     def _loop(self, dt):
+        """
+        Main loop checking for new feedback or extracting idle data
+        """
         if self._recording:
             self._read_feedback()
         else:
             self._idle_loop()
     
     def _idle_loop(self):
+        """
+        function called to extract idle data
+        """
         self.recv_buff.append(
             json.dumps(
                 {"idle": True,
