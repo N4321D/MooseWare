@@ -363,9 +363,9 @@ class DummyMicro(EventDispatcher):
             return self.recv_buff.pop(0)
 
 
-class Controller():
+class Interface():
     """
-    A class representing a controller for microcontroller devices
+    A class representing an interface for microcontroller devices
 
     Attributes:
         MAX_MEM (float): The maximum memory buffer that can be used.
@@ -764,7 +764,7 @@ BoxLayout:
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             self.loop = asyncio.get_event_loop()
-            self.control = Controller()
+            self.control = Interface()
             # self.text_event = Clock.schedule_interval(self.send_text, 1)
 
         def start_rec(self):

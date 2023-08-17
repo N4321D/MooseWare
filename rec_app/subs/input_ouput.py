@@ -22,7 +22,7 @@ import subs.network.server as nw_server     # import network client
 
 from subs.recording.saver import Saver
 from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars
-from subs.driver.arduino import Controller
+from rec_app.subs.driver.interfaces import Interface
 
 from subs.driver.sensor_files.chip import Chip
 
@@ -615,7 +615,7 @@ class InputOutput(EventDispatcher):
     # Interfaces
     async def interface_loop(self):
         if self.app.TESTING:
-            _controller = Controller(testing=True,
+            _controller = Interface(testing=True,
                                      on_connect=self.connect_interface,
                                      on_disconnect=self.disconnect_interface)
 
@@ -623,7 +623,7 @@ class InputOutput(EventDispatcher):
             # print("\nCONNECT LOOP " *10)
             # setup micro contoller TODO: move to loop and add function to add mulitple controllers
             
-            _controller = Controller(on_connect=self.connect_interface,
+            _controller = Interface(on_connect=self.connect_interface,
                                      on_disconnect=self.disconnect_interface)
             await _controller.async_start()
 
