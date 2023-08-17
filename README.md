@@ -42,7 +42,6 @@ Install python rec_app with poetry for easy installation:
 1. install poetry (see: https://python-poetry.org/)
 2. clone repository
 3. goto folder where repository is and run `poetry install`
-4. to start: make sure the poetry env is activated `poetry shell`, then go to the rec_app folder and run the main.py file
 
 ### Micro controller driver:
 To use this Arduino sketch, follow these steps:
@@ -56,7 +55,7 @@ To use this Arduino sketch, follow these steps:
 7. Upload the sketch to your board.
 
 ## Usage
-...
+To start make sure the poetry env is activated `poetry shell`, then go to the rec_app folder and run the main.py file
 
 ## Contributing
 Contributions to this code are welcome! If you find bugs or want to add features, please follow these steps:
