@@ -48,7 +48,6 @@ class CO2Sensor : public UARTSensor
             Con = ((outputbuffer[2]<<8) + outputbuffer[3]*1.0);
             Con *= 0.1; //Make sure to understand why at some point. Clear that for alt case its *= 0.01, not clear why all are a factor of 10 down...
         }
-       // Serial.println(Con);
         return Con;
     }
 

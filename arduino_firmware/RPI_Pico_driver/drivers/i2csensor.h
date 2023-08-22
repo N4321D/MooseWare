@@ -174,7 +174,6 @@ public:
         if (strcmp(key, "cmd1") == 0)
         {
             float test = value.as<float>();
-            Serial.println(String(NAME) + ": test value received");
         }
     }
 

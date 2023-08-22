@@ -41,7 +41,6 @@ class BMESensor : public I2CSensor
     }
 
     void init(){
-        //Serial.println("checkpoint 1");
         if(startup){
             heatingUp = true;
             endtime = millis() + 15000; //15 second heat up time
@@ -63,9 +62,6 @@ class BMESensor : public I2CSensor
     }
 
     void sample(){
-       // Serial.println("checkpoint 1.5");
-        //if(!sgp.IAQmeasure()){Serial.println("Measure fail");}
-       // Serial.println("checkpoint 2");
         if(heatingUp)
         {
             endtime = millis() + 15000;

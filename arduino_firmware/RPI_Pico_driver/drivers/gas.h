@@ -173,11 +173,9 @@ class GasSensor : public I2CSensor
         }
         else 
         {
-            Serial.println("Mode change success(?)");
             return true;
         }
-        //Serial.println(addr);
-       // Serial.println(outputbuffer[2]);
+
         return outputbuffer[2];
     }
 
@@ -230,16 +228,13 @@ class GasSensor : public I2CSensor
     {
         for(int x = 0; x <sizeof(_protocol.data); x++)
         {
-            Serial.println(_protocol.data[x]);
         }
-        Serial.println(_protocol.check);
     }
 
     void readOutput(uint8_t outputbuffer[])
     {
      for(int x = 0; x <9; x++)
         {
-            Serial.println(outputbuffer[x]);
         }  
     }
 

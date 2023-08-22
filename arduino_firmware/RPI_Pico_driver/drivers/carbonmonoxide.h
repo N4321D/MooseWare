@@ -37,7 +37,6 @@ class CarbonMonoxideSensor : public GasSensor
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
         writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
         readI2C(ADDRESS, 0, 9, outputbuffer);
-        //Serial.println("CO data");
         //readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) == outputbuffer[8])
         {

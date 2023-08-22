@@ -61,7 +61,6 @@ class AmmoniaSensor : public GasSensor
             else
                 Con = 0.0;
         }
-        //Serial.println(Con);
         return Con;
     } 
 
@@ -80,14 +79,11 @@ class AmmoniaSensor : public GasSensor
         }       
 
         uint16_t temp_ADC = (uint16_t)((outputbuffer[2]<<8) | outputbuffer[3]); 
-        //Serial.println("TEMP ADC");
-        //Serial.println(temp_ADC);
        //register is 0x87; need to get ADC value from chip
        // uint16_t temp_ADC = (recvbuf[2] << 8) + recvbuf[3];
         float Vpd3=3*(float)temp_ADC/1024;
         float Rth = Vpd3*10000/(3-Vpd3);
         float Tbeta = 1/(1/(273.15+25)+1/3380.13*log(Rth/10000))-273.15;
-        //Serial.println(Tbeta);
         return Tbeta;
     }
 

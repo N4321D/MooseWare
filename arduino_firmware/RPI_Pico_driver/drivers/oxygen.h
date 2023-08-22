@@ -43,7 +43,6 @@ class OxygenSensor : public GasSensor
             Con = (uint16_t)((outputbuffer[2]<<8) | outputbuffer[3]);
             Con *= 0.1; //do this right later (bit shifting)
         }
-       // Serial.println(Con);
         return Con;
     }
 
@@ -66,7 +65,6 @@ class OxygenSensor : public GasSensor
         float Vpd3=3*(float)temp_ADC/1024;
         float Rth = Vpd3*10000/(3-Vpd3);
         float Tbeta = 1/(1/(273.15+25)+1/3380.13*log(Rth/10000))-273.15;
-        //Serial.println(Tbeta);
         return Tbeta;
     }
 
