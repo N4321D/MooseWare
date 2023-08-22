@@ -48,7 +48,7 @@ struct textStr
   // struct with all text things
   const char *idle = "Standby...";
   const char *rec = "Recording...";
-  const char *defaultName = "RPI - Pico";
+  const char *defaultName = "RPiPico";
 };
 
 textStr texts;
@@ -325,8 +325,6 @@ void control(const char *key, JsonVariant value)
   }
   if (strcmp(key, "name") == 0)
   {
-    // strcpy(NAME, value.as<const char*>());
-    // feedback(NAME, 5, 20);
     setName(value.as<const char *>());
   }
 }
