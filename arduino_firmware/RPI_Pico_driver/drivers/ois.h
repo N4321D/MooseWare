@@ -1,6 +1,5 @@
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
 
-
 class OISSensor : public I2CSensor
 {
 private:

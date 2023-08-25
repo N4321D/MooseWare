@@ -21,7 +21,8 @@ import subs.network.client as nw_client     # import network client
 import subs.network.server as nw_server     # import network client
 
 from subs.recording.saver import Saver
-from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars
+from subs.recording.recorder import (Recorder, chip_d, get_connected_chips_and_pars, 
+                                     ReadWrite, TESTING, shared_vars)
 from subs.driver.interfaces import Interface
 
 from subs.driver.sensor_files.chip import Chip    # used to here to create button to control internal recording etc
