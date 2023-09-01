@@ -184,9 +184,12 @@ class ChipWidget(BoxLayout):
             if _resets and self.app.IO.running:
                 bg_col = (*CW_BUT_BGR_RES[:3], 0.3 if not _live_widget else 0.6)
             
-            if (status_color < 0 and self.app.IO.running 
-                and self.chip_labels[chip].chip.connected):
-                bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
+            try:
+                if (status_color < 0 and self.app.IO.running 
+                    and self.chip_labels[chip].chip.connected):
+                    bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
+            except Exception as e:
+                print(e, "chips_widget line 192")
 
             if self.chip_labels[chip].background_color != bg_col:
                 self.chip_labels[chip].background_color = bg_col
