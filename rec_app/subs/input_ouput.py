@@ -629,7 +629,7 @@ class InputOutput(EventDispatcher):
             
             _controller = Interface(on_connect=self.connect_interface,
                                      on_disconnect=self.disconnect_interface)
-            await _controller.async_start()
+            await _controller.async_start()  # wait for connection until device
 
     def connect_interface(self, interface):
         self.interfaces[interface.name] = interface
