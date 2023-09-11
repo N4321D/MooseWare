@@ -248,7 +248,10 @@ def copy_file(src, dst, overwrite=True, make_parents=True,
     # Make parent dirs
     if make_parents:
         dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.parent.chmod(mode)
+        try:
+            dst.parent.chmod(mode)
+        except Exception as e:
+            log(f"Cannot change dir priveliges: {e}", "warning")
 
     # Copy:
     if (platform.system() == 'Windows') or force_copy2:
