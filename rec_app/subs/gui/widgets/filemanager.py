@@ -672,7 +672,7 @@ class FileManager(FloatLayout):
                 # add destination subfolders
                 dst /= src.relative_to(Path(self.rootpath).absolute())
                 copy_file(src, dst)
-                return str(err) if err else None
+                return str(err) if err else ""
 
             action_list = [Action(partial(act, src, dst),
                     text=f"{src.name}{convert_bytes(src.stat().st_size): >10}")
