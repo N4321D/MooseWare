@@ -60,7 +60,7 @@ class LightStrip(Sensor):
 
     pixel_no = 0xFF
     whoisreg = 0x00
-    address = 0x2A
+    address = 0x55
     name = 'Ambient Light'
     resetpin = 17                                          # set GPIO reset pin
     short_name = 'Light'                                   # name used after importing
