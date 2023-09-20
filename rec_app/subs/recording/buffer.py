@@ -156,6 +156,10 @@ class SharedBuffer():
             start = (end - n_items)
         
         size = self.buffer[par][subpar].shape[0]
+        
+        if size == 0: 
+            # return empty array when nothing in buffer
+            return self.buffer[par][subpar]
 
         start %= size  # rotate over total length for circular buffer
         end %= size
