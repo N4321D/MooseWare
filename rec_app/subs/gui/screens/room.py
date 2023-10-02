@@ -7,7 +7,8 @@ NB: Kv String cannot contain \n -> must be \\n
 
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.properties import BooleanProperty, ListProperty, StringProperty, NumericProperty
+from kivy.properties import (BooleanProperty, ListProperty, 
+                             StringProperty, NumericProperty)
 from subs.gui.vars import *
 
 from subs.gui.screens.scr import Scr
