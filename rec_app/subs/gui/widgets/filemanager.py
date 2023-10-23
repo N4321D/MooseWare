@@ -73,6 +73,7 @@ Builder.load_string(
         multiselect: True
         dirselect: True
 
+
     # copy button
     FM_Button:
         id: copybut
@@ -152,11 +153,12 @@ def sec_2_t_passed(sec):
     return days, hours, mins, secs
 
 def convert_bytes(num_bytes):
-    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 0)]
+    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 0)]  # keep bytes to zero set later to 1 to prevent crash if num_bytes == 0
     for unit, value in units:
         if num_bytes >= value:
-            quotient = num_bytes / value
-            return f"{quotient:.2f} {unit}" if quotient < 100 else f"{quotient:.0f} {unit}"
+            quotient = num_bytes / (value or 1) # set value to 1 if using bytes
+            return (f"{quotient:.2f} {unit}" if quotient < 100 
+                    else f"{quotient:.0f} {unit}")
 
 
 def check_disk_space(directory, bitrate=float("NaN"), warning=None,
@@ -418,7 +420,13 @@ class FileManager(FloatLayout):
         # update label with changing selection:
         self.filechooser.bind(selection=lambda *x: setattr(self.sel_lbl,
                                                            "text",
-                                                           "Selected: {}".format(len(self.filechooser.selection))))
+                                                           f"Selected: {len(self.filechooser.selection)}"))
+        
+        # Clear selection when changing directory
+        self.filechooser.bind(path=Clock.schedule_once(
+            lambda *x: setattr(self.filechooser, "selection", []), 
+            0))   # use clock here otherwise it is switched back to rootpath
+
 
     def main_loop(self, *args):
         """
@@ -686,6 +694,8 @@ class FileManager(FloatLayout):
             txt = "Parallel Copying:"
 
         self.do_with_pb(action_list, txt)
+
+        self.filechooser.selection = []   # clear selection
 
     def switch_view(self, *args):
         """
