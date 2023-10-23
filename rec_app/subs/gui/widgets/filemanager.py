@@ -152,7 +152,7 @@ def sec_2_t_passed(sec):
     return days, hours, mins, secs
 
 def convert_bytes(num_bytes):
-    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 1)]
+    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 0)]
     for unit, value in units:
         if num_bytes >= value:
             quotient = num_bytes / value
@@ -250,6 +250,7 @@ def copy_file(src, dst, overwrite=True, make_parents=True,
         dst.parent.mkdir(parents=True, exist_ok=True)
         try:
             dst.parent.chmod(mode)
+            
         except Exception as e:
             log(f"Cannot change dir priveliges: {e}", "warning")
 
@@ -679,7 +680,8 @@ class FileManager(FloatLayout):
 
             action_list = [Action(partial(act, src, dst),
                     text=f"{src.name}{convert_bytes(src.stat().st_size): >10}")
-                    for src in file_list if (not src.is_dir() and src.exists())]
+                    for src in file_list if (not src.is_dir() and src.exists())
+                    ]
 
             txt = "Parallel Copying:"
 
