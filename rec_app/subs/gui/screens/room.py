@@ -617,21 +617,8 @@ class RoomScreen(Scr):
             self.send_alert(alert)
 
     def send_alert(self, pars):
-        message = 'Out of boundaries:'
-        for par in pars:
-            if par == 'Humidity':
-                message += '\n{}: {:.1f}%'.format(par, 
-                                                  self.data[par]['last'])
-            elif par == 'Temperature':
-                message += ("\n{}: {:.1f}{dg_sign}C"
-                            "".format(par, self.data[par]['last'],
-                                      dg_sign=u'\N{DEGREE SIGN}'))
-
-            elif par == 'Pressure Internal':
-                message += ("\nPressure: POSITIVE ROOM PRESSURE"
-                            "(should be negative)")
-
-        self.app.msg.send_alert(message)
+        # TODO: send message here
+        ...
 
     def calibrate_pressure(self):
         pars = self.app.IO.rec_data.keys()

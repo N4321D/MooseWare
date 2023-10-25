@@ -374,8 +374,6 @@ class FileManager(FloatLayout):
                   # extra time (not included in calculation)
                   "spare_t": 3600,
                   }
-    # can be changed when calling an instance
-    UPDATE_NAME = "MOOSE.update"
 
     # concurrent processing vars
     futures = []                                # list with futures running in executor
@@ -402,13 +400,6 @@ class FileManager(FloatLayout):
         self._init_widgets()
 
 
-    def update_func(_x): 
-        """
-        placeholder for called update function if update file is found
-        """
-        return _x
-
-
     def _init_widgets(self, *args):
         """
         This is laumched when kivy app starts
@@ -425,7 +416,7 @@ class FileManager(FloatLayout):
         # Clear selection when changing directory
         self.filechooser.bind(path=Clock.schedule_once(
             lambda *x: setattr(self.filechooser, "selection", []), 
-            0))   # use clock here otherwise it is switched back to rootpath
+            0))                                                                 # use clock here otherwise it is switched back to rootpath
 
 
     def main_loop(self, *args):
@@ -709,12 +700,6 @@ class FileManager(FloatLayout):
                 self.copybut.disabled = True
                 self.viewusbbut.text = "View HDD"
 
-                # update if update file found on usb root
-                update_loc = Path(self.filechooser.path) / self.UPDATE_NAME
-                if update_loc.exists():
-                    self.confirmation("Update System?", partial(
-                        self.run_update, update_loc))
-
             except KeyError as e:
                 log(e, level="debug")
         else:
@@ -725,22 +710,6 @@ class FileManager(FloatLayout):
         
         self.update_file_list()
 
-    def run_update(self, update_loc, *args):
-        self.fb_lbl.text = "Updating..."
-        try:
-            log("Updating", "info")
-            _actions = self.update_func(update_loc)
-            _actions.append(partial(setattr, self.fb_lbl,
-                            "text", "Update Successful"))
-            self.do_with_pb(_actions,
-                            text="Installing Update...")
-            log("Update Successful", "info")
-
-        except Exception as e:
-            log(f"Cannot Update: {e}", "error")
-            self.fb_lbl.text = f"Update Failed: {e}"
-
-        return
 
     # MISC METHODS
     def _hide_pb(self):

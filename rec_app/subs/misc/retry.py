@@ -1,7 +1,6 @@
 """
 retry function until it worked
 
-
 """
 
 def retry(f:callable,

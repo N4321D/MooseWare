@@ -102,11 +102,8 @@ from subs.gui.widgets.timezone_wid import TzWidget
 # Screens DO NOT REMOVE NEEDED IN KV
 from subs.gui.screens.root_layout import RootLayout
 
-from subs.updater import Updater
-
 # Other imports:
 from subs.driver.button import LedButton
-from subs.gui.widgets.messenger.kivy_messenger import Messenger                 # import sms alert system
 
 # GLOBAL VARS & PARS
 from subs.gui.vars import *
@@ -198,11 +195,7 @@ class guiApp(App):
         # define settings class
         self.settings_cls = SettingsWithSidebar
 
-        self.updater = Updater(app_version=['app_version'])
-
         self.bind(log_level=lambda *_: self.logger.setLevel(self.log_level))
-        
-        self.msg = Messenger(self)
 
         # input output class
         self.IO = InputOutput()
@@ -230,8 +223,6 @@ class guiApp(App):
             cls.popup.open()
         FileManager.popup = self.popup
         FileManager.confirmation = confirmation
-        FileManager.update_func = self.updater._update
-        FileManager.UPDATE_NAME = self.updater.UPDATE_PACK_NAME
 
         # app variables
         self.title = f"{SETTINGS_VAR['Main']['title']}{SETTINGS_VAR['Main']['app_logo']:>25}"
@@ -342,70 +333,60 @@ class Popup(MyPopup):
                           'size_hint': (0.1, 0.2)}
 
 
-
-
-# Main code to start app:
-# if not SERVER:
-#     # catch ctrl + c
-#     import signal
-#     signal.signal(signal.SIGINT, lambda *x: print("   nice try ;), but NO ctrl-c"))
-
-sys = system()
-
-if (sys == 'Linux'
+if (system() == 'Linux'
     or (__name__ == "__main__")):     # needed for multiprocessing to not spawn multiple windows on mac & win (or start from run.py)
-    # try:
+    try:
         # check certificates and serial
-    pem = f"./keys/{'server' if SERVER else 'client'}.pem"
-    cert_check = Encryption()
-    cert_check.load_all(pem, "./keys/ca.cer")
-    cert_check.check_certificates()
+        # pem = f"./keys/{'server' if SERVER else 'client'}.pem"
+        # cert_check = Encryption()
+        # cert_check.load_all(pem, "./keys/ca.cer")
+        # cert_check.check_certificates()
 
 
-    if not SERVER:
-        # check rpi serial
-        check_serial() 
-        pass            
+        if not SERVER:
+            # check rpi serial
+            check_serial() 
+            pass            
 
-    async def mainCoro():
-        global app  
-        # start GUI
-        # guiApp.TESTING = False
-        app = guiApp()        
-        await app.async_run()
+        async def mainCoro():
+            global app  
+            # start GUI
+            # guiApp.TESTING = False
+            app = guiApp()        
+            await app.async_run()
 
-    asyncio.run(mainCoro())
+        asyncio.run(mainCoro())
 
-    # shutdown on exit
-    if not SERVER:
-        # os.system("sudo shutdown -h now")
-        pass
+        # shutdown on exit
+        if not SERVER:
+            # os.system("sudo shutdown -h now")
+            pass
 
-    app.IO.stop_all_stims()
+        app.IO.stop_all_stims()
 
-    # # NOTE: enable for real version (prevents hard crash)
-    # except Exception as e:
-    #     import time
-    #     log(f"{type(e).__name__}: {e}", "exception")
+    # NOTE: enable for real version (prevents hard crash)
+    except Exception as e:
+        import time
+        log(f"{type(e).__name__}: {e}", "exception")
         
-    #     from kivy.core.window import Window
-    #     if not SERVER:
-    #         time.sleep(3)
-    #         app.stop()
-    #         Window.close()
+        from kivy.core.window import Window
+        if not SERVER:
+            time.sleep(3)
+            app.stop()
+            Window.close()
             
-    #         # os.system("sudo reboot")
+            # os.system("sudo reboot")
 
-    #     else:
-    #         # reset all chips just in case
-    #         from subs.driver.sensors import chip_d
-    #         for chip in chip_d.values():
-    #             chip.reset()
-    #             chip.init()
+        else:
+            # reset all chips just in case
+            from subs.driver.sensors import chip_d
+            for chip in chip_d.values():
+                chip.reset()
+                chip.init()
 
-    #         # print("REBOOT")
-    #         app.stop()
-    #         Window.close()
+            # print("REBOOT")
+            app.stop()
+            Window.close()
 
 
 
