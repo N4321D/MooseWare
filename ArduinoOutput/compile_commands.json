@@ -303,18 +303,16 @@
    "-I/home/dmitri/Arduino/libraries/Adafruit_BusIO",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/libraries/SPI/src",
    "-I/home/dmitri/Arduino/libraries/RPI_PICO_TimerInterrupt/src",
-   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp",
+   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp",
    "-o",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp.o"
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp.o"
   ],
-  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp"
+  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp"
  },
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",
   "arguments": [
-   "/home/dmitri/.arduino15/packages/rp2040/tools/pqt-gcc/1.5.0-b-c7bab52/bin/arm-none-eabi-g++",
-   "-I",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/core",
+   "/home/dmitri/.arduino15/packages/rp2040/tools/pqt-gcc/1.5.0-b-c7bab52/bin/arm-none-eabi-gcc",
    "-c",
    "-Werror=return-type",
    "-DCFG_TUSB_MCU=OPT_MCU_RP2040",
@@ -344,8 +342,7 @@
    "-iprefix/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/",
    "@/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/lib/platform_inc.txt",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/include",
-   "-fno-rtti",
-   "-std=gnu++17",
+   "-std=gnu17",
    "-g",
    "-pipe",
    "-DF_CPU=133000000L",
@@ -354,7 +351,6 @@
    "-DBOARD_NAME=\"RASPBERRY_PI_PICO\"",
    "-DARDUINO_ARCH_RP2040",
    "-Os",
-   "-DWIFICC=CYW43_COUNTRY_WORLDWIDE",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/cores/rp2040",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/variants/rpipico",
    "-I/home/dmitri/Arduino/libraries/ArduinoJson/src",
@@ -365,11 +361,11 @@
    "-I/home/dmitri/Arduino/libraries/Adafruit_BusIO",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/libraries/SPI/src",
    "-I/home/dmitri/Arduino/libraries/RPI_PICO_TimerInterrupt/src",
-   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp",
+   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/glcdfont.c",
    "-o",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp.o"
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/glcdfont.c.o"
   ],
-  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp"
+  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/glcdfont.c"
  },
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",
@@ -436,7 +432,9 @@
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",
   "arguments": [
-   "/home/dmitri/.arduino15/packages/rp2040/tools/pqt-gcc/1.5.0-b-c7bab52/bin/arm-none-eabi-gcc",
+   "/home/dmitri/.arduino15/packages/rp2040/tools/pqt-gcc/1.5.0-b-c7bab52/bin/arm-none-eabi-g++",
+   "-I",
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/core",
    "-c",
    "-Werror=return-type",
    "-DCFG_TUSB_MCU=OPT_MCU_RP2040",
@@ -466,7 +464,8 @@
    "-iprefix/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/",
    "@/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/lib/platform_inc.txt",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/include",
-   "-std=gnu17",
+   "-fno-rtti",
+   "-std=gnu++17",
    "-g",
    "-pipe",
    "-DF_CPU=133000000L",
@@ -475,6 +474,7 @@
    "-DBOARD_NAME=\"RASPBERRY_PI_PICO\"",
    "-DARDUINO_ARCH_RP2040",
    "-Os",
+   "-DWIFICC=CYW43_COUNTRY_WORLDWIDE",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/cores/rp2040",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/variants/rpipico",
    "-I/home/dmitri/Arduino/libraries/ArduinoJson/src",
@@ -485,11 +485,11 @@
    "-I/home/dmitri/Arduino/libraries/Adafruit_BusIO",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/libraries/SPI/src",
    "-I/home/dmitri/Arduino/libraries/RPI_PICO_TimerInterrupt/src",
-   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/glcdfont.c",
+   "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp",
    "-o",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/glcdfont.c.o"
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp.o"
   ],
-  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/glcdfont.c"
+  "file": "/home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp"
  },
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",
@@ -609,11 +609,11 @@
    "-I/home/dmitri/Arduino/libraries/Adafruit_BusIO",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/libraries/SPI/src",
    "-I/home/dmitri/Arduino/libraries/RPI_PICO_TimerInterrupt/src",
-   "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp",
+   "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp",
    "-o",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp.o"
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp.o"
   ],
-  "file": "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp"
+  "file": "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp"
  },
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",
@@ -671,11 +671,11 @@
    "-I/home/dmitri/Arduino/libraries/Adafruit_BusIO",
    "-I/home/dmitri/.arduino15/packages/rp2040/hardware/rp2040/3.3.2/libraries/SPI/src",
    "-I/home/dmitri/Arduino/libraries/RPI_PICO_TimerInterrupt/src",
-   "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp",
+   "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp",
    "-o",
-   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp.o"
+   "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp.o"
   ],
-  "file": "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp"
+  "file": "/home/dmitri/Arduino/libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp"
  },
  {
   "directory": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app",

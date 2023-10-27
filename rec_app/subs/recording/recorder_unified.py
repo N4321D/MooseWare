@@ -278,6 +278,7 @@ class Recorder():
         self.loopCounter = self.callCounter - 1
 
     def loop(self):
+        self.readInput()
         ...
         
 
