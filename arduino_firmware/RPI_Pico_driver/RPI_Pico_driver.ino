@@ -34,11 +34,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 struct adjustableSettings
 {
   // struct with adjustable settings
-  byte sample_analog = 0;                 // set bit [0 - 3] to sample analogue channel
   float timer_freq_hz = 256;              // 2048.0;      // timer freq in Hz (start freq)
   float current_timer_freq_hz = 0;        // actual timer freq
   float min_freq_hz = 1.0;                // minimal sample frequency in Hz
-  float idle_freq_hz = 2.0;               // 2048.0;      // timer freq in Hz (start freq)
+  float idle_freq_hz = 2.0;               // frequency of idle loop (checking which sensors are connected)
   uint loops_before_adjust = 0;           // number of loops too slow or fast before adjusting (is set in set freq)
   const float TIME_SEC_BEFORE_ADJUST = 1; // time in seconds before adjusting sample f, change here to set
 };
@@ -99,7 +98,7 @@ unsigned long sampleDT = 0; // time needed to sample sensors
 
 bool START = false;
 
-char NAME[32];
+char NAME[32];              // name of controller
 
 #include "other/welcome_text.h"
 
@@ -120,6 +119,7 @@ void setLed(int state = -1)
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
+// display text on screen:
 void displayText(String txt = "text here",
                  uint8_t x = 0,
                  uint8_t y = 0,
@@ -225,15 +225,9 @@ void sample()
 
     ptrSensors[i]->getSampledData(sens_json);
   }
-
-  // read analog data
-  // TODO: this can be more efficient with dma; write seperate driver for analog
-  if (settings.sample_analog & (1 << 0))
-    doc_out["A0"] = analogRead(A0);
-  if (settings.sample_analog & (1 << 1))
-    doc_out["A1"] = analogRead(A1);
-  if (settings.sample_analog & (1 << 2))
-    doc_out["A2"] = analogRead(A2);
+  
+  // send data over serial
+  sendData();
 }
 
 void idle()
@@ -399,8 +393,6 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   setLed(1);
 
-  settings.sample_analog = (0 << 0) | (0 << 1) | (0 << 2);
-
   // i2c display
   Wire.setSDA(24);        // Add these lines  // 0 for regular rpi, 24 for qtpy
   Wire.setSCL(25);        // 1 for regular rpi, 25 for qtpy0
@@ -487,9 +479,6 @@ void loop()
   sample();
   // Serial.println("sampled");
   sampleDT = micros() - loopStart;
-
-  // send data over serial
-  sendData();
 
   if (callCounter % ((uint)settings.current_timer_freq_hz / 2) == 0)
   {

@@ -3,7 +3,6 @@ Records stuff
 """
 # create logger
 
-from queue import Queue
 from subs.log import create_logger
 logger = create_logger()
 def log(message, level="info"):
@@ -141,7 +140,7 @@ class Recorder():
         add parameters for connected chips to memory
         """
         # check which chips are connected and add them to database
-        [chip.whois() for chip in self.chip_d.items()]
+        [chip.whois() for chip in self.chip_d.values()]
         self.chip_d = {name: chip for name, chip in chip_d.items()
                        if (not chip.disconnected) and chip.record}
         

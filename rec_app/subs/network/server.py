@@ -181,10 +181,7 @@ class Server(ServClientShared):
     async def do_pcmd_data(self, request, data):
         client_ip = request.remote
         print(client_ip, data)
-
-
-
-   
+  
 if __name__ == "__main__":
     import threading as tr
     s = Server()
