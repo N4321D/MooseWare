@@ -18,6 +18,7 @@ def log(message, level="info"):
 
 
 # import sensors from driver
+TODO create new drivers and chip_d based on RPI pico system
 try:
     from subs.driver.sensors import (
         sensTest,
