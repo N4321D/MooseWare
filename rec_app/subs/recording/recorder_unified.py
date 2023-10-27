@@ -7,6 +7,8 @@ from subs.log import create_logger
 
 logger = create_logger()
 
+from multiprocessing import Queue
+
 import time
 
 
@@ -44,10 +46,33 @@ except Exception as e:
     )
 
 
-class Recorder:
+class FakeSerial():
+    """
+    This class 'fakes' serial communication with queues to keep interface
+    classes the same for internal and external devices. The queues also enable
+    running the recorder on a seperate core
+
+    """
+    q_in = Queue()
+    q_out = Queue()
+
+    def __init__(self) -> None:
+        self.readStringUntil = lambda *x: self.read()
+
+    def available(self):
+        return not self.q_in.empty()
+
+    def read(self, *args):
+        return self.q_in.get_nowait()
+
+    def println(self, line):
+        self.q_out.put(line)
+
+
+class Recorder():
     # IO variables
     doc_out = {}  # outgoing data as python dict or json
-    don_in = {}  # incoming data as python dict or json
+    doc_in = {}  # incoming data as python dict or json
 
     # sensor list
     I2CSensor = chip_d  # dict with i2c sensors and interfaces to sample
@@ -69,6 +94,9 @@ class Recorder:
 
     NAME = "Internal"  # Name of interface
 
+    Serial = None   # Placeholder for Faked Serial interface
+
+
     # settings
     settings = {
         "timer_freq_hz": 256,  # timer freq in Hz (start freq)
@@ -89,8 +117,14 @@ class Recorder:
     def __init__(
         self,
     ):
+        # init serial
+        self.Serial = FakeSerial()
+
         # check chips
         [chip.whois() for chip in self.I2CSensor.values()]
+
+        # setup
+        self.setup()
 
     def timerHandler(self, *args):
         callCounter += 1
@@ -146,6 +180,7 @@ class Recorder:
                 if (sens.connected and sens.record)
             },
         }
+        self.sendData()
 
     def idle(self):
         """
@@ -160,16 +195,90 @@ class Recorder:
         # test sensors
         [sens.test_connection() for sens in self.I2CSensor.values()]
 
-        # send current controller parameters
+        # get data from sensors
         self.doc_out = {
             "idle": True,
             "CTRL": {"name": self.NAME},
             **{sens_name: sens.getInfo() for sens_name, sens in self.I2CSensor.items()},
         }
 
+        self.sendData()
+
     def run(self):
         """
         called when starting recording, inits sensors etc
         """
-        self.feedback(self.texts['rec'])
+        self.feedback(self.texts["rec"])
+
+        # start sensors
+        [sens.init() for sens in self.I2CSensor.values()]
+
+        # set sampling freq
+        self.adjustFreq(self.settings["timer_freq_hz"])
+
+    def procCmd(self, cmd):
+        if not isinstance(cmd, dict):
+            print("unknown cmd: ", cmd)
+            return
+
+        # split commands in controller and sensor commands and send to processing functions:
+        [
+            self.control(k, v) if k == "CTRL" else self.I2CSensor[k].doCmd(v)
+            for k, v in cmd.items()
+        ]
     
+    def control(self, key, value):
+        """
+        Instructions for controller
+
+        Args:
+            key (str): name of setting to change
+            value: new value for setting
+        """
+
+        if key == 'freq':
+            self.settings['timer_freq_hz'] = value
+            self.adjustFreq(value)
+
+        elif key == 'run':
+            self.START = bool(value)
+            self.run() if self.START else self.idle()
+        
+        elif key == "name":
+            self.setName(value)
+    
+    def setName(self, name):
+        self.NAME = name
+        self.feedback(name)
+        print("TODO save name in settings?")
+    
+    def loadName(self):
+        print("TODO load name from settings")
+
+    def readInput(self):
+        while self.Serial.available():
+            # read inputs
+            self.doc_in  = self.Serial.read()
+
+            # process inputs
+            [self.procCmd(k, v) for k, v in self.doc_in.items()]
+    
+    def sendData(self):
+        self.Serial.println(self.doc_out)
+    
+    def setup(self):
+        self.loadName()
+
+        # TODO: setup i2c bus here?
+        
+        # set freq
+        self.adjustFreq(self.settings['idle_freq_hz'])
+
+        self.startTime = time.time()
+        self.loopCounter = self.callCounter - 1
+
+    def loop(self):
+        ...
+        
+
+

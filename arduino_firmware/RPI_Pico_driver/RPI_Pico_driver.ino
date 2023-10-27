@@ -225,7 +225,7 @@ void sample()
 
     ptrSensors[i]->getSampledData(sens_json);
   }
-  
+
   // send data over serial
   sendData();
 }
@@ -428,10 +428,6 @@ void setup()
   Wire1.begin();
   Wire1.setClock(400000); // i2c clockspeed (call after begin)
   Wire1.setTimeout(1);    // timeout in us
-
-  // analog
-  // analogReference(DEFAULT); // set the reference voltage to 3.3V
-  analogReadResolution(12); // set the resolution to 12 bits (0-4095)
 
   adjustFreq(settings.idle_freq_hz);
 
