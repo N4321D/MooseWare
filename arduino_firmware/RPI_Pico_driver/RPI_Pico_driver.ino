@@ -88,6 +88,8 @@ static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock
 uint loopCounter = 0; // counts the number of finished loop calls
 uint loopBehind = 0;  // difference between callCoutner & loopCounter
+uint increase_counter = 0; //count number of loops that sampling is 2x faster and sample speed can be increased
+
 
 unsigned long loopStart = 0; // timepoint of start of loop
 unsigned long lastLoop = 0;  // start time of last loop
@@ -254,6 +256,7 @@ void idle()
     JsonObject sens_json = doc_out.createNestedObject(ptrSensors[i]->SHORT_NAME);
     ptrSensors[i]->getInfo(sens_json);
     sendData();
+    if (ptrSensors[i]->connected) ptrSensors[i]->stop();    // stop sensor
   };
   delay(10);
 }
@@ -471,14 +474,12 @@ void loop()
   }
 
   // sample here:
-  // Serial.println("presampled");
   sample();
-  // Serial.println("sampled");
   sampleDT = micros() - loopStart;
 
+  // Blink Led every 0.5 seconds
   if (callCounter % ((uint)settings.current_timer_freq_hz / 2) == 0)
   {
-    // do every second
     setLed();
   }
 
@@ -486,7 +487,6 @@ void loop()
   {
     // reduce sample speed
     adjustFreq(settings.current_timer_freq_hz / 2.0);
-    loopCounter = callCounter;
   }
   if (settings.current_timer_freq_hz < settings.timer_freq_hz)
   {
@@ -500,12 +500,10 @@ void loop()
   {
     if ((settings.current_timer_freq_hz * 2) <= settings.timer_freq_hz)
     {
-      static uint increase_counter = 0;
       increase_counter++;
-      if (increase_counter % settings.loops_before_adjust == 0)
+      if (increase_counter >= settings.loops_before_adjust)
+        increase_counter = 0;
         adjustFreq(settings.current_timer_freq_hz * 2);
     }
   }
 }
-
-// TODO: Ensure that init is called when sensor has power again  (e.g. there is no i2c error but init was not called before)

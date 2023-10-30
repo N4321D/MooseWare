@@ -82,14 +82,14 @@ public:
         writeI2C(ADDRESS, 0x41, &out, 1);
     }
 
-    void set_amps(byte amp, bool ir = false)
+    void set_amps(byte amp, bool green = true)
     {
         if (amp > MAX_AMP)
             amp = MAX_AMP;
 
         static byte out[2];
 
-        if (!ir)
+        if (green)
         {
             green_amps = amp;
             out[0] = amp;
@@ -125,14 +125,14 @@ public:
         if (amp > 0)
         {
             // pulse on
-            set_amps(amp, true);
+            set_amps(amp, false);
             set_mode(false);
 
         }
         else
         {
             // pulse off
-            set_amps(green_amps, false);
+            set_amps(green_amps, true);
         }
     }
 
@@ -158,7 +158,7 @@ public:
     void stop()
     {
         // stop stim
-        set_amps(green_amps, false);
+        set_amps(green_amps, true);
         set_mode(true);
     }
 };

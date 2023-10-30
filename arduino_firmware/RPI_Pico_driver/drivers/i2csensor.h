@@ -112,14 +112,14 @@ public:
     void getSampledData(JsonObject js)
     {
         // called by loop
-        if (STATUS >= 0)
-            dataToJSON(js);
+        // if (STATUS >= 0)
+        //     dataToJSON(js);
         if (STATUS != SENT_STATUS || STATUS < 0)
         {
             js["#ST"] = STATUS;
             SENT_STATUS = STATUS;
-            dataToJSON(js);
         };
+        dataToJSON(js);
     }
 
     void getInfo(JsonObject js)

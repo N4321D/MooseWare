@@ -9,7 +9,10 @@ logger = create_logger()
 
 from multiprocessing import Queue
 
+import sched
+from threading import Lock
 import time
+
 
 
 def log(message, level="info"):
@@ -56,19 +59,26 @@ class FakeSerial():
     """
     q_in = Queue()
     q_out = Queue()
+    CLOSED = False                  # is set to True if queue is closed -> app exit
 
     def __init__(self) -> None:
+        self.CLOSED = False
         self.readStringUntil = lambda *x: self.read()
 
     def available(self):
         return not self.q_in.empty()
 
     def read(self, *args):
-        return self.q_in.get_nowait()
+        if not self.q_in._closed():
+            return self.q_in.get_nowait()
+        else:
+            self.CLOSED = True
 
     def println(self, line):
-        self.q_out.put(line)
-
+        if not self.q_out._closed:
+            self.q_out.put_nowait(line)
+        else:
+            self.CLOSED = True
 
 class Recorder():
     # IO variables
@@ -82,6 +92,7 @@ class Recorder():
     callCounter = 0  # counts the number of calls to ImterHandler by interupt clock
     loopCounter = 0  # counts the number of finished loop calls
     loopBehind = 0  # difference between callCoutner & loopCounter
+    increaseCounter = 0 # count number of loops that sampling is 2x faster and sample speed can be increased
 
     # timers
     loopStart = 0  # timepoint of start of loop
@@ -126,6 +137,7 @@ class Recorder():
 
         # setup
         self.setup()
+        self._setup_interrupts()
 
     def timerHandler(self, *args):
         callCounter += 1
@@ -182,7 +194,7 @@ class Recorder():
             },
         }
         self.sendData()
-
+    
     def idle(self):
         """
         idle loop that checks if sensors are connected etc
@@ -193,8 +205,8 @@ class Recorder():
 
         self.feedback(self.texts["idle"])
 
-        # test sensors
-        [sens.test_connection() for sens in self.I2CSensor.values()]
+        # test sensors & stop if running
+        [(sens.test_connection(), sens.stop()) for sens in self.I2CSensor.values()]
 
         # get data from sensors
         self.doc_out = {
@@ -202,7 +214,6 @@ class Recorder():
             "CTRL": {"name": self.NAME},
             **{sens_name: sens.getInfo() for sens_name, sens in self.I2CSensor.items()},
         }
-
         self.sendData()
 
     def run(self):
@@ -279,8 +290,90 @@ class Recorder():
         self.loopCounter = self.callCounter - 1
 
     def loop(self):
+        # read input data
         self.readInput()
-        ...
+
+        self.loopBehind = self.callCounter - self.loopCounter
+
+        if not self.loopBehind:
+            # next time point was not called yet
+            return
         
+        self.loopStart = time.perf_counter_ns() // 1000
+        self.loopCounter += 1
+
+        # run idle if START is not set
+        if not self.START:
+            return self.idle()
+        
+        # sample:
+        self.sample()
+        self.sampleDT = time.perf_counter_ns() // 1000 - self.loopStart
+
+        # Blink Led every 0.5 seconds
+        # if not (self.callCounter % (self.settings['current_timer_freq_hz'] // 2)):
+        #     self.setLed()
+
+        # TIMING:
+        if self.loopBehind > self.settings['loops_before_adjust']:
+            self.adjustFreq(self.settings['current_timer_freq_hz'] / 2)
+        
+        if self.settings['current_timer_freq_hz'] < self.settings['timer_freq_hz']:
+            self.lastLoop = self.loopStart
+        
+        self.dt = time.perf_counter_ns() // 1000 - self.loopStart
+
+        # increase speed if dt is short enough 
+        if (1_000_000 / (self.dt + 10)) > (self.settings['current_time_freq_hz'] * 2):
+            if self.settings['current_timer_freq_hz'] * 2 <= self.settings['timer_freq_hz']:
+                self.increaseCounter += 1
+                if self.increaseCounter >= self.settings['loops_before_adjust']:
+                    self.increaseCounter = 0
+                    self.adjustFreq(self.settings['current_timer_freq_hz'] * 2)
 
 
+    # INTERRUPT TIMER
+    def _run_loop(self):
+        """
+        runs timing and loop functions repeatedly
+        """
+        self.timerHandler()
+
+        # do not execute loop if another loop is still running
+        if self._interupt_lock.locked():
+            return
+        
+        # Run loop with lock
+        with self._interupt_lock:
+            self.loop()
+    
+
+    def _periodic_call_abs(self, scheduler, action, actionargs=()):
+        """
+        creates repeated scheduler that calls the _run_loop function
+        calls are scheduled based on current time + sample freq in seconds
+        """
+
+        if self.Serial.CLOSED:
+            [self._scheduler.cancel(e) for e in self._scheduler.queue]
+            return
+        self._next_time += (1 / self.settings['current_timer_freq_hz']) # add current freq in sec for next step
+        self._scheduler.enterabs(
+            self._next_time, 
+                           0, 
+                           self._periodic_call_abs,
+                           (self._scheduler, action, actionargs)) # schedule the next call
+        action(*actionargs) # execute the action
+
+    def _setup_interrupts(self):
+        """
+        sets up scheduler, lock and timers for interrupt timer
+        """
+        self._scheduler = sched.scheduler(time.perf_counter, time.sleep)
+        self._next_time = time.perf_counter()
+        self._interupt_lock = Lock()
+        self._periodic_call_abs(self._scheduler, self._run_loop) # start the periodic task
+        self._scheduler.run()
+    
+if __name__ == '__main__':
+    ...

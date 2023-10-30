@@ -138,3 +138,4 @@ class InternalInterface(EventDispatcher):
         """
         if self.recv_buff:
             return self.recv_buff.pop(0)
+    
