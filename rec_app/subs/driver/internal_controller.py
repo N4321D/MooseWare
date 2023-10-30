@@ -13,42 +13,42 @@ import sched
 from threading import Lock
 import time
 
-
-
 def log(message, level="info"):
     cls_name = "RECORDER"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
 
 # import sensors from driver
-TODO create new drivers and chip_d based on RPI pico system
-try:
-    from subs.driver.sensors import (
-        sensTest,
-        get_pars,
-        chip_d,
-        chip_d_short_name,
-        datatypes,
-        get_connected_chips_and_pars,
-        get_connected_chips,
-        shared_vars,
-        ReadWrite,
-        TESTING,
-    )
+from pathlib import Path
+import importlib.util
+import sys
 
-except Exception as e:
-    log("Sensor import error: {}".format(e), "warning")
-    from driver.sensors import (
-        sensTest,
-        get_pars,
-        chip_d,
-        datatypes,
-        get_connected_chips_and_pars,
-        shared_vars,
-        ReadWrite,
-        TESTING,
-    )
+driver_dir = Path("./../internal_bus_drivers") # Get the absolute path of the directory of the current script
+sys.path.append(driver_dir) # Add this directory to Python's module search path
 
+def import_classes_from_folder(folder_path):
+    """
+    scans python files in folder and imports all classes from them
+
+    Args:
+        folder_path (Path): pathlib.Path with folder that needs to be imported
+
+    Returns:
+        dict: dictonary with imported classes
+    """
+    classes = {}
+    for filename in folder_path.glob("*.py"):
+        spec = importlib.util.spec_from_file_location(filename.stem, filename)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for name, obj in module.__dict__.items():
+            if isinstance(obj, type):
+                classes[name] = obj
+
+    return classes
+
+classes = import_classes_from_folder(driver_dir)
+chip_d = {v.SHORT_NAME: v() for k, v in classes.items() if hasattr(v, "SHORT_NAME") and k != "I2CSensor"}
 
 class FakeSerial():
     """
@@ -132,28 +132,25 @@ class Recorder():
         # init serial
         self.Serial = FakeSerial()
 
-        # check chips
-        [chip.whois() for chip in self.I2CSensor.values()]
-
         # setup
         self.setup()
         self._setup_interrupts()
 
     def timerHandler(self, *args):
-        callCounter += 1
+        self.callCounter += 1
 
     def setLed(self, state):
         # set led to state if led is present onboard
         pass
 
     def feedback(self, txt):
-        print("TODO feedback", txt)
+        print("TODO feedback: ", txt)
 
     def feedbackstats(self, txt):
-        print("Feedback stats", txt)
+        print("Feedback stats: ", txt)
 
     def adjustFreq(self, freq):
-        if not (self.settings["min_freq_hz"] <= freq <= self.settings.timer_freq_hz):
+        if not (self.settings["min_freq_hz"] <= freq <= self.settings['timer_freq_hz']):
             return
         self.feedbackstats(f"{freq:.1f} Hz")
 
@@ -165,7 +162,7 @@ class Recorder():
         else:
             self.settings["loops_before_adjust"] = 10
 
-        self.settings.current_timer_freq_hz = freq
+        self.settings['current_timer_freq_hz'] = freq
         self.loopCounter = self.callCounter
 
     def sample(self):
@@ -376,4 +373,4 @@ class Recorder():
         self._scheduler.run()
     
 if __name__ == '__main__':
-    ...
+    r = Recorder()

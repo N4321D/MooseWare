@@ -1,4 +1,4 @@
-from i2csensor import I2CSensor
+from internal_bus_drivers.i2csensor import I2CSensor
 import time
 
 class OISSensor(I2CSensor):
@@ -30,7 +30,7 @@ class OISSensor(I2CSensor):
     MAX_AMP = 63                # max amplitude in mA for all leds
 
     def init(self):
-        self.setmode(True)
+        self.set_mode(True)
         self.set_amps(self.green_amps)
     
     def trigger(self):
@@ -93,7 +93,8 @@ class OISSensor(I2CSensor):
 
     def procCmd(self, key, value):
         if key == "amps":
-            self.set_amps((value / 100) * self.MAX_AMP, True)
+            self.set_amps((value / 100) * self.MAX_AMP, 
+                          True)
         elif key == "stim":
             self.start_stim(value)
     

@@ -18,6 +18,9 @@ except:
         def SMBus(self, *args):
             return self
 
+        def read_byte(self, *args):
+            return 0xFF
+        
         def read_byte_data(self, *args):
             return 0xFF
 
