@@ -87,12 +87,12 @@ class FakeSerial:
 
     def println(self, line):
         if not self.q_out._closed:
-            self.q_out.put_nowait(line)
+            self.q_out.put(line)
         else:
             self.CLOSED = True
 
 
-class Recorder:
+class InternalBus:
     # IO variables
     doc_out = {}  # outgoing data as python dict or json
     doc_in = {}  # incoming data as python dict or json
@@ -407,7 +407,7 @@ class Recorder:
 if __name__ == "__main__":
     from threading import Thread
 
-    r = Recorder()
+    r = InternalBus()
     tr = Thread(
         target=r.start,
     )

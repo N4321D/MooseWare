@@ -121,7 +121,6 @@ class Interface():
         self.connected = self.micro.connected
 
         self.shared_buffer = SharedBuffer()
-        self.delme = []
 
     def connect_buffer(self):
         self.data_structure = self.shared_buffer.data_structure
@@ -223,7 +222,7 @@ class Interface():
         # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
         #       get fifo is async or multiprocessing processed?
         while True:
-            data = self.micro.get_fifo()
+            data = self.micro.read()
 
             if data is None:
                 return

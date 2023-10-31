@@ -114,7 +114,7 @@ class DummyMicro(EventDispatcher):
     def do(self, *args, **kwargs):
         pass
 
-    def get_fifo(self):
+    def read(self):
         """
         get first received data
         """

@@ -134,13 +134,13 @@ class Pico():
     async def scan_usb(self):
         while not self.EXIT.is_set():
             try:
-                self.device = next(list_ports.grep(self.DEVICES))
-                port = self.device.device
-                log(f"connecting to: {self.device}", "info")
+                self.serial_device = next(list_ports.grep(self.serial_deviceS))
+                port = self.serial_device.device
+                log(f"connecting to: {self.serial_device}", "info")
 
-                await self._setup_reader(self.device)
-                print(f"connected to {self.device.manufacturer} "
-                      f"{self.device.description} at {port}")
+                await self._setup_reader(self.serial_device)
+                print(f"connected to {self.serial_device.manufacturer} "
+                      f"{self.serial_device.description} at {port}")
                 self.disconnected.clear()
                 self.connected.set()
                 await self.disconnected.wait()          # stop until disconnected again
@@ -157,7 +157,7 @@ class Pico():
         self.EXIT.set()
         self.connected.clear()
         self.on_disconnect(self)
-        self.device is None
+        self.serial_device is None
         self.name = ''
         
     async def _setup_reader(self, dev):
@@ -197,7 +197,7 @@ class Pico():
                 data = data.encode()
             self.protocol.write(data + b"\n")
 
-    def get_fifo(self):
+    def read(self):
         """
         get first received data
         """
@@ -210,14 +210,12 @@ class Pico():
         called when connected
         """
         print("connected")
-        pass
 
     def on_disconnect(self):
         """
         called when disconnected
         """
         print("disconnected")
-        pass
 
     def on_write_pause(self):
         """
