@@ -104,7 +104,7 @@ class IOProtocol(asyncio.Protocol):
         pass
 
 
-class Pico():
+class SerialController():
     protocol = None
     transport = None
 
@@ -134,7 +134,7 @@ class Pico():
     async def scan_usb(self):
         while not self.EXIT.is_set():
             try:
-                self.serial_device = next(list_ports.grep(self.serial_deviceS))
+                self.serial_device = next(list_ports.grep(self.DEVICES))
                 port = self.serial_device.device
                 log(f"connecting to: {self.serial_device}", "info")
 

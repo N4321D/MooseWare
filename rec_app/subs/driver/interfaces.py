@@ -14,9 +14,8 @@ from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
 
-from subs.driver.interface_drivers.pico import Pico
-from subs.driver.interface_drivers.dummy import DummyMicro
-from subs.driver.interface_drivers.internal import InternalInterface
+from rec_app.subs.driver.interface_drivers.serial_controller import SerialController
+from subs.driver.interface_drivers.internal import InternalController
 
 
 
@@ -24,7 +23,7 @@ from subs.driver.interface_drivers.internal import InternalInterface
 from subs.log import create_logger
 logger = create_logger()
 def log(message, level="info"):
-    cls_name = "SERIAL_CONTROLLER"
+    cls_name = "INTERFACE"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
 from subs.gui.vars import MAX_MEM
@@ -85,7 +84,7 @@ class Interface():
         None: "f4"
     }
 
-    def __init__(self, testing=False, **kwargs) -> None:
+    def __init__(self, Controller=SerialController, **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
         self.data_dtype_fields = {}
@@ -107,18 +106,12 @@ class Interface():
         self.__dict__.update(kwargs)
         self.app = App.get_running_app()
 
-        if testing:
-            self.micro = DummyMicro(do=self.on_incoming,
-                                    on_connect=self._on_connect,
-                                    on_disconnect=self._on_disconnect,)
-
-        else:
-            self.micro = Pico(do=self.on_incoming,
-                                 on_connect=self._on_connect,
-                                 on_disconnect=self._on_disconnect,
-                                 )
-        self.disconnected = self.micro.disconnected
-        self.connected = self.micro.connected
+        self.controller = Controller(do=self.on_incoming,
+                                on_connect=self._on_connect,
+                                on_disconnect=self._on_disconnect,
+                                )
+        self.disconnected = self.controller.disconnected
+        self.connected = self.controller.connected
 
         self.shared_buffer = SharedBuffer()
 
@@ -141,7 +134,7 @@ class Interface():
         self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
-        await self.micro.start()
+        await self.controller.start()
 
     def start_stop(self, start=None):
         if start is not None:
@@ -164,16 +157,16 @@ class Interface():
         
         # clear / reset buffers
         self.buffer_length = 0
-        self.micro.recv_buff.clear()
+        self.controller.recv_buff.clear()
 
         # write start
-        self.micro.write(json.dumps({"CTRL": out}))
+        self.controller.write(json.dumps({"CTRL": out}))
 
         self.sensors['CTRL'].status = 5 if self.run else 0
 
     def adjust_freq(self, freq):
         self.samplerate = freq
-        self.micro.write(json.dumps({"CTRL": {"freq": freq}}))
+        self.controller.write(json.dumps({"CTRL": {"freq": freq}}))
         self.current_rate = freq
 
     async def _on_connect(self, dev):
@@ -222,14 +215,16 @@ class Interface():
         # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
         #       get fifo is async or multiprocessing processed?
         while True:
-            data = self.micro.read()
+            data = self.controller.read()
 
             if data is None:
                 return
 
             try:
-                # process jsons
-                data = json.loads(data)
+                if not isinstance(data, dict):
+                    # process jsons
+                    data = json.loads(data)
+
                 if "idle" in data:
                     self.do_idle(data)
                     
@@ -242,7 +237,7 @@ class Interface():
                 self.do_feedback(data, e)
 
     def do_idle(self, data):
-        data.pop("idle")
+        del data["idle"]
 
         if self.name is None and "CTRL" not in data:
             return # wait for control pars to be received first
@@ -259,12 +254,15 @@ class Interface():
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]
 
-        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items() if (chip.status >= 0 and chip.record and hasattr(chip, 'parameter_short_names'))
+        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items() 
+                           if (chip.status >= 0 and chip.record 
+                                and hasattr(chip, 'parameter_short_names'))
                            for par in chip.parameter_short_names 
                            }   
 
     def do_new_data(self, data):
-        data['time'] = self._do_time(data['us'])
+        if ('us' in data) and ('time' not in data):
+            data['time'] = self._do_time(data['us'])
 
         self._calc_ema(data.pop('sDt'))
 
@@ -368,7 +366,7 @@ class Interface():
     def _calc_ema(self, dt):
         if dt == 0:
             return
-        dt = dt / 1e6
+        dt /= 1e6
         if self.emarate == 0:
             self.emarate = 1 / dt
         else:
@@ -384,11 +382,11 @@ class Interface():
         
         except (KeyError):
             value = json.dumps({'CTRL': value})
-            self.micro.write(value)
+            self.controller.write(value)
 
     def exit(self):
         self.start_stop(False)
-        self.micro.stop()
+        self.controller.stop()
 
 
 if __name__ == "__main__":
@@ -404,7 +402,7 @@ BoxLayout:
     orientation: 'vertical'
     Label:
         id: dev
-        text: app.control.micro.name if app.control.micro.name else "disconnected"
+        text: app.interface.controller.name if app.interface.controller.name else "disconnected"
         font_size: "40sp"
 
     Label:
@@ -420,8 +418,6 @@ BoxLayout:
         text: 'Press'
         on_release: app.start_rec()
 
-            
-        
     """
 
     class AsyncApp(App):
@@ -431,11 +427,11 @@ BoxLayout:
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
             self.loop = asyncio.get_event_loop()
-            self.control = Interface()
+            self.interface = Interface()
             # self.text_event = Clock.schedule_interval(self.send_text, 1)
 
         def start_rec(self):
-            self.control.start_stop()
+            self.interface.start_stop()
 
         def set_dev(self, dev):
             txt = f"{dev.manufacturer} - {dev.product}" if dev else 'disconnected'
@@ -458,7 +454,7 @@ BoxLayout:
         # This func will start all the "tasks", in this case the only task is the kivy app
         async def base(self):
             tasks = {asyncio.create_task(t) for t in
-                     {self.kivyCoro(), self.control.async_start()}}
+                     {self.kivyCoro(), self.interface.async_start()}}
             done, pending = await asyncio.wait(tasks, return_when="FIRST_COMPLETED")
 
         def start(self):

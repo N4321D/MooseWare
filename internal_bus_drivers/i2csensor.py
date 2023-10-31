@@ -67,6 +67,7 @@ class I2CSensor:
     def __init__(self) -> None:
         if isinstance(self.bus, DummyBus):
             self._TESTING = True
+            self.NAME = self.NAME + ":TEST_MODE" 
 
     def init(self):
         # init of sensor, overwrite in subclass

@@ -618,11 +618,6 @@ class InputOutput(EventDispatcher):
 
     # Interfaces
     async def interface_loop(self):
-        if self.app.TESTING:
-            _controller = Interface(testing=True,
-                                     on_connect=self.connect_interface,
-                                     on_disconnect=self.disconnect_interface)
-
         while not self.EXIT.is_set():
             # print("\nCONNECT LOOP " *10)
             # setup micro contoller TODO: move to loop and add function to add mulitple controllers

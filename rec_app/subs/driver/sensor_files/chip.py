@@ -6,8 +6,8 @@ class Chip():
     A class representing a chip device on an interface
 
     Attributes:
-        controller (Controller): The controller object to which the chip is connected.
-        parent_name (str): The name of the parent device or controller.
+        interface (Controller): The interface object to which the chip is connected.
+        parent_name (str): The name of the parent device or interface.
         connected (bool): Indicates if the chip is currently connected.
         status (int): Indicates the current status of the chip (see vars.py for all status options)
         name (str): The full name of the chip.
@@ -24,10 +24,10 @@ class Chip():
         do_config(par, value): Performs configuration for the chip.
 
     """
-    def __init__(self, short_name, chip_dict, controller, **kwargs) -> None:
-        self.controller = controller
+    def __init__(self, short_name, chip_dict, interface, **kwargs) -> None:
+        self.interface = interface
         self.stim_control = {}
-        self.parent_name = controller.name if controller is not None else ""      
+        self.parent_name = interface.name if interface is not None else ""      
         self.connected = True
         self.status = 0                  # indicates what chip is doing (see vars.py sensor status) negative values are errors
         self.name = short_name
@@ -69,7 +69,7 @@ class Chip():
     def send_cmd(self, val):
         val = json.dumps({self.short_name: val})
         print(f"Sending {val}")
-        self.controller.micro.write(val)
+        self.interface.controller.write(val)
         
     def update(self, chip_dict):
         self.__dict__.update(chip_dict)

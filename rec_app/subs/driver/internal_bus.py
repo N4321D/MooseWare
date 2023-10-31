@@ -27,7 +27,8 @@ import sys
 driver_dir = Path(
     "./../internal_bus_drivers"
 )  # Get the absolute path of the directory of the current script
-sys.path.append(driver_dir)  # Add this directory to Python's module search path
+if str(driver_dir.absolute()) not in sys.path:
+    sys.path.append(driver_dir)  # Add this directory to Python's module search path
 
 
 def import_classes_from_folder(folder_path):

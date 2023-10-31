@@ -205,6 +205,9 @@ class MoSens(Sensor):
         elif par == 'lin_sensitivity':
             self.current_lin_sens = value
             self.set_lin_sensitivity()
+        elif par == 'record':
+            self.record = value
+            
         else:
             print(f"Motion Sensor: config not found: {par}:{value}")
 
