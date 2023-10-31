@@ -13,6 +13,7 @@ import sched
 from threading import Lock
 import time
 
+
 def log(message, level="info"):
     cls_name = "RECORDER"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
@@ -23,8 +24,11 @@ from pathlib import Path
 import importlib.util
 import sys
 
-driver_dir = Path("./../internal_bus_drivers") # Get the absolute path of the directory of the current script
-sys.path.append(driver_dir) # Add this directory to Python's module search path
+driver_dir = Path(
+    "./../internal_bus_drivers"
+)  # Get the absolute path of the directory of the current script
+sys.path.append(driver_dir)  # Add this directory to Python's module search path
+
 
 def import_classes_from_folder(folder_path):
     """
@@ -47,19 +51,26 @@ def import_classes_from_folder(folder_path):
 
     return classes
 
-classes = import_classes_from_folder(driver_dir)
-chip_d = {v.SHORT_NAME: v() for k, v in classes.items() if hasattr(v, "SHORT_NAME") and k != "I2CSensor"}
 
-class FakeSerial():
+classes = import_classes_from_folder(driver_dir)
+chip_d = {
+    v.SHORT_NAME: v()
+    for k, v in classes.items()
+    if hasattr(v, "SHORT_NAME") and k != "I2CSensor"
+}
+
+
+class FakeSerial:
     """
     This class 'fakes' serial communication with queues to keep interface
     classes the same for internal and external devices. The queues also enable
     running the recorder on a seperate core
 
     """
+
     q_in = Queue()
     q_out = Queue()
-    CLOSED = False                  # is set to True if queue is closed -> app exit
+    CLOSED = False  # is set to True if queue is closed -> app exit
 
     def __init__(self) -> None:
         self.CLOSED = False
@@ -69,7 +80,7 @@ class FakeSerial():
         return not self.q_in.empty()
 
     def read(self, *args):
-        if not self.q_in._closed():
+        if not self.q_in._closed:
             return self.q_in.get_nowait()
         else:
             self.CLOSED = True
@@ -80,7 +91,8 @@ class FakeSerial():
         else:
             self.CLOSED = True
 
-class Recorder():
+
+class Recorder:
     # IO variables
     doc_out = {}  # outgoing data as python dict or json
     doc_in = {}  # incoming data as python dict or json
@@ -92,7 +104,7 @@ class Recorder():
     callCounter = 0  # counts the number of calls to ImterHandler by interupt clock
     loopCounter = 0  # counts the number of finished loop calls
     loopBehind = 0  # difference between callCoutner & loopCounter
-    increaseCounter = 0 # count number of loops that sampling is 2x faster and sample speed can be increased
+    increaseCounter = 0  # count number of loops that sampling is 2x faster and sample speed can be increased
 
     # timers
     loopStart = 0  # timepoint of start of loop
@@ -106,8 +118,7 @@ class Recorder():
 
     NAME = "Internal"  # Name of interface
 
-    Serial = None   # Placeholder for Faked Serial interface
-
+    Serial = None  # Placeholder for Faked Serial interface
 
     # settings
     settings = {
@@ -134,7 +145,6 @@ class Recorder():
 
         # setup
         self.setup()
-        self._setup_interrupts()
 
     def timerHandler(self, *args):
         self.callCounter += 1
@@ -144,13 +154,15 @@ class Recorder():
         pass
 
     def feedback(self, txt):
-        print("TODO feedback: ", txt)
+        # print("TODO feedback: ", txt)
+        self.Serial.println(txt)
 
     def feedbackstats(self, txt):
-        print("Feedback stats: ", txt)
+        # print("Feedback stats: ", txt)
+        self.Serial.println(txt)
 
     def adjustFreq(self, freq):
-        if not (self.settings["min_freq_hz"] <= freq <= self.settings['timer_freq_hz']):
+        if not (self.settings["min_freq_hz"] <= freq <= self.settings["timer_freq_hz"]):
             return
         self.feedbackstats(f"{freq:.1f} Hz")
 
@@ -162,7 +174,7 @@ class Recorder():
         else:
             self.settings["loops_before_adjust"] = 10
 
-        self.settings['current_timer_freq_hz'] = freq
+        self.settings["current_timer_freq_hz"] = freq
         self.loopCounter = self.callCounter
 
     def sample(self):
@@ -186,12 +198,12 @@ class Recorder():
             "sDt": self.sampleDT,
             **{
                 sens_name: sens.getSampledData()
-                for sens_name, sens in self.I2CSensor.values()
+                for sens_name, sens in self.I2CSensor.items()
                 if (sens.connected and sens.record)
             },
         }
         self.sendData()
-    
+
     def idle(self):
         """
         idle loop that checks if sensors are connected etc
@@ -203,7 +215,7 @@ class Recorder():
         self.feedback(self.texts["idle"])
 
         # test sensors & stop if running
-        [(sens.test_connection(), sens.stop()) for sens in self.I2CSensor.values()]
+        [sens.test_connection() for sens in self.I2CSensor.values()]
 
         # get data from sensors
         self.doc_out = {
@@ -212,6 +224,10 @@ class Recorder():
             **{sens_name: sens.getInfo() for sens_name, sens in self.I2CSensor.items()},
         }
         self.sendData()
+
+    def stop_sensors(self):
+        [sens.stop() for sens in self.I2CSensor.values()]
+
 
     def run(self):
         """
@@ -225,17 +241,17 @@ class Recorder():
         # set sampling freq
         self.adjustFreq(self.settings["timer_freq_hz"])
 
-    def procCmd(self, cmd):
-        if not isinstance(cmd, dict):
-            print("unknown cmd: ", cmd)
+    def procCmd(self, key, value):
+        if not isinstance(value, dict):
+            print("unknown cmd: ", key, value)
             return
 
         # split commands in controller and sensor commands and send to processing functions:
         [
-            self.control(k, v) if k == "CTRL" else self.I2CSensor[k].doCmd(v)
-            for k, v in cmd.items()
+            self.control(k, v) if key == "CTRL" else self.I2CSensor[key].doCmd(k, v)
+            for k, v in value.items()
         ]
-    
+
     def control(self, key, value):
         """
         Instructions for controller
@@ -245,43 +261,46 @@ class Recorder():
             value: new value for setting
         """
 
-        if key == 'freq':
-            self.settings['timer_freq_hz'] = value
+        if key == "freq":
+            self.settings["timer_freq_hz"] = value
             self.adjustFreq(value)
 
-        elif key == 'run':
+        elif key == "run":
             self.START = bool(value)
-            self.run() if self.START else self.idle()
-        
+            self.run() if self.START else (self.stop_sensors(), self.idle())
+
         elif key == "name":
             self.setName(value)
-    
+
     def setName(self, name):
         self.NAME = name
         self.feedback(name)
         print("TODO save name in settings?")
-    
+
     def loadName(self):
-        print("TODO load name from settings")
+        print("TODO load name from settings?")
 
     def readInput(self):
         while self.Serial.available():
             # read inputs
-            self.doc_in  = self.Serial.read()
+            self.doc_in = self.Serial.read()
 
             # process inputs
-            [self.procCmd(k, v) for k, v in self.doc_in.items()]
-    
+            if isinstance(self.doc_in, dict):
+                [self.procCmd(k, v) for k, v in self.doc_in.items()]
+            else:
+                self.feedback(f"Error Processing CMD: {self.doc_in}")
+
     def sendData(self):
         self.Serial.println(self.doc_out)
-    
+
     def setup(self):
         self.loadName()
 
         # TODO: setup i2c bus here?
-        
+
         # set freq
-        self.adjustFreq(self.settings['idle_freq_hz'])
+        self.adjustFreq(self.settings["idle_freq_hz"])
 
         self.startTime = time.time()
         self.loopCounter = self.callCounter - 1
@@ -295,14 +314,14 @@ class Recorder():
         if not self.loopBehind:
             # next time point was not called yet
             return
-        
+
         self.loopStart = time.perf_counter_ns() // 1000
         self.loopCounter += 1
 
         # run idle if START is not set
         if not self.START:
             return self.idle()
-        
+
         # sample:
         self.sample()
         self.sampleDT = time.perf_counter_ns() // 1000 - self.loopStart
@@ -312,22 +331,24 @@ class Recorder():
         #     self.setLed()
 
         # TIMING:
-        if self.loopBehind > self.settings['loops_before_adjust']:
-            self.adjustFreq(self.settings['current_timer_freq_hz'] / 2)
-        
-        if self.settings['current_timer_freq_hz'] < self.settings['timer_freq_hz']:
+        if self.loopBehind > self.settings["loops_before_adjust"]:
+            self.adjustFreq(self.settings["current_timer_freq_hz"] / 2)
+
+        if self.settings["current_timer_freq_hz"] < self.settings["timer_freq_hz"]:
             self.lastLoop = self.loopStart
-        
+
         self.dt = time.perf_counter_ns() // 1000 - self.loopStart
 
-        # increase speed if dt is short enough 
-        if (1_000_000 / (self.dt + 10)) > (self.settings['current_time_freq_hz'] * 2):
-            if self.settings['current_timer_freq_hz'] * 2 <= self.settings['timer_freq_hz']:
+        # increase speed if dt is short enough
+        if (1_000_000 / (self.dt + 10)) > (self.settings["current_timer_freq_hz"] * 2):
+            if (
+                self.settings["current_timer_freq_hz"] * 2
+                <= self.settings["timer_freq_hz"]
+            ):
                 self.increaseCounter += 1
-                if self.increaseCounter >= self.settings['loops_before_adjust']:
+                if self.increaseCounter >= self.settings["loops_before_adjust"]:
                     self.increaseCounter = 0
-                    self.adjustFreq(self.settings['current_timer_freq_hz'] * 2)
-
+                    self.adjustFreq(self.settings["current_timer_freq_hz"] * 2)
 
     # INTERRUPT TIMER
     def _run_loop(self):
@@ -339,11 +360,10 @@ class Recorder():
         # do not execute loop if another loop is still running
         if self._interupt_lock.locked():
             return
-        
+
         # Run loop with lock
         with self._interupt_lock:
             self.loop()
-    
 
     def _periodic_call_abs(self, scheduler, action, actionargs=()):
         """
@@ -354,13 +374,16 @@ class Recorder():
         if self.Serial.CLOSED:
             [self._scheduler.cancel(e) for e in self._scheduler.queue]
             return
-        self._next_time += (1 / self.settings['current_timer_freq_hz']) # add current freq in sec for next step
+        self._next_time += (
+            1 / self.settings["current_timer_freq_hz"]
+        )  # add current freq in sec for next step
         self._scheduler.enterabs(
-            self._next_time, 
-                           0, 
-                           self._periodic_call_abs,
-                           (self._scheduler, action, actionargs)) # schedule the next call
-        action(*actionargs) # execute the action
+            self._next_time,
+            0,
+            self._periodic_call_abs,
+            (self._scheduler, action, actionargs),
+        )  # schedule the next call
+        action(*actionargs)  # execute the action
 
     def _setup_interrupts(self):
         """
@@ -369,8 +392,38 @@ class Recorder():
         self._scheduler = sched.scheduler(time.perf_counter, time.sleep)
         self._next_time = time.perf_counter()
         self._interupt_lock = Lock()
-        self._periodic_call_abs(self._scheduler, self._run_loop) # start the periodic task
+        self._periodic_call_abs(
+            self._scheduler, self._run_loop
+        )  # start the periodic task
         self._scheduler.run()
-    
-if __name__ == '__main__':
+
+    def start(self):
+        """
+        Call to start loop
+        """
+        self._setup_interrupts()
+
+
+if __name__ == "__main__":
+    from threading import Thread
+
     r = Recorder()
+    tr = Thread(
+        target=r.start,
+    )
+    tr.start()
+
+    def print_loop(*args):
+        last = 0
+        while True:
+            txt = r.Serial.q_out.get()
+            if time.time() - last > 1:
+                print(txt)
+                last = time.time()
+            time.sleep(1/512)
+
+    tr2 = Thread(target=print_loop)
+    tr2.start()
+
+    s = r.Serial
+    print("control controller with s.q_in.put({'CTRL':{'run': 1}})")

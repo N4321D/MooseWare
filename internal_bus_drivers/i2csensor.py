@@ -96,10 +96,11 @@ class I2CSensor:
     def getSampledData(self):
         # called from recorder to get data
         self.dict_out = {}
-        if self.STATUS != self.SENT_STATUS or self.SENT_STATUS < 0:
+        if (self.STATUS != self.SENT_STATUS) or (self.STATUS < 0):
             self.dict_out["#ST"] = self.STATUS
             self.SENT_STATUS = self.STATUS
-        return self.dataToJSON()
+        self.dataToJSON()
+        return self.dict_out
 
     def getInfo(self):
         """
@@ -142,6 +143,7 @@ class I2CSensor:
             self.bus.read_byte(self.ADDRESS)
             self.STATUS = 0
             self.connected = True
+            
         except OSError:
             self.STATUS = -5
             self.connected = False
@@ -165,8 +167,10 @@ class I2CSensor:
 
             if not any(self.sampled_data):
                 self.zero_count += 1
+
             if self.STATUS < 0:
                 self.STATUS = 0  # reset status on succesful read
+
             return True
 
         except OSError:

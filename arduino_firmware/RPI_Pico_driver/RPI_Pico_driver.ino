@@ -256,7 +256,6 @@ void idle()
     JsonObject sens_json = doc_out.createNestedObject(ptrSensors[i]->SHORT_NAME);
     ptrSensors[i]->getInfo(sens_json);
     sendData();
-    if (ptrSensors[i]->connected) ptrSensors[i]->stop();    // stop sensor
   };
   delay(10);
 }
@@ -318,12 +317,19 @@ void control(const char *key, JsonVariant value)
   if (strcmp(key, "run") == 0)
   {
     START = value.as<bool>();
-    START ? run() : idle();
+    START ? run() : (stop_sensors(), idle());
   }
   if (strcmp(key, "name") == 0)
   {
     setName(value.as<const char *>());
   }
+}
+
+
+void stop_sensors(){
+  for (byte i = 0; i < sizeof(ptrSensors) / sizeof(ptrSensors[0]); i++){
+  if (ptrSensors[i]->connected) ptrSensors[i]->stop();    // stop sensor
+  };
 }
 
 void setName(const char *name)
@@ -446,6 +452,7 @@ void loop()
     feedback("Serial Disconnected");
     // stop recording
     START = 0;
+    stop_sensors();
     idle();
     while (!Serial)
     {

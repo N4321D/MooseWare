@@ -103,7 +103,8 @@ class MOTSensor(I2CSensor):
                 mp = self.ang_sens_val[self.ang_sensitivity]  
             else:  
                 mp = self.lin_sens_val[self.lin_sensitivity]        
-            self.dict_out[par] = (int.to_bytes((msb, lsb), byteorder='little', signed=True) / 0x7FFF) * mp
+            self.dict_out[par] = (int.from_bytes((msb, lsb), byteorder='little', signed=True) / 0x7FFF) * mp
+        return self.dict_out
         
     def procCmd(self, key, value):
         if key == "asens":

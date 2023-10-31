@@ -42,7 +42,6 @@ class OISSensor(I2CSensor):
             self.error_count = 0
         else:
             self.error_count += 1
-    
 
     # Chip specific Functions
     def set_mode(self, green=True):
@@ -73,7 +72,7 @@ class OISSensor(I2CSensor):
     
     def start_stim(self, time_amps):
 
-        self.stim_end = time.perf_counter_ns // 1_000_000 + time_amps[0]
+        self.stim_end = time.perf_counter_ns() // 1_000_000 + time_amps[0]
         
         amp = int((time_amps[1] / 100) * self.MAX_AMP)
         
@@ -90,6 +89,7 @@ class OISSensor(I2CSensor):
         self.dict_out['BGR'] = int.from_bytes(self.sampled_data[:2], byteorder='little') / 0xFFFF
         self.dict_out['STIM'] = self.stim_amp
         self.dict_out['PWR'] = self.green_amps
+        return self.dict_out
 
     def procCmd(self, key, value):
         if key == "amps":

@@ -19,27 +19,29 @@ public:
         strcpy(NAME, "Optical Intrisic Signal");
         strcpy(SHORT_NAME, "OIS");
         ADDRESS = 0x5B;
-        N_PARS = 3;
+        N_PARS = 4;
         strcpy(PARAMETER_NAMES[1], "OIS Signal");
         strcpy(PARAMETER_NAMES[0], "OIS Background");
         strcpy(PARAMETER_NAMES[2], "OIS Stimulation mA");
+        strcpy(PARAMETER_NAMES[3], "OIS Green LED mA");
         strcpy(PARAMETER_SHORT_NAMES[1], "SIG");
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
+        strcpy(PARAMETER_SHORT_NAMES[3], "PWR");
 
         control_str = "["
-            "{\"title\": \"Blue Light Stimulation\","
-            "\"type\": \"stim\","
-            "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
-            "\"key\": \"stim\"},"
-            "{\"title\": \"Green Led Intensity\","
-            "\"type\": \"plusminin\","
-            "\"desc\": \"Green LED power in %\","
-            "\"key\": \"amps\","
-            "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
-            "\"limits\": [0, 100],"    // [min, max]
-            "\"live_widget\": true}"
-            "]";
+                      "{\"title\": \"Blue Light Stimulation\","
+                      "\"type\": \"stim\","
+                      "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
+                      "\"key\": \"stim\"},"
+                      "{\"title\": \"Green Led Intensity\","
+                      "\"type\": \"plusminin\","
+                      "\"desc\": \"Green LED power in %\","
+                      "\"key\": \"amps\","
+                      "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+                      "\"limits\": [0, 100],"                                             // [min, max]
+                      "\"live_widget\": true}"
+                      "]";
     }
     void init()
     {
@@ -77,7 +79,7 @@ public:
          *   0: "ir"
          *   1: "green"
          */
-        STATUS = green? 5: 10;
+        STATUS = green ? 5 : 10;
         const byte out = green ? 0x87 : 0x97;
         writeI2C(ADDRESS, 0x41, &out, 1);
     }
@@ -112,7 +114,7 @@ public:
             {
                 // stop stim
                 stim_amp = 0;
-                set_amps(green_amps, false);
+                set_amps(green_amps, true);
                 set_mode(true);
             }
         }
@@ -127,7 +129,6 @@ public:
             // pulse on
             set_amps(amp, false);
             set_mode(false);
-
         }
         else
         {
@@ -139,9 +140,10 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        js["SIG"] = (float)sampled_data[1] / 0xFFFF; 
+        js["SIG"] = (float)sampled_data[1] / 0xFFFF;
         js["BGR"] = (float)sampled_data[0] / 0xFFFF;
         js["STIM"] = stim_amp;
+        js["PWR"] = green_amps;
     }
 
     void procCmd(const char *key, JsonVariant value)
@@ -150,7 +152,8 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps((byte)((value.as<float>() / 100) * MAX_AMP), false);
+            set_amps((byte)((value.as<float>() / 100) * MAX_AMP), true);
+        // start stim
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }
