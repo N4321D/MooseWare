@@ -117,7 +117,7 @@ class InternalBus:
 
     START = False
 
-    NAME = "Internal"  # Name of interface
+    NAME = "InternalBus"  # Name of interface
 
     Serial = None  # Placeholder for Faked Serial interface
 
@@ -141,11 +141,18 @@ class InternalBus:
     def __init__(
         self,
     ):
+        # # check test mode
+        if any([sens._TESTING
+            for sens in self.I2CSensor.values()
+        ]):
+            self.NAME += " TEST"
+
         # init serial
         self.Serial = FakeSerial()
 
         # setup
         self.setup()
+
 
     def timerHandler(self, *args):
         self.callCounter += 1
@@ -155,11 +162,9 @@ class InternalBus:
         pass
 
     def feedback(self, txt):
-        # print("TODO feedback: ", txt)
         self.Serial.println(txt)
 
     def feedbackstats(self, txt):
-        # print("Feedback stats: ", txt)
         self.Serial.println(txt)
 
     def adjustFreq(self, freq):
@@ -213,7 +218,7 @@ class InternalBus:
         if self.settings["current_timer_freq_hz"] != self.settings["idle_freq_hz"]:
             self.adjustFreq(self.settings["idle_freq_hz"])
 
-        self.feedback(self.texts["idle"])
+        # self.feedback(self.texts["idle"])
 
         # test sensors & stop if running
         [sens.test_connection() for sens in self.I2CSensor.values()]
@@ -244,7 +249,7 @@ class InternalBus:
 
     def procCmd(self, key, value):
         if not isinstance(value, dict):
-            print("unknown cmd: ", key, value)
+            self.feedback("Cannot unpack cmd: ", key, value)
             return
 
         # split commands in controller and sensor commands and send to processing functions:
@@ -289,8 +294,9 @@ class InternalBus:
             # process inputs
             if isinstance(self.doc_in, dict):
                 [self.procCmd(k, v) for k, v in self.doc_in.items()]
+
             else:
-                self.feedback(f"Error Processing CMD: {self.doc_in}")
+                self.feedback(f"Error Processing CMD: {type(self.doc_in)}: {self.doc_in}")
 
     def sendData(self):
         self.Serial.println(self.doc_out)
@@ -403,6 +409,8 @@ class InternalBus:
         Call to start loop
         """
         self._setup_interrupts()
+    
+        
 
 
 if __name__ == "__main__":

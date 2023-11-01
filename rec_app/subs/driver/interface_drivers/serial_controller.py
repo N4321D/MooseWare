@@ -3,11 +3,15 @@ Interface driver for RPi pico micro controller
 
 
 """
+from subs.driver.interface_drivers.template import Controller
 
 import asyncio
 import serial
 import serial_asyncio
 from serial.tools import list_ports
+
+import json
+from json import JSONDecodeError
 
 
 # Logger
@@ -18,10 +22,9 @@ try:
         cls_name = "PICO"
         getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 except:
-    log = lambda *args: print("PICO", *args)
+    log = lambda *args: print("SERIAL_CTRL", *args)
 
 class IOProtocol(asyncio.Protocol):
-    buffer = []
     sub_buffer = bytearray()  # sub buffer to cache incoming data until '\n is found'
     parent = None
     transport = None
@@ -43,15 +46,11 @@ class IOProtocol(asyncio.Protocol):
     def data_received(self, data):
         self.save(data)
 
-    def save(self, data):
-        self.sub_buffer.extend(data)
+    def save(self, incoming):
+        self.sub_buffer.extend(incoming)
         if self.DELIMITER in self.sub_buffer:
-            *_buff, self.sub_buffer = self.sub_buffer.split(self.DELIMITER)
-            self.buffer.extend(_buff)
-            self.do()
-
-        if len(self.buffer) > self.RECV_BUFFER_SIZE:
-            del self.buffer[0]
+            *data, self.sub_buffer = self.sub_buffer.split(self.DELIMITER)
+            [self.do(d) for d in data]
 
     def write(self, data):
         if self.transport is not None:
@@ -79,7 +78,7 @@ class IOProtocol(asyncio.Protocol):
             f'resume writing; buffer: {self.transport.get_write_buffer_size()}')
         self.on_write_resume()
 
-    def do(self):
+    def do(self, *args, **kwargs):
         """
         placeholder for function which is called with new data
         """
@@ -104,19 +103,15 @@ class IOProtocol(asyncio.Protocol):
         pass
 
 
-class SerialController():
+class SerialController(Controller):
     protocol = None
     transport = None
-
-    recv_buff = []
-    write_buffer = []
 
     # indicates that usb dev is disconnected
     disconnected = asyncio.Event()
     connected = asyncio.Event()
 
     device = None                                   # placeholder for device
-    name = ''
 
     EXIT = asyncio.Event()                     # exit flag
     SCAN_DT = 1                                   # dt for usb scan
@@ -158,7 +153,6 @@ class SerialController():
         self.connected.clear()
         self.on_disconnect(self)
         self.serial_device is None
-        self.name = ''
         
     async def _setup_reader(self, dev):
         baudrate = self.BAUDRATE  # min(self.BAUDRATE, max(dev.BAUDRATES))
@@ -172,38 +166,30 @@ class SerialController():
                                                    parity=serial.PARITY_NONE,
                                                    stopbits=serial.STOPBITS_ONE)
                                                )
-        self.recv_buff = self.protocol.buffer
-        self.protocol.do = self.do
+        self.protocol.do = self._preprocess_data
         self.protocol.on_connection_loss = self._on_connection_loss
         self.protocol.on_write_pause, self.protocol.on_write_resume = self.on_write_pause, self.on_write_resume
 
-        self.name = f"{dev.manufacturer} - {dev.product}"
         await self.on_connect(dev)
-
-    def do(self, *args, **kwargs):
-        '''
-        placeholder for function called with new data
-        # TODO: run async? 
-        '''
-        pass
 
     def write(self, data):
         if not self.protocol:
             return
-        if isinstance(data, (list, tuple, set)):
-            self.protocol.write_lines(data)
-        else:
-            if isinstance(data, str):
-                data = data.encode()
-            self.protocol.write(data + b"\n")
-
-    def read(self):
-        """
-        get first received data
-        """
-        if self.recv_buff:
-            return self.recv_buff.pop(0)
         
+        data = json.dumps(data)
+        # if isinstance(data, (list, tuple, set)):
+        #     self.protocol.write_lines(data)
+        # else:
+        if isinstance(data, str):
+            data = data.encode()
+        self.protocol.write(data + b"\n")    
+
+    def _preprocess_data(self, data):
+        try:
+            data = json.loads(data)
+        except (JSONDecodeError, TypeError):
+            pass  # data is string (feedback etc)
+        self.do(data)
 
     async def on_connect(self, dev):
         """

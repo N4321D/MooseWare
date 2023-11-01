@@ -1,6 +1,5 @@
 import asyncio
 import json
-from json import JSONDecodeError
 
 import time
 
@@ -121,7 +120,7 @@ class Interface():
 
         if self.name in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=self.data_name)
+            self.shared_buffer.reset(par=self.name)
 
     def set_buffer_dims(self, *args):
         bytes_per_samplepoint = self.line_buffer.nbytes
@@ -157,19 +156,18 @@ class Interface():
         
         # clear / reset buffers
         self.buffer_length = 0
-        self.controller.recv_buff.clear()
 
         # write start
-        self.controller.write(json.dumps({"CTRL": out}))
+        self.controller.write({"CTRL": out})
 
         self.sensors['CTRL'].status = 5 if self.run else 0
 
     def adjust_freq(self, freq):
         self.samplerate = freq
-        self.controller.write(json.dumps({"CTRL": {"freq": freq}}))
+        self.controller.write({"CTRL": {"freq": freq}})
         self.current_rate = freq
 
-    async def _on_connect(self, dev):
+    async def _on_connect(self, *args):
         while self.name is None:
             await asyncio.sleep(0.1)
 
@@ -177,7 +175,7 @@ class Interface():
         self.sensors["CTRL"] = Chip(
                 "CTRL", 
                 {"name": "Controller",
-                 "control_str": json.dumps([
+                 "control_str": [
                      {
                     "title": "Controller Name",
                     "type": "string",
@@ -190,7 +188,7 @@ class Interface():
                     "key": "freq",
                     "steps": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]], 
                     "limits": [1, 2048],                            
-                    "live_widget": True}]),
+                    "live_widget": True}],
                  "#ST": 0,
                  "parameter_names": [],
                  "parameter_short_names": []}, 
@@ -211,30 +209,20 @@ class Interface():
     def on_disconnect(self, dev):
         pass
 
-    def on_incoming(self):
+    def on_incoming(self, data):
         # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
         #       get fifo is async or multiprocessing processed?
-        while True:
-            data = self.controller.read()
+        if isinstance(data, dict):
+            if "idle" in data:
+                self.do_idle(data)
+                
+            else:
+                # incoming data
+                self.do_new_data(data)
 
-            if data is None:
-                return
-
-            try:
-                if not isinstance(data, dict):
-                    # process jsons
-                    data = json.loads(data)
-
-                if "idle" in data:
-                    self.do_idle(data)
-                    
-                else:
-                    # incoming data
-                    self.do_new_data(data)
-
-            except (JSONDecodeError, TypeError) as e:
-                # no a json but feedback message
-                self.do_feedback(data, e)
+        else:
+            # no dictionary packed data, probably feedback
+            self.do_feedback(data)
 
     def do_idle(self, data):
         del data["idle"]
@@ -245,12 +233,14 @@ class Interface():
         for name, chip_d in data.items():
             status = chip_d.pop('#ST') if '#ST' in chip_d else 0
             if name not in self.sensors:
+                # Create chip widget
                 self.sensors[name] = Chip(name, chip_d, self)
-
             else:
+                # update chip widget stats
                 self.sensors[name].update(chip_d)
 
             self.sensors[name].status = status
+
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]
 
@@ -287,7 +277,7 @@ class Interface():
                 self.line_buffer[parname] = val.get(subpar[0], np.nan)
                 # get status
                 if par != _last_chip:
-                    _status = val.get('#ST')
+                    _status = val.pop('#ST') if '#ST' in val else None
                     if _status is not None:
                         self.sensors[par].status = _status
                     _last_chip = par
@@ -299,12 +289,13 @@ class Interface():
         
 
     def create_line_buffer(self, data):
+
         dtypes = []
         
         sensors = self.sensors
         for par, val in data.items():
             if isinstance(val, dict):
-                _status = val.get("#ST")
+                _status = val.pop('#ST') if '#ST' in val else None
                 if par in sensors:
                     if _status is not None:
                         sensors[par].status = _status
@@ -315,9 +306,9 @@ class Interface():
                     dtypes += [(f"{par}_{subpar}", 
                                     self.dtypes.get(subpar, self.dtypes[None]))
                                           for subpar in val]
-        else:
-            dtypes.append((par, self.dtypes.get(par, self.dtypes[None])))
-        
+            else:
+                dtypes.append((par, self.dtypes.get(par, self.dtypes[None])))
+                
         self.line_buffer = np.zeros(1, dtype=dtypes)
 
     def save_data(self,):
@@ -328,16 +319,20 @@ class Interface():
             self.line_buffer
         )
 
-    def do_feedback(self, data, e):
-        try:
+    def do_feedback(self, data):
+        """
+        Processes feedback from the controller (data that is not packed in dictionaries)
+
+        Args:
+            data (str, bytes): data to process
+        """
+        if isinstance(data, (bytes, bytearray)):
             data = data.decode()
-            if data[-4:] == " Hz\r":
-                self.current_rate = float(data[:-4])
-            else:
-                print(f"{self.name}:    {data}")
-        except:
-            log(f"feedback error: {type(e)} - {e}: {data}", "info")
-            self.error_data = data
+        if data[-4:] == " Hz\r":
+            self.current_rate = float(data[:-4])
+        else:
+            print(f"FEEDBACK:{self.name}:    {data}")
+
 
     def set_dev(self, dev):
         txt = f"{dev.manufacturer} - {dev.product}" if dev else 'disconnected'
@@ -347,7 +342,15 @@ class Interface():
             pass
 
     def _do_time(self, us):
-        # get microseconds
+        """
+        convert relative micro seconds to absolute time
+
+        Args:
+            us (int): microseconds since start of recording
+
+        Returns:
+            float: absolute time
+        """
         sec = us * 1e-6
 
         if self.lasttime is None:
@@ -377,11 +380,12 @@ class Interface():
     def _send_cmd(self, value):
         # process controller commands / config
         try:
+            # cmd is record and intended for interface
             self.record = value['record']
-            return
         
-        except (KeyError):
-            value = json.dumps({'CTRL': value})
+        except KeyError:
+            # send cmd to controller
+            value = {'CTRL': value}
             self.controller.write(value)
 
     def exit(self):

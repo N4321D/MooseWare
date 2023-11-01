@@ -33,16 +33,19 @@ class Chip():
         self.name = short_name
         self.short_name = short_name
         self.record = True
-        self.__dict__.update(kwargs)
-        
+        self.__dict__.update(kwargs)        
         self.update(chip_dict)
+
+        _buttons = chip_dict.get("control_str", [])
+        if isinstance(_buttons, (str, bytes, bytearray)):
+            _buttons = json.loads(_buttons or "[]")
+
         self.control_panel = [{"title": "Record",
                      "type": "bool",
                      "desc": "Record data from this device",
                      "key": "record",
                      "default_value": True,
-                  }] + (json.loads(chip_dict.get("control_str") or "[]")
-                 )
+                  }] + _buttons
         
         # add section for saving settings
         for i in self.control_panel:
@@ -67,9 +70,9 @@ class Chip():
         super().__setattr__(name, value)
 
     def send_cmd(self, val):
-        val = json.dumps({self.short_name: val})
-        print(f"Sending {val}")
-        self.interface.controller.write(val)
+        # val = json.dumps({self.short_name: val})
+        # self.interface.controller.write(val)
+        self.interface.controller.write({self.short_name: val})
         
     def update(self, chip_dict):
         self.__dict__.update(chip_dict)

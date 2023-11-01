@@ -72,7 +72,7 @@ kv_str = """
         pos_hint: {'x': 0.7, 'top': 0.1}
         size_hint: (.2, .1)
         text: app.IO.selected_interface
-        types: ['Internal', *app.IO.interfaces]
+        types: app.IO.interfaces
         text_size: self.size
         color: WHITE # if app.IO.selected_interface != "Internal" else MO
         background_color: MO_BGR # if app.IO.selected_interface != "Internal" else BUT_BGR
@@ -385,20 +385,6 @@ class RecScreen(Scr):
         # (when touching screen)
         if auto:
             return self.plotonoff_event()
-
-    # def button_press(self, lastpresstime):
-    #     if not self.nudging:
-    #         self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, True)
-    #     else:
-    #         # stop wakeup protocol when pressing button
-    #         self.autostim.stop_wakeup_prot()
-    #         self.nudging = False
-
-    # def button_release(self, touch_duration, *args):
-    #     if not self.nudging:
-    #         self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, False)
-    #         if self.app.IO.running:
-    #             self.app.IO.add_note(f'Button Pressed for {touch_duration:.2f} seconds')
 
     def ois_updates(self, *args):
         _i = self.app.IO.sensor_status["OIS:status"][0]        

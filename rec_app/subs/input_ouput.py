@@ -125,7 +125,7 @@ class InputOutput(EventDispatcher):
     # dictionary with connected interfaces
     interfaces = DictProperty({})
     # plot micro or internal sensors
-    selected_interface = StringProperty("Internal")
+    selected_interface = StringProperty("")
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
@@ -134,10 +134,6 @@ class InputOutput(EventDispatcher):
     # dict with sensorname: shared table with sensor readouts
     _sensor_status = shared_vars
 
-    # placholder for recorder
-    rec = None
-    # mp process for recorder
-    rec_pr = None
     # placeholder for saver
     sav = None
     # interval to create new file
@@ -201,24 +197,6 @@ class InputOutput(EventDispatcher):
         self.get_buf = self.shared_buffer.get_buf
 
         self.create_notes()
-
-        # Create controller for recording with internal sensors
-        self.internalControl = Chip(
-                "CTRL", 
-                {"name": "Controller",
-                 "control_str": ("[{\"title\": \"Recording Frequency\","
-                                "\"type\": \"plusminin\","
-                                "\"desc\": \"Recording Frequency (Hz)\","
-                                "\"key\": \"freq\","
-                                "\"steps\": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]]," 
-                                "\"limits\": [1, 2048]}"
-                                "]"),
-                 "i2c_status": 0,
-                 "parameter_names": [],
-                 "parameter_short_names": []}, 
-            None, send_cmd=self._internal_commands, parent_name="Internal Recording",
-            freq=256,
-            )
 
         # limit seconds back
         def limit_secondsback(_, x):
@@ -310,16 +288,6 @@ class InputOutput(EventDispatcher):
 
             else:
                 self.sav = None
-        
-            if self.internalControl.record:
-                self.rec = Recorder(start_rate=self.internalControl.freq,
-                                    MAX_MEM=MAX_MEM)                                # MAX_MEM is defined in vars.py
-
-                # limit viewable data to max buffered data
-                self.app.rec_vars.data_length = int(self.rec.buffer_length
-                                                    / self.internalControl.freq)
-
-                self.rec_pr = self.rec.start()
 
             # start controllers
             for dev_name in self.interfaces:
@@ -342,9 +310,6 @@ class InputOutput(EventDispatcher):
         has stopped
         """
         if not self.client_ip:
-            if self.rec is not None:
-                self.rec.stop()
-
             self.stop_all_stims()
 
             for dev_name in self.interfaces:
@@ -352,10 +317,6 @@ class InputOutput(EventDispatcher):
 
             if self.sav:
                 self.sav.stop()
-
-            if self.rec_pr is not None:
-                self.rec_pr.join()
-                self.rec_pr = None
 
             self.add_note(f"Recording stopped")
 
@@ -373,12 +334,9 @@ class InputOutput(EventDispatcher):
         `chip_command("LED_chip", 'set_led', 30, color='blue')` sets leds on on 
             this driver to 30% blue light 
         """
-        if self.running and self.rec is not None:
-            self.rec.q_in.put((chip, method, args, kwargs))
-
-        else:
-            if chip in self.sensors:
-                getattr(self.sensors[chip], method)(*args, **kwargs)
+        print("IO URGENT TODO: send commands to internal interface here (for roomcontrol etc)", 
+              chip, method, args, kwargs)
+        self.chip_command = lambda *_, **__: None
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):
@@ -438,19 +396,17 @@ class InputOutput(EventDispatcher):
         """
         Check connected sensors and status
         """
-        if self.selected_interface != "Internal":
-            dev = self.interfaces[self.selected_interface]
-            if dev.name != self.selected_interface:
-                self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
-                self.selected_interface = dev.name
-    
-            sensors = {k: v for k, v in dev.sensors.items()
-                       if v.connected}
-            pars = dev.parameters
-        else:
-            # internal sensors
-            sensors, pars = get_connected_chips_and_pars(filter_pars=True)
-            sensors = {**{"CTRL": self.internalControl}, **sensors}
+        dev = self.interfaces.get(self.selected_interface)
+        if not dev:
+            return
+        if dev.name != self.selected_interface:
+            self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = dev.name
+
+        sensors = {k: v for k, v in dev.sensors.items()
+                    if v.connected}
+        pars = dev.parameters
+
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
@@ -491,13 +447,7 @@ class InputOutput(EventDispatcher):
         - maxrate: float, max limit sample rate
         - emarate: float, current exponential avg theoretical max sample rate
         """
-    
-        if self.selected_interface == "Internal" and self.rec is not None:
-            _new_pars = {k: self.rec.pars.get(k)[0]
-                            for k in self.rec.pars.array.dtype.fields}
-            self.rec_pars.update(_new_pars)
-
-        elif self.selected_interface != "Internal" and self.interfaces:
+        if self.interfaces:
             dev = self.interfaces[self.selected_interface]
             _new_pars = {
                 "samplerate": dev.current_rate,
@@ -527,11 +477,7 @@ class InputOutput(EventDispatcher):
         [('parameter', graph1, kwargs),
         ('parameter', graph2, kwargs), etc.]
         """
-        if self.selected_interface != "Internal":
-            plot_buff_name = self.selected_interface
-            
-        else:
-            plot_buff_name = "data"
+        plot_buff_name = self.selected_interface 
 
         if ((not self.plotting
                 and not (self.sending and self.client))
@@ -618,13 +564,25 @@ class InputOutput(EventDispatcher):
 
     # Interfaces
     async def interface_loop(self):
-        while not self.EXIT.is_set():
-            # print("\nCONNECT LOOP " *10)
-            # setup micro contoller TODO: move to loop and add function to add mulitple controllers
+        tasks = set()
+        # internal interface
+        from subs.driver.interface_drivers.internal import InternalController
+
+        _internal_controller = Interface(on_connect=self.connect_interface,
+                                     on_disconnect=self.disconnect_interface,
+                                     Controller=InternalController)
+        
+        tasks.add(_internal_controller.async_start())  # wait for connection until device
+
+        _controller = Interface(on_connect=self.connect_interface,
+                                    on_disconnect=self.disconnect_interface)
+        
+        tasks.add(_controller.async_start())
+        proc_async_exceptions(await asyncio.gather(*tasks, return_exceptions=True))
+        # while not self.EXIT.is_set():
+        #     # setup micro contoller TODO: move to loop and add function to add mulitple controllers
             
-            _controller = Interface(on_connect=self.connect_interface,
-                                     on_disconnect=self.disconnect_interface)
-            await _controller.async_start()  # wait for connection until device
+  
 
     def connect_interface(self, interface):
         self.interfaces[interface.name] = interface
@@ -1009,10 +967,6 @@ class InputOutput(EventDispatcher):
 
         [chip.unlink() for chip in self._sensor_status.values()]
     
-    def _internal_commands(self, value):
-        if "freq" in value:
-            self.internalControl.__dict__['freq'] = value['freq']  # do not use = her to set value -> trigger inf loop
-
 
 # TESTING
 if __name__ == '__main__':

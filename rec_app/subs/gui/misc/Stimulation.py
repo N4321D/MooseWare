@@ -496,10 +496,10 @@ class StimController(StimGenerator, EventDispatcher):
         placeholder for function that is called when stim is created
 
         Args:
-            duration (float): duration of stim in seconds
+            duration (float): duration of stim in ms
             amp (float): amp of stim in %
         """
-        print(f"stim for {duration} seconds, {amp}% amplitude")
+        print(f"stim for {duration} mili seconds, {amp}% amplitude")
     
     def get_panel(self, *args):
         stim_panel = StimPanel(self)

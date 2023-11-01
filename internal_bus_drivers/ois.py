@@ -15,7 +15,7 @@ class OISSensor(I2CSensor):
                    "key": "stim",
                    },
                    {"title": "Green Led Intensity",
-                    "type": "plusmin",
+                    "type": "plusminin",
                     "desc": "Green LED power in %",
                     "key": "amps",
                     "steps": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]],
@@ -95,7 +95,7 @@ class OISSensor(I2CSensor):
         if key == "amps":
             self.set_amps((value / 100) * self.MAX_AMP, 
                           True)
-        elif key == "stim":
+        elif key == "stim" and value != 0:
             self.start_stim(value)
     
     def stop(self):

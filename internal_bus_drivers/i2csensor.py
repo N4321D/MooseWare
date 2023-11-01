@@ -67,7 +67,6 @@ class I2CSensor:
     def __init__(self) -> None:
         if isinstance(self.bus, DummyBus):
             self._TESTING = True
-            self.NAME = self.NAME + ":TEST_MODE" 
 
     def init(self):
         # init of sensor, overwrite in subclass
@@ -135,8 +134,9 @@ class I2CSensor:
             self.procCmd(key, value)
 
     def procCmd(self, key, value):
-        # custom incoming commands, overwrite in subclass
-        # e.g. if key == 'test': self.test = value
+        """
+        Custom incoming commands, overwrite in subclass
+        """
         pass
 
     def test_connection(self):
