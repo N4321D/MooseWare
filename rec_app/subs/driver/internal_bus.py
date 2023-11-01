@@ -170,7 +170,7 @@ class InternalBus:
     def adjustFreq(self, freq):
         if not (self.settings["min_freq_hz"] <= freq <= self.settings["timer_freq_hz"]):
             return
-        self.feedbackstats(f"{freq:.1f} Hz")
+        self.feedbackstats(f"{freq:.1f} Hz\r")
 
         # limit loops before adjust to 10 if sample rate is lower than TIME BEFORE ADJUST
         if freq > 10:
