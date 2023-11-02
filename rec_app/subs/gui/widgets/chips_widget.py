@@ -253,6 +253,7 @@ class ChipPanel(MySettingsWithNoMenu):
         #     # value = bool(value)  
         #     self.parent_button.chip_enabled = value
 
+        # send to chip
         self.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
