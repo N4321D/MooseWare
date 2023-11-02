@@ -5,8 +5,11 @@ and integrates them into IO
 
 
 from serial import list_ports
-from subs.driver.interfaces import Interface
 
+from subs.driver.interfaces import Interface
+from subs.driver.interface_drivers.internal import InternalController
+
+import asyncio
 
 
 class InterfaceFactory():
