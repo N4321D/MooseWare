@@ -1,8 +1,8 @@
 """
 Template for sensor drivers
 """
-
 import time
+from typing import final
 
 try:
     import smbus
@@ -64,6 +64,7 @@ class I2CSensor:
     bus = bus
     _TESTING = False  # indicates that dummy bus is loaded for testing
 
+    @final
     def __init__(self) -> None:
         if isinstance(self.bus, DummyBus):
             self._TESTING = True
@@ -72,6 +73,7 @@ class I2CSensor:
         # init of sensor, overwrite in subclass
         pass
 
+    @final
     def check_and_trigger(self):
         """
         checks if sensor needs to be resetted and triggers sensor
@@ -93,6 +95,7 @@ class I2CSensor:
         else:
             self.error_count += 1
 
+    @final
     def getSampledData(self):
         # called from recorder to get data
         self.dict_out = {}
@@ -102,10 +105,10 @@ class I2CSensor:
         self.dataToJSON()
         return self.dict_out
 
+    @final
     def getInfo(self):
         """
         called from idle loop in recorder to get sensor status
-
         """
         self.SENT_STATUS = self.STATUS
 
@@ -125,6 +128,7 @@ class I2CSensor:
         )
         return self.dict_out
 
+    @final
     def doCmd(self, key, value):
         # called to process incoming commands
         if key == "record":
@@ -139,6 +143,7 @@ class I2CSensor:
         """
         pass
 
+    @final
     def test_connection(self):
         try:
             self.bus.read_byte(self.ADDRESS)
@@ -149,6 +154,7 @@ class I2CSensor:
             self.STATUS = -5
             self.connected = False
 
+    @final
     def readI2C(self, address, reg, numBytes, reverse=False):
         """
         Read bytes from an I2C sensor
@@ -179,6 +185,7 @@ class I2CSensor:
             self.STATUS = -5
             return False
 
+    @final
     def writeI2C(self, address, reg, data):
         """
         write an array of data to a register of the i2c sensor
@@ -211,6 +218,7 @@ class I2CSensor:
         # called to stop sensor, overwrite for specific sensors
         pass
 
+    @final
     def reset(self):
         # called to reset, DO NOT OVERWRITE (edit reset_procedure instead)
         self.STATUS = 0

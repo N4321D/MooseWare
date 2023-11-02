@@ -4,6 +4,7 @@ Template for Controller
 
 import asyncio
 from subs.log import create_logger
+from typing import final
 
 
 logger = create_logger()
@@ -15,6 +16,7 @@ class Controller:
 
     device = None # placeholder for the device or bus driver
 
+    @final
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
         self._setup()
@@ -64,6 +66,7 @@ class Controller:
         """
         self.do(data)
 
+    @final
     def _log(self, message, level="info"):
         getattr(logger, level)(f"CTRL:{self.name}: {message}")
   
