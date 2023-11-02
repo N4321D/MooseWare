@@ -84,7 +84,7 @@ class ChipLabel(Button):
         else:
             self.chip = chip
             self.chip_name = chip.name
-            self.text = chip.short_name # chip.short_name.replace(" ", "\n")
+            self.text = chip.short_name
             self.chip_enabled = chip.record
             default_opts = chip.return_default_options()
         
@@ -240,22 +240,19 @@ class ChipPanel(MySettingsWithNoMenu):
                             for item in self.chip.json_panel()]
                 
     def on_config_change(self, config, section, option, value):
-        if option == "record":
-            # value = config.getboolean(section, option)
-            value = bool(value)
-            self.parent_button.chip_enabled = value# config.getboolean(section, option)
-            
-        else:
-            try:
-                value = literal_eval(value)
-            except (ValueError, SyntaxError):
-                # Value is string
-                pass
+        # convert string to number
+        try:
+            value = literal_eval(value)
+        except (ValueError, SyntaxError):
+            # Value is string
+            pass
 
-        if self.parent_button.app.IO.selected_interface == "Internal" and self.parent_button.app.IO.running:
-            self.parent_button.app.IO.chip_command(self.chip.name, "do_config", option, value)
-        else:
-            self.chip.do_config(option, value)
+        # convert to bool specifically for booleans
+        if option == "record":
+            # value = bool(value)
+            self.parent_button.chip_enabled = value
+
+        self.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
         """

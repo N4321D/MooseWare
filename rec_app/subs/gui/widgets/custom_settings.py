@@ -331,6 +331,8 @@ class SettingInWithPlusMinus(SettingNumeric):
         self.value = str(_val)
     
 class SettingStim(SettingItem):
+    stim_control = {}
+
     def __init__(self, live_widget=None, **kwargs):
         self.stim_panel = None
         super().__init__(**kwargs)
@@ -489,6 +491,11 @@ if __name__ == "__main__":
             self.settings_cls = SettingsWithSidebar
             print("Press f1 to open settings")
 
+            class IO():
+                running = True
+            
+            self.IO = IO()
+
         def build(self):
             return Builder.load_string(
 r"""
@@ -612,12 +619,12 @@ Button:
                 "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],  # [low range, high range, step]
                 "limits": [0, 65],   # [min, max]
             },
-            {"title": "SettingStim",
-                "type": "stim",
-                "desc": "Stim settings button",
-                "section": "test",
-                "key": "stim",
-            }
+            # {"title": "SettingStim",
+            #     "type": "stim",
+            #     "desc": "Stim settings button",
+            #     "section": "test",
+            #     "key": "stim",
+            # }
             
             ]
             settings.add_json_panel("Test", self.config, data=json.dumps(panel))

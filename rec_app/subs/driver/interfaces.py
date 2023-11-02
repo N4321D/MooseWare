@@ -256,7 +256,6 @@ class Interface:
             self.sensors[name].status = status
 
             if name == "CTRL":
-                print(data["CTRL"])
                 [setattr(self, k, v) for k, v in chip_d.items()]
 
         self.parameters = {

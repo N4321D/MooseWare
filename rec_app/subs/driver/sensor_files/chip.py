@@ -77,10 +77,6 @@ class Chip():
         Args:
             val (dict): command to send to chip or interface
         """
-        # val = json.dumps({self.short_name: val})
-        # self.interface.controller.write(val)
-        # self.interface.controller.write({self.short_name: val})
-        # print("POEP")
         
     def update(self, chip_dict):
         self.__dict__.update(chip_dict)
