@@ -17,19 +17,21 @@ from rec_app.subs.driver.interface_drivers.serial_controller import SerialContro
 from subs.driver.interface_drivers.internal import InternalController
 
 
-
 # Logger
 from subs.log import create_logger
+
 logger = create_logger()
+
+
 def log(message, level="info"):
     cls_name = "INTERFACE"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
+
 from subs.gui.vars import MAX_MEM
 
 
-
-class Interface():
+class Interface:
     """
     A class representing an interface for microcontroller devices
 
@@ -72,16 +74,12 @@ class Interface():
         _calc_ema(dt): Calculates the Exponential Moving Average (EMA) rate.
         exit(): Stops the controller and performs cleanup operations.
     """
+
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
     MAX_MEM = 128e6
 
     # specify dtypes for saving
-    dtypes = {
-        "time": "f8",
-        "us": "u4",
-        "sDt": "u2",
-        None: "f4"
-    }
+    dtypes = {"time": "f8", "us": "u4", "sDt": "u2", None: "f4"}
 
     def __init__(self, Controller=SerialController, **kwargs) -> None:
         self.sensors = {}
@@ -93,22 +91,23 @@ class Interface():
         self.starttime = 0
         self.lasttime = None
 
-        self.record = True               # enable or disable recording from controller
+        self.record = True  # enable or disable recording from controller
         self.run = False
-        self.samplerate = 256            # start sample rate
-        self.emarate = 0                 # theoretical max
-        self.current_rate = 0            # current sample rate
-     
+        self.samplerate = 256  # start sample rate
+        self.emarate = 0  # theoretical max
+        self.current_rate = 0  # current sample rate
+
         # length of buffer (will be calculated from buffer_time * startrate)
         self.line_buffer = np.array([])
         self.buffer_length = 0
         self.__dict__.update(kwargs)
         self.app = App.get_running_app()
 
-        self.controller = Controller(do=self.on_incoming,
-                                on_connect=self._on_connect,
-                                on_disconnect=self._on_disconnect,
-                                )
+        self.controller = Controller(
+            do=self.on_incoming,
+            on_connect=self._on_connect,
+            on_disconnect=self._on_disconnect,
+        )
         self.disconnected = self.controller.disconnected
         self.connected = self.controller.connected
 
@@ -124,11 +123,11 @@ class Interface():
 
     def set_buffer_dims(self, *args):
         bytes_per_samplepoint = self.line_buffer.nbytes
-        
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
-        self.shared_buffer.add_parameter(self.name, self.line_buffer.dtype, 
-                                         self.buffer_length)
+        self.shared_buffer.add_parameter(
+            self.name, self.line_buffer.dtype, self.buffer_length
+        )
 
         self.parameters = set(self.line_buffer.dtype.names)
 
@@ -143,7 +142,7 @@ class Interface():
 
         out = {"run": int(self.run)}
 
-        if self.run:
+        if self.run and self.record:
             # Start
             self.lasttime = None
             self.starttime = time.time()
@@ -153,14 +152,14 @@ class Interface():
         else:
             # Stop
             self.starttime = 0
-        
+
         # clear / reset buffers
         self.buffer_length = 0
 
         # write start
         self.controller.write({"CTRL": out})
 
-        self.sensors['CTRL'].status = 5 if self.run else 0
+        self.sensors["CTRL"].status = 5 if self.run else 0
 
     def adjust_freq(self, freq):
         self.samplerate = freq
@@ -173,29 +172,44 @@ class Interface():
 
         self.connect_buffer()
         self.sensors["CTRL"] = Chip(
-                "CTRL", 
-                {"name": "Controller",
-                 "control_str": [
-                     {
-                    "title": "Controller Name",
-                    "type": "string",
-                    "desc": "set / change the name of the controller",
-                    "key": "name",
+            "CTRL",
+            {
+                "name": "Controller",
+                "control_str": [
+                    {
+                        "title": "Controller Name",
+                        "type": "string",
+                        "desc": "set / change the name of the controller",
+                        "key": "name",
                     },
-                     {"title": "Recording Frequency",
-                    "type": "plusminin",
-                    "desc": "Recording Frequency (Hz)",
-                    "key": "freq",
-                    "steps": [[1, 32, 8], [32, 64, 32], [64, 128, 64], [128, 256, 128], [256, 512, 256], [512, 1024, 256], [1024, 2048, 512]], 
-                    "limits": [1, 2048],                            
-                    "live_widget": True}],
-                 "#ST": 0,
-                 "parameter_names": [],
-                 "parameter_short_names": []}, 
-            self, 
-            send_cmd=self._send_cmd)
+                    {
+                        "title": "Recording Frequency",
+                        "type": "plusminin",
+                        "desc": "Recording Frequency (Hz)",
+                        "key": "freq",
+                        "steps": [
+                            [1, 32, 8],
+                            [32, 64, 32],
+                            [64, 128, 64],
+                            [128, 256, 128],
+                            [256, 512, 256],
+                            [512, 1024, 256],
+                            [1024, 2048, 512],
+                        ],
+                        "limits": [1, 2048],
+                        "live_widget": True,
+                    },
+                ],
+                "#ST": 0,
+                "parameter_names": [],
+                "parameter_short_names": [],
+            },
+            self,
+            send_cmd=self._send_cmd,
+        )
 
-        self.sensors['CTRL'].name = self.name
+        self.sensors["CTRL"].name = self.name
+        # self.record = self.sensors["CTRL"].record
 
         self.on_connect(self)
 
@@ -210,12 +224,12 @@ class Interface():
         pass
 
     def on_incoming(self, data):
-        # TODO speed_up by making async? -> on incoming sets flag and when flag is set 
+        # TODO speed_up by making async? -> on incoming sets flag and when flag is set
         #       get fifo is async or multiprocessing processed?
         if isinstance(data, dict):
             if "idle" in data:
                 self.do_idle(data)
-                
+
             else:
                 # incoming data
                 self.do_new_data(data)
@@ -228,13 +242,13 @@ class Interface():
         del data["idle"]
 
         if self.name is None and "CTRL" not in data:
-            return # wait for control pars to be received first
+            return  # wait for control pars to be received first
 
         for name, chip_d in data.items():
-            status = chip_d.pop('#ST') if '#ST' in chip_d else 0
+            status = chip_d.pop("#ST") if "#ST" in chip_d else 0
             if name not in self.sensors:
                 # Create chip widget
-                self.sensors[name] = Chip(name, chip_d, self)
+                self.sensors[name] = Chip(name, chip_d, self, send_cmd=self._send_cmd)
             else:
                 # update chip widget stats
                 self.sensors[name].update(chip_d)
@@ -242,81 +256,92 @@ class Interface():
             self.sensors[name].status = status
 
             if name == "CTRL":
+                print(data["CTRL"])
                 [setattr(self, k, v) for k, v in chip_d.items()]
 
-        self.parameters = {f"{k}_{par}": k for k, chip in self.sensors.items() 
-                           if (chip.status >= 0 and chip.record 
-                                and hasattr(chip, 'parameter_short_names'))
-                           for par in chip.parameter_short_names 
-                           }   
+        self.parameters = {
+            f"{k}_{par}": k
+            for k, chip in self.sensors.items()
+            if (
+                chip.status >= 0
+                and chip.record
+                and hasattr(chip, "parameter_short_names")
+            )
+            for par in chip.parameter_short_names
+        }
 
     def do_new_data(self, data):
-        if ('us' in data) and ('time' not in data):
-            data['time'] = self._do_time(data['us'])
+        if ("us" in data) and ("time" not in data):
+            data["time"] = self._do_time(data["us"])
 
-        self._calc_ema(data.pop('sDt'))
+        self._calc_ema(data.pop("sDt"))
 
         if self.buffer_length == 0:
             self.create_line_buffer(data)
 
             # create buffer based on incoming data
             self.set_buffer_dims()
-            
+
             # save dtype of current data
             self.data_dtype_fields = self.line_buffer.dtype.fields
-        
-        
+
         _last_chip = ""
         # unpack dictionary
         for parname in self.data_dtype_fields:
             par, *subpar = parname.split("_")
             val = data.get(par, np.nan)
-            
+
             if isinstance(val, dict):
                 # add data to line buffer
                 self.line_buffer[parname] = val.get(subpar[0], np.nan)
                 # get status
                 if par != _last_chip:
-                    _status = val.pop('#ST') if '#ST' in val else None
+                    _status = val.pop("#ST") if "#ST" in val else None
                     if _status is not None:
                         self.sensors[par].status = _status
                     _last_chip = par
             else:
                 # add data to line_buffer
                 self.line_buffer[par] = val
-                
+
         self.save_data()
-        
 
     def create_line_buffer(self, data):
-
         dtypes = []
-        
+
         sensors = self.sensors
         for par, val in data.items():
             if isinstance(val, dict):
-                _status = val.pop('#ST') if '#ST' in val else None
+                _status = val.pop("#ST") if "#ST" in val else None
                 if par in sensors:
                     if _status is not None:
                         sensors[par].status = _status
                 else:
-                    sensors[par] = Chip(par, {"status":  _status if _status is not None else 0}, self)
-                if  _status is None or _status >= 0:
+                    sensors[par] = Chip(
+                        par,
+                        {"status": _status if _status is not None else 0},
+                        self,
+                        send_cmd=self._send_cmd,
+                    )
+                if _status is None or _status >= 0:
                     # if status is ok, add dtype to pars
-                    dtypes += [(f"{par}_{subpar}", 
-                                    self.dtypes.get(subpar, self.dtypes[None]))
-                                          for subpar in val]
+                    dtypes += [
+                        (f"{par}_{subpar}", self.dtypes.get(subpar, self.dtypes[None]))
+                        for subpar in val
+                    ]
             else:
                 dtypes.append((par, self.dtypes.get(par, self.dtypes[None])))
-                
+
         self.line_buffer = np.zeros(1, dtype=dtypes)
 
-    def save_data(self,):
+    def save_data(
+        self,
+    ):
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.name,
             # tuple(data.values())
-            self.line_buffer
+            self.line_buffer,
         )
 
     def do_feedback(self, data):
@@ -333,9 +358,8 @@ class Interface():
         else:
             print(f"FEEDBACK:{self.name}:    {data}")
 
-
     def set_dev(self, dev):
-        txt = f"{dev.manufacturer} - {dev.product}" if dev else 'disconnected'
+        txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
         try:
             self.root.ids.dev.text = txt
         except:
@@ -360,7 +384,7 @@ class Interface():
 
         # track last time to count loop of us
         if sec < self.lasttime:
-            self.starttime += (0xFFFF_FFFF / 1e6)
+            self.starttime += 0xFFFF_FFFF / 1e6
         self.lasttime = sec
 
         t = self.starttime + sec
@@ -373,19 +397,19 @@ class Interface():
         if self.emarate == 0:
             self.emarate = 1 / dt
         else:
-            n = self.samplerate * 60   # ema over 1 min
+            n = self.samplerate * 60  # ema over 1 min
             self.emarate = (self.emarate - (self.emarate / n)) + ((1 / dt) / n)
-    
-    
+
     def _send_cmd(self, value):
         # process controller commands / config
+        print("CMD_OUT: ", value)
         try:
             # cmd is record and intended for interface
-            self.record = value['record']
-        
+            self.record = value["CTRL"]["record"]
+            self.sensors["CTRL"].record = value["CTRL"]["record"]
+
         except KeyError:
             # send cmd to controller
-            value = {'CTRL': value}
             self.controller.write(value)
 
     def exit(self):
@@ -394,8 +418,7 @@ class Interface():
 
 
 if __name__ == "__main__":
-    """
-    """
+    """ """
     from kivy.app import App
     from kivy.lang.builder import Builder
     from kivy.clock import Clock
@@ -438,7 +461,7 @@ BoxLayout:
             self.interface.start_stop()
 
         def set_dev(self, dev):
-            txt = f"{dev.manufacturer} - {dev.product}" if dev else 'disconnected'
+            txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
             try:
                 self.root.ids.dev.text = txt
             except:
@@ -453,12 +476,14 @@ BoxLayout:
             and 'async__init__' for app
             """
 
-            await self.async_run(async_lib='asyncio')
+            await self.async_run(async_lib="asyncio")
 
         # This func will start all the "tasks", in this case the only task is the kivy app
         async def base(self):
-            tasks = {asyncio.create_task(t) for t in
-                     {self.kivyCoro(), self.interface.async_start()}}
+            tasks = {
+                asyncio.create_task(t)
+                for t in {self.kivyCoro(), self.interface.async_start()}
+            }
             done, pending = await asyncio.wait(tasks, return_when="FIRST_COMPLETED")
 
         def start(self):

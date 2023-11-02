@@ -71,7 +71,9 @@ class OISSensor(I2CSensor):
                 self.set_mode(True)
     
     def start_stim(self, time_amps):
-
+        print(time_amps)
+        if time_amps == 0:
+            time_amps = (0, 0)
         self.stim_end = time.perf_counter_ns() // 1_000_000 + time_amps[0]
         
         amp = int((time_amps[1] / 100) * self.MAX_AMP)

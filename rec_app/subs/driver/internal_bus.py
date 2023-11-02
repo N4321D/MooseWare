@@ -424,7 +424,7 @@ if __name__ == "__main__":
 
     def print_loop(*args):
         last = 0
-        while True:
+        while not r.Serial.q_out._closed:
             txt = r.Serial.q_out.get()
             if time.time() - last > 1:
                 print(txt)

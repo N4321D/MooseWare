@@ -66,13 +66,21 @@ class Chip():
             if name == 'status':
                 self.connected = (value >= 0)
             else:
-                self.send_cmd({name: value})
+                self.send_cmd({self.short_name: {name: value}})
+
         super().__setattr__(name, value)
 
     def send_cmd(self, val):
+        """
+        Place Holder for send cmd from interface
+
+        Args:
+            val (dict): command to send to chip or interface
+        """
         # val = json.dumps({self.short_name: val})
         # self.interface.controller.write(val)
-        self.interface.controller.write({self.short_name: val})
+        # self.interface.controller.write({self.short_name: val})
+        # print("POEP")
         
     def update(self, chip_dict):
         self.__dict__.update(chip_dict)
@@ -81,8 +89,11 @@ class Chip():
         return self.control_panel
     
     def do_config(self, par, value):
-        self.send_cmd({par: value})
+        if (par == "stim") and ("stim_Strt_T" in value):
+            return
+            
+        self.send_cmd({self.short_name: {par: value}})
     
     def do_stim(self, par, dur, amp):
-        self.send_cmd({par: [dur, amp]})
+        self.send_cmd({self.short_name: {par: [dur, amp]}})
 
