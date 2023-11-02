@@ -23,7 +23,6 @@ smbus = "^1.1.post2"
 rpi-gpio = "^0.7.1"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
 ipython = "^8.3.0"
 
 [tool.poetry.group.dev.dependencies]

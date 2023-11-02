@@ -1,4 +1,4 @@
-from internal_bus_drivers.i2csensor import I2CSensor
+from i2csensor import I2CSensor
 import time
 
 class OISSensor(I2CSensor):
@@ -52,13 +52,15 @@ class OISSensor(I2CSensor):
         if amp > self.MAX_AMP:
             amp = self.MAX_AMP
         
+        amp = int(amp)
+        
         if green:
             self.green_amps = amp
-            out = (amp, amp)
+            out = [amp, amp]
         
         else:
             self.stim_amp = amp
-            out = (0b10 << 6 | amp, 0b1<<7 | amp)
+            out = [0b10 << 6 | amp, 0b1<<7 | amp]
 
         self.writeI2C(self.ADDRESS, 0x42, out)
 

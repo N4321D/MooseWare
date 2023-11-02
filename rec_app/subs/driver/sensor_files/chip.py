@@ -86,8 +86,12 @@ class Chip():
         return self.control_panel
     
     def do_config(self, par, value):
-        if (par == "stim") and ("stim_Strt_T" in value):
-            return
+        if (par == "stim"):
+            try:
+                value["stim_Strt_T"]
+                return
+            except:
+                pass
             
         self.send_cmd({self.short_name: {par: value}})
     

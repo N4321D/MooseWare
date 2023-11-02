@@ -13,7 +13,7 @@ from kivy.event import EventDispatcher
 from kivy.app import App
 from kivy.clock import Clock
 
-from rec_app.subs.driver.interface_drivers.serial_controller import SerialController
+from subs.driver.interface_drivers.serial_controller import SerialController
 from subs.driver.interface_drivers.internal import InternalController
 
 

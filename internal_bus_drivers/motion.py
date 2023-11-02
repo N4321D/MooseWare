@@ -1,4 +1,4 @@
-from internal_bus_drivers.i2csensor import I2CSensor
+from i2csensor import I2CSensor
 
 
 class MOTSensor(I2CSensor):
@@ -64,7 +64,7 @@ class MOTSensor(I2CSensor):
         [
             self.writeI2C(self.ADDRESS, r, data)
             for r, data in {
-                0x0D: (0b01000000, 0b00000011), # set intial data ready & FIFO bits
+                0x0D: [0b01000000, 0b00000011], # set intial data ready & FIFO bits
                 # 0x0E: 0b00000011, # set initial data ready bits
                 0x12: 0b00000100, # set to i2c mode
                 0x18: [0b00111000] * 2, # enable X Y and Z axis on linear /ang sensor 

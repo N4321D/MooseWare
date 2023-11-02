@@ -15,6 +15,7 @@ except:
     from math import sin, tan
 
     class DummyBus:
+        DUMMY_BUS = True
         def SMBus(self, *args):
             return self
 
@@ -66,7 +67,7 @@ class I2CSensor:
 
     @final
     def __init__(self) -> None:
-        if isinstance(self.bus, DummyBus):
+        if hasattr(self.bus, "DUMMY_BUS"):
             self._TESTING = True
 
     def init(self):
@@ -186,7 +187,10 @@ class I2CSensor:
             return False
 
     @final
-    def writeI2C(self, address, reg, data):
+    def writeI2C(self, 
+                 address: int, 
+                 reg: int, 
+                 data: (list, int)):
         """
         write an array of data to a register of the i2c sensor
 
@@ -196,7 +200,7 @@ class I2CSensor:
             data (list, int): data to write, can be list for multiple bytes
         """
         try:
-            if isinstance(data, (list, tuple)):
+            if isinstance(data, list):
                 # write list
                 self.bus.write_i2c_block_data(address, reg, data)
             else:

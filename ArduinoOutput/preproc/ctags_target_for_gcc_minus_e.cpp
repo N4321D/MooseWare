@@ -404,8 +404,8 @@ void setup()
   setLed(1);
 
   // i2c display
-  Wire.setSDA(24); // Add these lines  // 0 for regular rpi, 24 for qtpy
-  Wire.setSCL(25); // 1 for regular rpi, 25 for qtpy0
+  Wire.setSDA(0); // Add these lines  // 0 for regular rpi, 24 for qtpy
+  Wire.setSCL(1); // 1 for regular rpi, 25 for qtpy0
   Wire.begin(); //
   Wire.setClock(400000); // i2c clockspeed (call after begin)
   Wire.setTimeout(1);
@@ -433,8 +433,8 @@ void setup()
 
   feedback("setting up i2c");
   // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!
-  Wire1.setSDA(22); // 2 for regular rpi, 22 for qtpy
-  Wire1.setSCL(23); // 3 for regular rpi, 23 for qtpy
+  Wire1.setSDA(2); // 2 for regular rpi, 22 for qtpy
+  Wire1.setSCL(3); // 3 for regular rpi, 23 for qtpy
   Wire1.begin();
   Wire1.setClock(400000); // i2c clockspeed (call after begin)
   Wire1.setTimeout(1); // timeout in us
