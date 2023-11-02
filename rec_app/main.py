@@ -67,7 +67,7 @@ log(f"{'SERVER' if SERVER else 'CLIENT'} MODE", "info")
 Config.write()
 
 # import subs
-from subs.input_ouput import InputOutput, TESTING
+from subs.input_ouput import InputOutput
 
 from subs.verify import MACADDRESS, check_serial, Encryption  # import key verification
 
@@ -175,7 +175,6 @@ class guiApp(App):
     ADMIN = ADMIN
     MACADDRESS = MACADDRESS
     ROOM_CONTROL = BooleanProperty(True)
-    TESTING = TESTING
 
     Button = LedButton()
 
@@ -351,7 +350,6 @@ if (system() == 'Linux'
         async def mainCoro():
             global app  
             # start GUI
-            # guiApp.TESTING = False
             app = guiApp()        
             await app.async_run()
 

@@ -18,8 +18,6 @@ from kivy.lang import Builder
 from subs.gui.widgets.custom_settings import MySettingsWithNoMenu
 from kivy.config import ConfigParser
 
-from subs.driver.sensors import chip_d
-
 
 from kivy.properties import BooleanProperty
 
@@ -130,11 +128,12 @@ class ChipWidget(BoxLayout):
         super().__init__(**kwargs)
         self.chip_labels = {}
         self.app = App.get_running_app()
-        self.sensor_status = self.app.IO.sensor_status
         
         Builder.load_string(kv_str)
         self.create_buttons()
         self.app.IO.bind(sensors=self.create_buttons)
+        Clock.schedule_interval(
+            self.change_color, 0.25)
 
     def create_buttons(self, *args):
         self.clear_widgets()
@@ -153,21 +152,14 @@ class ChipWidget(BoxLayout):
             [self.add_widget(Button(background_color=CW_BUT_BGR_EN)) 
              for i in range(min_buttons - len(self.chip_labels))]
         
-        self.app.IO.bind(sensor_status=self.change_color)
         self.change_color()
 
     def change_color(self, *args):
         for chip in self.chip_labels:
             _live_widget = self.chip_labels[chip].settings.contains_live_widgets
 
-            _resets = self.app.IO.sensor_status.get(f"{chip}:reset_count", (0,))[0]
-
             # status color
-            try:
-                status_color = self.chip_labels[chip].chip.status
-
-            except:
-                status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
+            status_color = self.chip_labels[chip].chip.status
 
             if status_color < -1:
                 status_color = -1
@@ -181,6 +173,8 @@ class ChipWidget(BoxLayout):
             else:
                 bg_col = CW_BUT_BGR_EN
             
+            # Resets
+            _resets = self.chip_labels[chip].chip.resets
             if _resets and self.app.IO.running:
                 bg_col = (*CW_BUT_BGR_RES[:3], 0.3 if not _live_widget else 0.6)
             
@@ -188,8 +182,9 @@ class ChipWidget(BoxLayout):
                 if (status_color < 0 and self.app.IO.running 
                     and self.chip_labels[chip].chip.connected):
                     bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
+            
             except Exception as e:
-                print(e, "chips_widget line 192")
+                raise e
 
             if self.chip_labels[chip].background_color != bg_col:
                 self.chip_labels[chip].background_color = bg_col
@@ -269,30 +264,4 @@ class ChipPanel(MySettingsWithNoMenu):
             
 
 if __name__ == "__main__":
-    from random import randint
-    from kivy.clock import Clock
-    from kivy.properties import DictProperty
-    from kivy.event import EventDispatcher
-
-    class SIO(EventDispatcher):
-        sensors = DictProperty(chip_d)
-        sensor_status = DictProperty({f"{i}:status": 0 for i in chip_d})
-
-        def change_status(self, *args):
-            self.sensor_status.update({i: randint(0, 4) for i in self.sensor_status})
-
-    class MyApp(App):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.IO = SIO()
-            
-        def build(self,):
-            Clock.schedule_interval(lambda *x: self.IO.change_status(), 1)
-            self.chip = ChipWidget()
-            return self.chip
-    
-    app = MyApp()
-    app.run()
-
-
-# TODO: make sure settings panel starts with right values for bools -> use 1 and 0 and convert to true & false
+    pass

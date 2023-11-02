@@ -21,11 +21,8 @@ import subs.network.client as nw_client     # import network client
 import subs.network.server as nw_server     # import network client
 
 from subs.recording.saver import Saver
-from subs.recording.recorder import (Recorder, chip_d, get_connected_chips_and_pars, 
-                                     ReadWrite, TESTING, shared_vars)
-from subs.driver.interfaces import Interface
 
-from subs.driver.sensor_files.chip import Chip    # used to here to create button to control internal recording etc
+from subs.driver.interfaces import Interface
 
 from subs.recording.buffer import SharedBuffer
 from kivy.properties import (BooleanProperty, NumericProperty,
@@ -110,7 +107,6 @@ class InputOutput(EventDispatcher):
     # main vars
     dt = {'input': 0.01,
           'plotting': 1,
-          'sensor stats': 0.2,
           }                                                              # Wait times for input & plot loop
     recording_name = ConfigParserProperty("Untitled", "recording",
                                           "recording_name", "app_config",
@@ -120,8 +116,7 @@ class InputOutput(EventDispatcher):
     sensors = DictProperty({})
     # list with plottable pars (to choose in graph)
     choices = ListProperty([])
-    # function to read & write directly to chips
-    readwrite = ReadWrite()
+    
     # dictionary with connected interfaces
     interfaces = DictProperty({})
     # plot micro or internal sensors
@@ -129,11 +124,7 @@ class InputOutput(EventDispatcher):
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
-    # kivy dict with sensor status created from _sensor_stats
-    sensor_status = DictProperty({})
-    # dict with sensorname: shared table with sensor readouts
-    _sensor_status = shared_vars
-
+    
     # placeholder for saver
     sav = None
     # interval to create new file
@@ -207,8 +198,6 @@ class InputOutput(EventDispatcher):
         self.bind(secondsback=limit_secondsback)
 
         Clock.schedule_once(self.__kv_init__, 0)
-        Clock.schedule_interval(
-            self._update_sensor_stats, self.dt['sensor stats'])
 
         self.async_main_coro_task = asyncio.create_task(self.main_coro())
 
@@ -265,9 +254,7 @@ class InputOutput(EventDispatcher):
             save (bool, optional): Flag indicating whether to save the data or not. Defaults to True.
 
         Attributes:
-            rec (Recorder): Recording object.
             sav (Saver): Saver object.
-            rec_pr (Process): Process for running the recorder.
             running (bool): Flag indicating if recording has started.
             shared_buffer (data structure): Shared memory buffer containing recorded data.
             app (App): The main application object.
@@ -422,21 +409,6 @@ class InputOutput(EventDispatcher):
             self.sensors.clear()
             self.sensors.update(sensors)
             self.choices = choices
-
-    def _update_sensor_stats(self, *_):
-        """
-        updates self.sensor_stats with
-        "sensor name:parameter": parameter
-        from shared tables of chip.shv (self._sensor_status)
-
-        Note: this is not to actively probe if the sensor is connected but to 
-        get reset counts, current settings etc
-        """
-        sensor_stats = {f"{chip}:{par}": val.get(par)
-                        for chip, val in self._sensor_status.items()
-                        for par in val.array.dtype.fields}
-
-        self.sensor_status.update(sensor_stats)
 
     async def _update_rec_pars(self, *_):
         """
@@ -883,8 +855,6 @@ class InputOutput(EventDispatcher):
             self.send_var('app', 'IO.running', val=bool(self.running))
             self.send_var('app', 'IO.recording_name',
                           val=str(self.recording_name))
-            self.send_var('app', 'IO.sensor_status',
-                          val=dict(self.sensor_status))
             self.send_var('app', 'stim.protocol', val=self.app.stim.protocol)
             self.send_var("Record", 'ids.splot1.text', val=str(
                 self.app.root.ids.scrman.get_screen('Record').ids['splot1'].text))
@@ -964,14 +934,11 @@ class InputOutput(EventDispatcher):
 
         self.shared_buffer.close_all()
         self.shared_buffer.unlink_all()
-
-        [chip.unlink() for chip in self._sensor_status.values()]
     
 
 # TESTING
 if __name__ == '__main__':
     # disable chips
-    chip_d['Humidity Temperature'].record = False
     Saver.NEW_FILE_INTERVAL = timedelta(seconds=30)
 
     class testApp(App):

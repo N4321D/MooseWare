@@ -231,7 +231,7 @@ class SetScreen(Scr):
         Builder.load_string(kv_str)
 
         # Dictionary with link to sensors
-        self.rwi2c = self.app.IO.readwrite
+        # self.rwi2c = self.app.IO.readwrite
         
 
     def selectscreen(self, screen):

@@ -114,16 +114,6 @@ kv_str = """
         on_release:
             root.open_autostim()
 
-    Label:
-        id: stimstat_text
-        size_hint: 0.1, 0.1
-        pos_hint: {'right': 1, 'top': 0.63}
-        font_size: '16sp' if self.text == '[i]last\\nstim[/i]' else '14sp'
-        text: '[i]last\\nstim[/i]'
-        color: WHITE if app.IO.sensor_status.get("OIS:status", (0, ))[0] > 1 else GREY
-        halign: 'center' if self.text == '[i]last\\nstim[/i]' else 'right'
-        markup: True
-    
     StdButton:
         id: bluebutt
         font_size: '16sp'
@@ -270,7 +260,6 @@ class RecScreen(Scr):
         # self.Button.on_press = self.button_press
         # self.Button.on_release = self.button_release
     
-        self.app.IO.bind(sensor_status=self.ois_updates)
         self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
                                                        self.app.IO.selected_interface))
 
@@ -386,16 +375,6 @@ class RecScreen(Scr):
         if auto:
             return self.plotonoff_event()
 
-    def ois_updates(self, *args):
-        _i = self.app.IO.sensor_status["OIS:status"][0]        
-        # set stim counter
-        if _i > 1:
-            count = self.app.IO.sensor_status['OIS:stim_count'][0]
-            if count > 0:
-                ma = self.app.IO.sensor_status['OIS:last_stim_mA'][0]
-                dur = round(self.app.IO.sensor_status['OIS:last_stim_dur'][0], 2)
-                self.ids.stimstat_text.text = f"{count}\n{dur} s.\n{ma} mA"
-            
     # Autostimulation
     def open_autostim(self,):
         # self.autostim_pan.open()

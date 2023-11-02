@@ -30,6 +30,7 @@ class Chip():
         self.parent_name = interface.name if interface is not None else ""      
         self.connected = True
         self.status = 0                  # indicates what chip is doing (see vars.py sensor status) negative values are errors
+        self.resets = 0                  # counts number of resets #TODO: implement
         self.name = short_name
         self.short_name = short_name
         self.record = True
