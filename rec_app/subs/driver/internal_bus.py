@@ -7,17 +7,15 @@ from subs.log import create_logger
 
 logger = create_logger()
 
+def log(message, level="info"):
+    cls_name = "INTERNAL BUS"
+    getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
+
 from multiprocessing import Queue
 
 import sched
 from threading import Lock
 import time
-
-
-def log(message, level="info"):
-    cls_name = "RECORDER"
-    getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
-
 
 # import sensors from driver
 from pathlib import Path
