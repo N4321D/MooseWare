@@ -248,9 +248,10 @@ class ChipPanel(MySettingsWithNoMenu):
             pass
 
         # convert to bool specifically for booleans
-        if option == "record":
-            # value = bool(value)
-            self.parent_button.chip_enabled = value
+        # TODO: NOTE: not needed? test especially for serial devices!
+        # if option == "record":
+        #     # value = bool(value)  
+        #     self.parent_button.chip_enabled = value
 
         self.chip.do_config(option, value)
     
