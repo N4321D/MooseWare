@@ -24,6 +24,12 @@ class Controller:
     async def start(self) -> None:
         pass
 
+    async def run(self) -> None:
+        """
+        loop or event that has to be awaited or run to record
+        """
+        await self.disconnected.wait()
+
     def stop(self) -> None:
         pass
 
@@ -43,7 +49,7 @@ class Controller:
         """
         self.connected.set()
         self.disconnected.clear()
-        return await self.on_connect()
+        return await self.on_connect(*args, **kwargs)
 
     def on_disconnect_default(self, *args, **kwargs) -> None:
         """
@@ -51,7 +57,7 @@ class Controller:
         """
         self.connected.clear()
         self.disconnected.set()
-        return self.on_disconnect()
+        return self.on_disconnect(*args, **kwargs)
 
     async def on_connect(self, *args, **kwargs) -> None:
         """

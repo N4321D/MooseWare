@@ -7,45 +7,74 @@ and integrates them into IO
 from serial.tools import list_ports
 
 from subs.driver.interfaces import Interface
-from subs.driver.interface_drivers.internal import InternalController
+from subs.driver.interface_drivers.internal_controller import InternalController
 from subs.driver.interface_drivers.serial_controller import SerialController
 
 import asyncio
-
+import traceback
 from subs.log import create_logger
 
 logger = create_logger()
 
 
+def extract_tb(e):
+    """
+    extract traceback from exception
+
+    Args:
+        e (Exception): exception to extract tb from
+
+    Returns:
+        str: traceback
+    """
+    return f"{type(e).__name__}: " + "".join(traceback.format_exception(e))
+
+
 def log(message, level="info"):
-    cls_name = "INTERFACE FACT"
+    cls_name = "INTERFACE FACTORY"
     getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
 
 class InterfaceFactory:
+    """
+    A factory class for creating and managing interfaces.
+
+    Attributes:
+        SCAN_DT (int): The interval at which to scan for devices.
+        EXIT (asyncio.Event): An event that signals when to exit.
+    """
+
     SCAN_DT = 1
     EXIT = asyncio.Event()  # exit flag
-    DEVICES = (
-        r"Adafruit ItsyBitsy M4|Pico.*Board CDC|Nano 33 BLE"  # regex to select devices
-    )
-    BAUDRATE = 20_000_000
-
-    device_change_event = asyncio.Event()
 
     def __init__(
         self,
         on_connect=lambda *x: x,
         on_disconnect=lambda *x: x,
         EXIT=None,
+        interfaces={},  # pass interfaces of parent class
     ) -> None:
+        """
+        Initialize the InterfaceFactory.
+
+        Args:
+            on_connect (callable, optional): A callback function to be called when a device is connected.
+            on_disconnect (callable, optional): A callback function to be called when a device is disconnected.
+            EXIT (asyncio.Event, optional): An external event that signals when to exit.
+        """
         if EXIT:
             self.EXIT = EXIT
+
+        self.interfaces = interfaces
 
         self.external_on_connect = on_connect
         self.external_on_disconnect = on_disconnect
 
         # add always connected interfaces to connected devices
-        self.connected_devices = (
+        self.connected_usb_devices = (
+            {}
+        )  # dictionary with port as key and task of connecting or connected interface if connected as value
+        self.connected_internal_devices = (
             {}
         )  # dictionary with port as key and task of connecting or connected interface if connected as value
 
@@ -53,22 +82,36 @@ class InterfaceFactory:
         """
         Scan for USB devices and update the connected devices.
 
-        This function runs a loop that checks for USB devices using the check_usb method and sleeps for a specified interval. It also awaits the tasks stored in the self.tasks attribute. The loop exits when the self.EXIT event is set.
+        This function scans and connects all devices.
+        It runs a loop that checks for USB devices using the check_usb
+        method and sleeps for a specified interval.
+        The loop exits when the self.EXIT event is set.
 
-        Args:
-            self (DeviceManager): The instance of the DeviceManager class.
-
-        Returns:
-            Awaitable[None]: An awaitable object that resolves when the scan loop is finished.
         """
-        log("scanning for devices", "info")
+        # internal interfaces
+        log("connecting internal interfaces", "info")
         int_interface_task = asyncio.create_task(self.create_internal_interfaces())
-        self.device_change_event.set()
 
+        # external interfaces
+        log("scanning for devices", "info")
         while not self.EXIT.is_set():
             result = await asyncio.gather(
                 self.check_usb(), asyncio.sleep(self.SCAN_DT), return_exceptions=True
             )
+
+            # check exceptions
+            tasks = [int_interface_task] + [
+                t for t in self.connected_usb_devices.values() if isinstance(t, asyncio.Task)
+            ]
+
+            for t in tasks:
+                if (exception := t.exception()) is not None:
+                    log(
+                        f"{t.get_coro()} Exception: "
+                        f"{''.join(extract_tb(exception))}",
+                        "critical",
+                    )
+            print("loop")
 
         # stop:
         int_interface_task.cancel()
@@ -79,26 +122,24 @@ class InterfaceFactory:
         Check for USB devices and update the connected devices.
 
         This function gets the current USB ports and compares them with the
-        connected devices dictionary. It removes the disconnected devices using
+        connected usb devices dictionary. It removes the disconnected devices using
         the remove_usb_interface method and creates new devices using the
         create_serial_interface method.
         """
         usb_ports = set(p.device for p in list_ports.comports())
-        new_devices = usb_ports.difference(self.connected_devices)
-        disconnected_devices = set(self.connected_devices).difference(usb_ports)
+        new_devices = usb_ports.difference(self.connected_usb_devices)
+        disconnected_devices = set(self.connected_usb_devices).difference(usb_ports)
 
-        if not any(new_devices) or not any(disconnected_devices):
+        if not new_devices and not disconnected_devices:
             return
 
         # remove old devices
         [self.remove_usb_interface(d) for d in disconnected_devices]
 
         for d in new_devices:
-            self.connected_devices[d] = asyncio.create_task(
+            self.connected_usb_devices[d] = asyncio.create_task(
                 self.create_serial_interface(d)
             )
-
-        self.device_change_event.set()  # flag that devices are connected or disconnected
 
     async def create_serial_interface(
         self,
@@ -117,17 +158,22 @@ class InterfaceFactory:
 
         """
         interface = Interface(
+            SerialController,
             on_connect=self.on_connect,
             on_disconnect=self.on_disconnect,
-            Controller=SerialController,
             device=port,
+            other_names=self.interfaces,
         )
+        print("STARTING")
+
         await interface.async_start()
-        self.connected_devices[port] = interface
+        print("STARTed")
+        self.connected_usb_devices[port] = interface  # add port to interface
+        await interface.async_run()
 
     def remove_usb_interface(
         self,
-        dev: str,
+        port: str,
     ):
         """
         Remove a USB interface from the connected devices.
@@ -137,68 +183,71 @@ class InterfaceFactory:
         or exit operation before removing it from the connected devices dictionary.
 
         Parameters:
-        - self (DeviceManager): The instance of the DeviceManager class.
-        - dev (str): The device identifier used to reference the connected device.
+        - port (str): The port used to reference the connected device.
 
-        Returns:
-        - None
         """
-        if isinstance(self.connected_devices[dev], asyncio.Task):
-            self.connected_devices[dev].cancel()
+        print(f"remove {port}")
 
-        if isinstance(self.connected_devices[dev], Interface):
-            self.connected_devices[dev].exit()
+        if isinstance(self.connected_usb_devices[port], asyncio.Task):
+            self.connected_usb_devices[port].cancel()
 
-        del self.connected_devices[dev]
+        if isinstance(self.connected_usb_devices[port], Interface):
+            self.connected_usb_devices[port].exit()
+
+        del self.connected_usb_devices[port]
 
     async def create_internal_interfaces(self) -> None:
         """
-        Connect all permanently connected / internal interfaces here suchs as i2c bus,
+        Connect all permanently connected / internal interfaces such as i2c bus,
         camera, network etc.
+
+        This function creates an Interface object for each internal interface and
+        initializes it. The interfaces are stored in the self.connected_internal_devices dictionary.
         """
         interfaces = []
 
         async def init_interface(interface):
             await interface.async_start()
-            self.connected_devices["internalbus"] = interface
+            self.connected_internal_devices[interface.device] = interface
 
         interfaces.append(
             Interface(
+                InternalController,
                 on_connect=self.on_connect,
                 on_disconnect=self.on_disconnect,
-                Controller=InternalController,
                 device="internalbus",
             )
         )
-        asyncio.gather(
+
+        await asyncio.gather(
             *[init_interface(interface) for interface in interfaces],
             return_exceptions=True,
         )
 
     def on_connect(self, interface):
+        """
+        Handle a connection event.
+
+        This function calls the external_on_connect callback with the given interface.
+
+        Args:
+            interface: The interface that has been connected.
+        """
         self.external_on_connect(interface)
 
     def on_disconnect(self, interface):
+        """
+        Handle a disconnection event.
+
+        This function calls the external_on_disconnect callback with the given interface.
+
+        Args:
+            interface: The interface that has been disconnected.
+        """
         self.external_on_disconnect(interface)
 
-    async def connect(self):
-        try:
-            port = self.serial_device.device
-            log(f"connecting to: {self.serial_device}", "info")
-
-            await self._setup_reader(self.serial_device)
-            log(
-                f"connected to {self.serial_device.manufacturer} "
-                f"{self.serial_device.description} at {port}",
-                "info",
-            )
-            self.disconnected.clear()
-            self.connected.set()
-            await self.disconnected.wait()  # stop until disconnected again
-
-        except StopIteration:
-            # No usb device found
-            pass
-
     def exit(self):
+        """
+        Exit the interface. This function is a placeholder for an exit routine.
+        """
         pass

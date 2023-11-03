@@ -3,7 +3,7 @@ Interface driver for RPi pico micro controller
 
 
 """
-from subs.driver.interface_drivers.template import Controller
+from subs.driver.interface_drivers.controller_template import Controller
 
 import asyncio
 import serial
@@ -123,37 +123,17 @@ class SerialController(Controller):
     BAUDRATE = 20_000_000
 
     async def start(self) -> None:
-        await self._setup_reader()
+        await self._setup_reader(self.device)
         log(f"connected to {self.device}", "info")
-        await self.disconnected()
-
-    # async def scan_usb(self):
-    #     while not self.EXIT.is_set():
-    #         try:
-    #             self.serial_device = next(list_ports.grep(self.DEVICES))
-    #             port = self.serial_device.device
-
-    #             await self._setup_reader(self.serial_device)
-
-    #             # self.disconnected.clear()
-    #             # self.connected.set()
-    #             await self.disconnected.wait()          # stop until disconnected again
-
-    #         except StopIteration:
-    #             # No usb device found
-    #             pass
-
-    #         await asyncio.sleep(self.SCAN_DT)
 
     def _on_connection_loss(self):
         self.disconnected.set()
         self.EXIT.set()
         self.connected.clear()
         self.on_disconnect(self)
-        self.serial_device is None
 
     async def _setup_reader(self, dev):
-        log(f"connecting to {dev}, baudrate: {self.baudrate}")
+        log(f"connecting to {dev}, baudrate: {self.BAUDRATE}")
         
         # create transport
         self.transport, self.protocol = await serial_asyncio.create_serial_connection(
@@ -189,18 +169,6 @@ class SerialController(Controller):
         except (JSONDecodeError, TypeError):
             pass  # data is string (feedback etc)
         self.do(data)
-
-    # async def on_connect(self, dev):
-    #     """
-    #     called when connected
-    #     """
-    #     print("connected")
-
-    # def on_disconnect(self):
-    #     """
-    #     called when disconnected
-    #     """
-    #     print("disconnected")
 
     def on_write_pause(self):
         """

@@ -1,7 +1,7 @@
 """
 interface driver for RPi internal i2c / GPIO etc interface
 """
-from subs.driver.interface_drivers.template import Controller
+from subs.driver.interface_drivers.controller_template import Controller
 from subs.driver.internal_bus import InternalBus
 
 import asyncio

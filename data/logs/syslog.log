@@ -1,0 +1,10 @@
+
+2023-11-03 11:25:13,592 - kivy - WARNING - VIDEO WIDGET: Unable to load camera: No module named 'picamera'
+
+2023-11-03 11:25:13,593 - kivy - WARNING - VIDEO WIDGET: Cannot load H264 decoder, is Gstreamer installed? No module named 'gi'
+
+2023-11-03 11:25:13,596 - kivy - WARNING - LED BUTTON: GPIO module import error: No module named 'sensor_files'
+
+2023-11-03 11:25:13,617 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7f81c8fe7150>" was accessed, it will be removed in a future version
+
+2023-11-03 11:25:16,966 - kivy - WARNING - MTD: Unable to open device "/dev/input/event4". Please ensure you have the appropriate permissions.

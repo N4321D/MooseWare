@@ -8,13 +8,14 @@ from subs.recording.buffer import SharedBuffer
 from subs.driver.sensor_files.chip import Chip
 
 import numpy as np
+import re
 
-from kivy.event import EventDispatcher
+# from kivy.event import EventDispatcher
 from kivy.app import App
-from kivy.clock import Clock
+# from kivy.clock import Clock
 
-from subs.driver.interface_drivers.serial_controller import SerialController
-from subs.driver.interface_drivers.internal import InternalController
+# from subs.driver.interface_drivers.serial_controller import SerialController
+# from subs.driver.interface_drivers.internal_controller import InternalController
 
 
 # Logger
@@ -82,13 +83,14 @@ class Interface:
     dtypes = {"time": "f8", "us": "u4", "sDt": "u2", None: "f4"}
 
     def __init__(self, 
-                 Controller=SerialController, 
+                 Controller, 
                  device=None,
                  **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
         self.data_dtype_fields = {}
         self.name = None
+        self.other_names = set()         # iterable with names of other interfaces (for renaming)
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
         self.starttime = 0
@@ -139,6 +141,9 @@ class Interface:
 
     async def async_start(self):
         await self.controller.start()
+    
+    async def async_run(self):
+        await self.controller.run()
 
     def start_stop(self, start=None):
         if start is not None:
@@ -173,7 +178,10 @@ class Interface:
         self.current_rate = freq
 
     async def _on_connect(self, *args):
-        await self.settings_received.wait()
+        await self.settings_received.wait()  # wait for name etc to arrive
+
+        name = self.check_name(self.name, self.other_names)
+        self.rename(name)
 
         self.connect_buffer()
         self.sensors["CTRL"] = Chip(
@@ -359,7 +367,10 @@ class Interface:
         if isinstance(data, (bytes, bytearray)):
             data = data.decode()
         if data[-4:] == " Hz\r":
-            self.current_rate = float(data[:-4])
+            try:
+                self.current_rate = float(data[:-4])
+            except ValueError:
+                log(f"Cannot unpack sample rate: {data}", "warning")
         else:
             print(f"FEEDBACK:{self.name}:    {data}")
 
@@ -407,7 +418,6 @@ class Interface:
 
     def _send_cmd(self, value):
         # process controller commands / config
-        print("CMD_OUT: ", value)
         try:
             # cmd is record and intended for interface
             self.record = value["CTRL"]["record"]
@@ -417,10 +427,44 @@ class Interface:
             # send cmd to controller
             self.controller.write(value)
 
+    def rename(self, name):
+        if name != self.name:
+            self.name = name
+            self._send_cmd({"CTRL": {"name": name}})
+
+    def check_name(self,
+                   current_name: str, 
+                   existing_names: iter,
+                   ) -> str:
+        """
+        Create a new name if the current name already exists.
+
+        If the current name ends with a number, increment that number. 
+        Otherwise, append an incremental number to the current name.
+
+        Args:
+            current_name (str): The current name.
+            existing_names (iterable): The set of existing names.
+
+        Returns:
+            str: The new name.
+        """
+        base_name = re.sub(r'\d+$', '', current_name)
+        number = re.findall(r'\d+$', current_name)
+        start = int(number[0]) if number else 1
+
+        new_name = current_name
+        while new_name in existing_names:
+            new_name = f"{base_name}{start}"
+            start += 1
+
+        return new_name
+
     def exit(self):
         self.start_stop(False)
         self.controller.stop()
         self.controller.exit()
+    
 
 if __name__ == "__main__":
     """ """

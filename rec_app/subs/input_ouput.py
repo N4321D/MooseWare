@@ -536,30 +536,14 @@ class InputOutput(EventDispatcher):
 
     # Interfaces
     async def interface_loop(self):
-        # from subs.driver.interfaces import Interface
-        # tasks = set()
-        # # internal interface
-        # from subs.driver.interface_drivers.internal import InternalController
-
-        # _internal_controller = Interface(on_connect=self.connect_interface,
-        #                              on_disconnect=self.disconnect_interface,
-        #                              Controller=InternalController)
-        
-        # tasks.add(_internal_controller.async_start())  # wait for connection until device
-
-        # _controller = Interface(on_connect=self.connect_interface,
-        #                             on_disconnect=self.disconnect_interface)
-        
-        # tasks.add(_controller.async_start())
-        # proc_async_exceptions(await asyncio.gather(*tasks, return_exceptions=True))
-        # # while not self.EXIT.is_set():
-        # #     # setup micro contoller TODO: move to loop and add function to add mulitple controllers
-            
+        # create interface factory
         self.interface_factory = InterfaceFactory(
             on_connect=self.connect_interface,
             on_disconnect=self.disconnect_interface,
-            EXIT=self.EXIT
+            EXIT=self.EXIT,
+            interfaces=self.interfaces,
         )
+        # start scan loop
         await self.interface_factory.scan()
 
     def connect_interface(self, interface):

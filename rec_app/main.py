@@ -342,10 +342,10 @@ if (system() == 'Linux'
         # cert_check.check_certificates()
 
 
-        if not SERVER:
-            # check rpi serial
-            check_serial() 
-            pass            
+        # if not SERVER:
+        #     # check rpi serial
+        #     check_serial() 
+        #     pass            
 
         async def mainCoro():
             global app  
