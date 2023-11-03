@@ -111,10 +111,10 @@ class InterfaceFactory:
                         f"{''.join(extract_tb(exception))}",
                         "critical",
                     )
-            print("loop")
 
         # stop:
         int_interface_task.cancel()
+        [t.cancel() for t in self.connected_usb_devices.values() if isinstance(t, asyncio.Task)]
         self.exit()
 
     async def check_usb(self) -> None:
@@ -164,10 +164,7 @@ class InterfaceFactory:
             device=port,
             other_names=self.interfaces,
         )
-        print("STARTING")
-
         await interface.async_start()
-        print("STARTed")
         self.connected_usb_devices[port] = interface  # add port to interface
         await interface.async_run()
 

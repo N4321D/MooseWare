@@ -379,15 +379,18 @@ class InternalBus:
         if self.Serial.CLOSED:
             [self._scheduler.cancel(e) for e in self._scheduler.queue]
             return
+        
         self._next_time += (
             1 / self.settings["current_timer_freq_hz"]
         )  # add current freq in sec for next step
+
         self._scheduler.enterabs(
             self._next_time,
             0,
             self._periodic_call_abs,
             (self._scheduler, action, actionargs),
         )  # schedule the next call
+        
         action(*actionargs)  # execute the action
 
     def _setup_interrupts(self):

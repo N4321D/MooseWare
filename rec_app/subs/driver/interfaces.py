@@ -180,6 +180,9 @@ class Interface:
     async def _on_connect(self, *args):
         await self.settings_received.wait()  # wait for name etc to arrive
 
+        if not self.name:
+            self.name = "USB"
+            
         name = self.check_name(self.name, self.other_names)
         self.rename(name)
 
