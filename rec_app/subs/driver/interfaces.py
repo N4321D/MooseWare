@@ -81,7 +81,10 @@ class Interface:
     # specify dtypes for saving
     dtypes = {"time": "f8", "us": "u4", "sDt": "u2", None: "f4"}
 
-    def __init__(self, Controller=SerialController, **kwargs) -> None:
+    def __init__(self, 
+                 Controller=SerialController, 
+                 device=None,
+                 **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
         self.data_dtype_fields = {}
@@ -107,11 +110,14 @@ class Interface:
             do=self.on_incoming,
             on_connect=self._on_connect,
             on_disconnect=self._on_disconnect,
+            device=device,
         )
         self.disconnected = self.controller.disconnected
         self.connected = self.controller.connected
+        self.settings_received = asyncio.Event()        # is set to True once name etc is received from controller
 
         self.shared_buffer = SharedBuffer()
+
 
     def connect_buffer(self):
         self.data_structure = self.shared_buffer.data_structure
@@ -167,8 +173,7 @@ class Interface:
         self.current_rate = freq
 
     async def _on_connect(self, *args):
-        while self.name is None:
-            await asyncio.sleep(0.1)
+        await self.settings_received.wait()
 
         self.connect_buffer()
         self.sensors["CTRL"] = Chip(
@@ -257,6 +262,7 @@ class Interface:
 
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]
+                self.settings_received.set()
 
         self.parameters = {
             f"{k}_{par}": k
@@ -414,7 +420,7 @@ class Interface:
     def exit(self):
         self.start_stop(False)
         self.controller.stop()
-
+        self.controller.exit()
 
 if __name__ == "__main__":
     """ """

@@ -11,8 +11,8 @@ logger = create_logger()
 
 
 class Controller:
-    connected = True
-    disconnected = False
+    connected = asyncio.Event()
+    disconnected = asyncio.Event()
 
     device = None # placeholder for the device or bus driver
 
@@ -36,6 +36,22 @@ class Controller:
         TODO: run async?
         """
         pass
+
+    async def on_connect_default(self, *args, **kwargs) -> None:
+        """
+        called when connected
+        """
+        self.connected.set()
+        self.disconnected.clear()
+        return await self.on_connect()
+
+    def on_disconnect_default(self, *args, **kwargs) -> None:
+        """
+        called when disconnected
+        """
+        self.connected.clear()
+        self.disconnected.set()
+        return self.on_disconnect()
 
     async def on_connect(self, *args, **kwargs) -> None:
         """

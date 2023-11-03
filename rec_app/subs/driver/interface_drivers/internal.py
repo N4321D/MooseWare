@@ -43,7 +43,7 @@ class InternalController(Controller):
 
     async def start(self) -> None:
         return asyncio.gather(self._queue_processor.run_loop(), 
-                              self.on_connect(), 
+                              self.on_connect_default(), 
                               return_exceptions=True)
 
         

@@ -17,12 +17,16 @@ from json import JSONDecodeError
 # Logger
 try:
     from subs.log import create_logger
+
     logger = create_logger()
+
     def log(message, level="info"):
         cls_name = "PICO"
         getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
+
 except:
     log = lambda *args: print("SERIAL_CTRL", *args)
+
 
 class IOProtocol(asyncio.Protocol):
     sub_buffer = bytearray()  # sub buffer to cache incoming data until '\n is found'
@@ -30,7 +34,7 @@ class IOProtocol(asyncio.Protocol):
     transport = None
 
     RECV_BUFFER_SIZE = 10000
-    DELIMITER = b'\n'
+    DELIMITER = b"\n"
 
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
@@ -69,13 +73,11 @@ class IOProtocol(asyncio.Protocol):
         self.transport.resume_reading()
 
     def pause_writing(self):
-        print(
-            f'pause writing; buffer: {self.transport.get_write_buffer_size()}')
+        print(f"pause writing; buffer: {self.transport.get_write_buffer_size()}")
         self.on_write_pause()
 
     def resume_writing(self):
-        print(
-            f'resume writing; buffer: {self.transport.get_write_buffer_size()}')
+        print(f"resume writing; buffer: {self.transport.get_write_buffer_size()}")
         self.on_write_resume()
 
     def do(self, *args, **kwargs):
@@ -111,78 +113,75 @@ class SerialController(Controller):
     disconnected = asyncio.Event()
     connected = asyncio.Event()
 
-    device = None                                   # placeholder for device
+    device = None  # placeholder for device
 
-    EXIT = asyncio.Event()                     # exit flag
-    SCAN_DT = 1                                   # dt for usb scan
-    DEVICES = r'Adafruit ItsyBitsy M4|Pico.*Board CDC|Nano 33 BLE'    # regex to select devices
+    EXIT = asyncio.Event()  # exit flag
+    SCAN_DT = 1  # dt for usb scan
+    DEVICES = (
+        r"Adafruit ItsyBitsy M4|Pico.*Board CDC|Nano 33 BLE"  # regex to select devices
+    )
     BAUDRATE = 20_000_000
 
-    def __init__(self, **kwargs) -> None:
-        self.__dict__.update(kwargs)
-        self.EXIT.clear()
-
     async def start(self) -> None:
-        log("scanning for devices", "info")
-        await self.scan_usb()
+        await self._setup_reader()
+        log(f"connected to {self.device}", "info")
+        await self.disconnected()
 
-    async def scan_usb(self):
-        while not self.EXIT.is_set():
-            try:
-                self.serial_device = next(list_ports.grep(self.DEVICES))
-                port = self.serial_device.device
-                log(f"connecting to: {self.serial_device}", "info")
+    # async def scan_usb(self):
+    #     while not self.EXIT.is_set():
+    #         try:
+    #             self.serial_device = next(list_ports.grep(self.DEVICES))
+    #             port = self.serial_device.device
 
-                await self._setup_reader(self.serial_device)
-                print(f"connected to {self.serial_device.manufacturer} "
-                      f"{self.serial_device.description} at {port}")
-                self.disconnected.clear()
-                self.connected.set()
-                await self.disconnected.wait()          # stop until disconnected again
+    #             await self._setup_reader(self.serial_device)
 
+    #             # self.disconnected.clear()
+    #             # self.connected.set()
+    #             await self.disconnected.wait()          # stop until disconnected again
 
-            except StopIteration:
-                # No usb device found
-                pass
+    #         except StopIteration:
+    #             # No usb device found
+    #             pass
 
-            await asyncio.sleep(self.SCAN_DT)
-        
+    #         await asyncio.sleep(self.SCAN_DT)
+
     def _on_connection_loss(self):
         self.disconnected.set()
         self.EXIT.set()
         self.connected.clear()
         self.on_disconnect(self)
         self.serial_device is None
-        
+
     async def _setup_reader(self, dev):
-        baudrate = self.BAUDRATE  # min(self.BAUDRATE, max(dev.BAUDRATES))
-        print(f"connecting to {dev.device}, baudrate: {baudrate}")
-        self.transport, self.protocol = await (serial_asyncio
-                                               .create_serial_connection(
-                                                   asyncio.get_event_loop(),
-                                                   IOProtocol,
-                                                   dev.device,
-                                                   baudrate=baudrate,
-                                                   parity=serial.PARITY_NONE,
-                                                   stopbits=serial.STOPBITS_ONE)
-                                               )
+        log(f"connecting to {dev}, baudrate: {self.baudrate}")
+        
+        # create transport
+        self.transport, self.protocol = await serial_asyncio.create_serial_connection(
+            asyncio.get_event_loop(),
+            IOProtocol,
+            dev,
+            baudrate=self.BAUDRATE,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+        )
+
+        # connect functions that are called on new data, and changes in connection
         self.protocol.do = self._preprocess_data
         self.protocol.on_connection_loss = self._on_connection_loss
-        self.protocol.on_write_pause, self.protocol.on_write_resume = self.on_write_pause, self.on_write_resume
+        self.protocol.on_write_pause, self.protocol.on_write_resume = (
+            self.on_write_pause,
+            self.on_write_resume,
+        )
 
-        await self.on_connect(dev)
+        await self.on_connect_default(dev)
 
     def write(self, data):
         if not self.protocol:
             return
-        
         data = json.dumps(data)
-        # if isinstance(data, (list, tuple, set)):
-        #     self.protocol.write_lines(data)
-        # else:
         if isinstance(data, str):
             data = data.encode()
-        self.protocol.write(data + b"\n")    
+        self.protocol.write(data + b"\n")
 
     def _preprocess_data(self, data):
         try:
@@ -191,17 +190,17 @@ class SerialController(Controller):
             pass  # data is string (feedback etc)
         self.do(data)
 
-    async def on_connect(self, dev):
-        """
-        called when connected
-        """
-        print("connected")
+    # async def on_connect(self, dev):
+    #     """
+    #     called when connected
+    #     """
+    #     print("connected")
 
-    def on_disconnect(self):
-        """
-        called when disconnected
-        """
-        print("disconnected")
+    # def on_disconnect(self):
+    #     """
+    #     called when disconnected
+    #     """
+    #     print("disconnected")
 
     def on_write_pause(self):
         """
