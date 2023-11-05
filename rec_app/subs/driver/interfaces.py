@@ -144,6 +144,7 @@ class Interface:
     
     async def async_run(self):
         await self.controller.run()
+        self.exit()
 
     def start_stop(self, start=None):
         if start is not None:
@@ -182,7 +183,7 @@ class Interface:
 
         if not self.name:
             self.name = "USB"
-            
+
         name = self.check_name(self.name, self.other_names)
         self.rename(name)
 
@@ -467,6 +468,8 @@ class Interface:
         self.start_stop(False)
         self.controller.stop()
         self.controller.exit()
+        print('int exit')
+
     
 
 if __name__ == "__main__":

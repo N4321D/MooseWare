@@ -11,7 +11,7 @@ controls recording, saving and plotting of the data
 """
 
 import asyncio
-from subs.gui.vars import SETTINGS_VAR, MAX_MEM
+from subs.gui.vars import SETTINGS_VAR
 from functools import partial
 import numpy as np
 import threading as tr
@@ -105,15 +105,15 @@ class InputOutput(EventDispatcher):
     app = None
 
     # main vars
-    dt = {'input': 0.01,
-          'plotting': 1,
+    dt = {'plotting': 1,
           }                                                              # Wait times for input & plot loop
     recording_name = ConfigParserProperty("Untitled", "recording",
                                           "recording_name", "app_config",
                                           val_type=str,)                 # Name of the curren recording
 
-    # Dictionary with connected sensors
+    # Dictionary with connected sensors for current interface
     sensors = DictProperty({})
+
     # list with plottable pars (to choose in graph)
     choices = ListProperty([])
     
@@ -267,7 +267,7 @@ class InputOutput(EventDispatcher):
         self.add_note(f"Recording Started")
 
         if not self.client_ip:
-            # creaet saver
+            # create saver
             if save:
                 self.sav = Saver(recname=self.recording_name,
                                  NEW_FILE_INTERVAL=self.new_file_interval)
@@ -324,6 +324,7 @@ class InputOutput(EventDispatcher):
         print("IO URGENT TODO: send commands to internal interface here (for roomcontrol etc)", 
               chip, method, args, kwargs)
         self.chip_command = lambda *_, **__: None
+        print({chip: {method: kwargs}})
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):
@@ -915,12 +916,15 @@ class InputOutput(EventDispatcher):
         async clean is done in main_coro
         """
         self.stop_all_stims()
+        print("stop stims")
         self.EXIT.set()
+        print("exit")
         self.stop_recording() if self.running else ...
-
+        print("stop recording")
         # stop micro controllers
-        for dev in self.interfaces.values():
-            dev.exit()
+        for interface in self.interfaces.values():
+            interface.exit()
+        print("stop micros")
 
         self.shared_buffer.close_all()
         self.shared_buffer.unlink_all()

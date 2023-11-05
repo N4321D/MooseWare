@@ -79,13 +79,13 @@ class FakeSerial:
         return not self.q_in.empty()
 
     def read(self, *args):
-        if not self.q_in._closed:
+        if self.q_in._closed is False:
             return self.q_in.get_nowait()
         else:
             self.CLOSED = True
 
     def println(self, line):
-        if not self.q_out._closed:
+        if self.q_out._closed is False:
             self.q_out.put(line)
         else:
             self.CLOSED = True
@@ -375,7 +375,6 @@ class InternalBus:
         creates repeated scheduler that calls the _run_loop function
         calls are scheduled based on current time + sample freq in seconds
         """
-
         if self.Serial.CLOSED:
             [self._scheduler.cancel(e) for e in self._scheduler.queue]
             return

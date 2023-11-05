@@ -70,6 +70,7 @@ class InternalController(Controller):
             self.q_out.close()
         if not self.q_in._closed:
             self.q_in.close()
+        self._dev_proc.kill()
         self._dev_proc.join()
 
 
