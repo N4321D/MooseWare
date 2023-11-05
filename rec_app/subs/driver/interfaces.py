@@ -468,9 +468,6 @@ class Interface:
         self.start_stop(False)
         self.controller.stop()
         self.controller.exit()
-        print('int exit')
-
-    
 
 if __name__ == "__main__":
     """ """

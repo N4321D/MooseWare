@@ -66,10 +66,8 @@ class InternalController(Controller):
                                                     do=self._preprocess_data)
     
     def exit(self, *args, **kwargs):
-        if not self.q_out._closed:
-            self.q_out.close()
-        if not self.q_in._closed:
-            self.q_in.close()
+        self.q_out.close()
+        self.q_in.close()
         self._dev_proc.kill()
         self._dev_proc.join()
 

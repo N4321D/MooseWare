@@ -50,7 +50,7 @@ def import_classes_from_folder(folder_path):
 
     return classes
 
-
+# Load drivers into chip_d
 classes = import_classes_from_folder(driver_dir)
 chip_d = {
     v.SHORT_NAME: v()
@@ -302,8 +302,6 @@ class InternalBus:
     def setup(self):
         self.loadName()
 
-        # TODO: setup i2c bus here?
-
         # set freq
         self.adjustFreq(self.settings["idle_freq_hz"])
 
@@ -330,10 +328,6 @@ class InternalBus:
         # sample:
         self.sample()
         self.sampleDT = time.perf_counter_ns() // 1000 - self.loopStart
-
-        # Blink Led every 0.5 seconds
-        # if not (self.callCounter % (self.settings['current_timer_freq_hz'] // 2)):
-        #     self.setLed()
 
         # TIMING:
         if self.loopBehind > self.settings["loops_before_adjust"]:
