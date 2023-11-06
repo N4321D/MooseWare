@@ -20,17 +20,10 @@ def log(message, level="info"):
 
 # imports
 try:
-    try:
-        from subs.driver.sensor_files.sensor_template import GPIO
-    except:
-        from sensor_files.sensor_template import GPIO
+    import RPi.GPIO as GPIO
 
 except Exception as e:
     log(f"GPIO module import error: {e}", "warning")
-    try:
-        from subs.driver.sensor_files.dummy_gpio import GPIO
-    except:
-        from sensor_files.dummy_gpio import GPIO
 
 import time
 

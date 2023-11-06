@@ -90,9 +90,6 @@ from subs.gui.widgets.timezone_wid import TzWidget
 # Screens DO NOT REMOVE NEEDED IN KV
 from subs.gui.screens.root_layout import RootLayout
 
-# Other imports:
-from subs.driver.button import LedButton
-
 # GLOBAL VARS & PARS
 from subs.gui.vars import *
 ADMIN = False
@@ -160,12 +157,7 @@ class guiApp(App):
     MACADDRESS = MACADDRESS
     ROOM_CONTROL = BooleanProperty(True)
 
-    Button = LedButton()
-
     use_kivy_settings = False   # disable kivy settings in options
-
-    GPIO = None
-    msg = None                                                                  # placeholder for messaging app TODO: to IO?
 
     def __init__(self, **kwargs):
         self.loop = asyncio.get_event_loop()
@@ -182,9 +174,6 @@ class guiApp(App):
 
         # input output class
         self.IO = InputOutput()
-        self.IO.bind(running=self.change_led_status)
-        self.bind(led_status=self.change_led_status)
-        Clock.schedule_once(self.change_led_status, 0)
 
         self.config.read("settings.ini")
         self.config.name = "app_config"
@@ -280,15 +269,6 @@ class guiApp(App):
         log("Shutting Down... ", "info")
         self.IO.exit()
         return super().stop(*args, **kwargs)
-        
-    def change_led_status(self, *args, f=None, dc=None):
-        if f is None and dc is None:
-            options = ((100, 1), (100, 1), (1, 0.1), (5, 0.2), (10, 0.2))       # idle, running, stimulating
-            self.Button.led_f_dc(*options[(self.led_status 
-                                           or self.IO.running)])  
-        else:
-            self.Button.led_f(f) if f is not None else None
-            self.Button.led_dc(dc) if dc is not None else None
 
     def start(self):
         self.loop.run_until_complete(app.base())

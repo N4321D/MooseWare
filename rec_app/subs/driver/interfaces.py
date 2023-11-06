@@ -5,7 +5,7 @@ import time
 
 from subs.recording.buffer import SharedBuffer
 
-from subs.driver.sensor_files.chip import Chip
+from subs.driver.interface_drivers.chip import Chip
 
 import numpy as np
 import re
