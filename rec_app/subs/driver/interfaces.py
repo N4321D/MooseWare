@@ -77,7 +77,7 @@ class Interface:
     """
 
     # Max memory buffer can use, can be overwritten by  IO class with actual mem limit defined in vars.py
-    MAX_MEM = 128e6
+    MAX_MEM = MAX_MEM
 
     # specify dtypes for saving
     dtypes = {"time": "f8", "us": "u4", "sDt": "u2", None: "f4"}

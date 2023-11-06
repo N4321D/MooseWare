@@ -144,7 +144,7 @@ class I2CSensor:
         """
         pass
 
-    @final
+    # @final
     def test_connection(self):
         try:
             self.bus.read_byte(self.ADDRESS)

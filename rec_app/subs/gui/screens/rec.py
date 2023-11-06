@@ -211,13 +211,13 @@ kv_str = """
         id: splot1
         pos_hint: {'x': 0.07, 'top': 0.88}
         types: app.IO.choices
-        text: self.types[0] if len(self.types) > 1 else 'Not Connected'
+        text: "OIS_SIG" if "OIS_SIG" in self.types else (self.types[0] if len(self.types) > 1 else 'Not Connected')
 
     SPLOT:
         id: splot2
         pos_hint: {'x': 0.07, 'top': 0.428}
         types: app.IO.choices
-        text: self.types[1] if len(self.types) > 2 else 'Not Connected'
+        text: "MOT_AX" if "MOT_AX" in self.types else (self.types[1] if len(self.types) > 2 else 'Not Connected')
 
 """
 
@@ -262,6 +262,7 @@ class RecScreen(Scr):
     
         self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
                                                        self.app.IO.selected_interface))
+        
 
         Clock.schedule_once(self.__kv_init__, 0)
     

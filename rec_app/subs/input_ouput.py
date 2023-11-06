@@ -57,7 +57,7 @@ def log(message, level="info"):
 NOTES_LENGTH = 2000
 
 # PARAMETERS TO REMOVE FROM PLOT CHOICES
-REMOVE_PARS = {'OIS Stimulation Current', "us", "sDt", "time"}
+REMOVE_PARS = {"us", "sDt", "time"}
 
 
 def proc_async_exceptions(results):
@@ -153,12 +153,6 @@ class InputOutput(EventDispatcher):
                                    if x > 10000 else 0)                 # zoom of Y ax in %
     # time frame to plot
     secondsback = NumericProperty(10)
-    default_plot_pars = {"OIS Signal": 0,                               # default plotting pars (TODO: remember last ones -> save in app.settings)
-                         "Motion Ang. X": 1,
-                         "GPIO 6": float('inf'),
-                         "GPIO 18": float('inf'),
-                         "OIS_SIG": 0,
-                         "MOT_AX": 1, }
 
     # Switches & events
     # Event to signal that app is closing
@@ -395,14 +389,11 @@ class InputOutput(EventDispatcher):
                     if v.connected}
         pars = dev.parameters
 
-
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
         # Create list of plottable sensors
-        choices = set(pars).difference(REMOVE_PARS)
-
-        choices = sorted(choices,
-                         key=lambda x: self.default_plot_pars.get(x, 2)
+        choices = sorted(set(pars).difference(REMOVE_PARS),
+                         key = lambda x: ("GPIO" in x, x),
                          ) + ['Off']
 
         if sensors != self.sensors or choices != self.choices:
