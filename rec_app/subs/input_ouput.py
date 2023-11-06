@@ -516,9 +516,6 @@ class InputOutput(EventDispatcher):
 
         # exceptions for specific sensors
         # TODO: move the exceptions and functions to different file, maybe driver?
-        if par[-1] == 'OIS Signal':
-            par.append('OIS Stimulation Current')
-        
         if par[-1] == "OIS_SIG":
             par.append('OIS_STIM')
 

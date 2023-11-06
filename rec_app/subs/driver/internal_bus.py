@@ -417,11 +417,12 @@ if __name__ == "__main__":
     tr.start()
 
     def print_loop(*args):
+        global txt
         last = 0
         while not r.Serial.q_out._closed:
             txt = r.Serial.q_out.get()
             if time.time() - last > 1:
-                print(txt)
+                print(txt, "\n")
                 last = time.time()
             time.sleep(1/512)
 

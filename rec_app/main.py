@@ -7,27 +7,26 @@ GUI For Recording
 
 # IMPORTS
 from platform import system, machine
-from kivy.event import EventDispatcher
+import os
 
 if system() == 'Linux' and machine() in {'armv7l', 'aarch64'}:
     # RPI specific options:
-    import os
-
     # enable starting via SSH
     os.system('export DISPLAY=":0.0"')
 
 # setup Kivy
 import kivy
-from kivy.config import Config
 # Test Kivy Version
 kivy.require('2.0.0')
 
+# Setup logging
 from subs.log import create_logger
 logger = create_logger()
 def log(message, level="info"):
     getattr(logger, level)(f"MAIN: {message}")  # change RECORDER SAVER IN CLASS NAME
 
 # configure Kivy
+from kivy.config import Config
 Config.set('kivy', 'window_icon', 'Icons/M_App_Icon.png')  # Icon
 Config.set('kivy', 'keyboard_mode',  'systemanddock')     # keyboard docked
 Config.set('graphics', 'show_cursor', 1)
@@ -39,7 +38,7 @@ log(f"OS: {sys_platform} {machine()}", "info")
 
 if machine() in {'armv7l', 'aarch64'} and sys_platform == 'Linux':
     # RASPBERRY PI SETTINGS
-    log("Loading Raspberry Pi presets", "info")
+    log(f"Loading Raspberry Pi ({machine}) presets", "info")
     Config.set('graphics', 'fullscreen', 'auto')
     Config.set('graphics', 'show_cursor', 0)     # hide mouse
     Config.set('graphics', 'allow_screensaver', 1) 
@@ -47,19 +46,13 @@ if machine() in {'armv7l', 'aarch64'} and sys_platform == 'Linux':
 
 else:
     # PC SETTINGS
+    log(f"Loading {sys_platform} presets", "info")
     Config.set('graphics', 'fullscreen', 0)
     SERVER = True
     # for testing set same size as pi res:
     Config.set('graphics', 'height', 480)
     Config.set('graphics', 'width', 800)
 
-    if sys_platform == 'Windows':       # windows stuff
-        log("Loading Windows presets", "info")
-    elif sys_platform == 'Darwin':   # OSX Stuff
-        log("Loading OSX presets", "info")
-    elif sys_platform == "Linux":   # linux server stuff
-        log("Loading Linux presets", "info")
-        # Config.set('graphics', 'multisamples', '0')   # kivy does not detect opengl2
         
 log(f"{'SERVER' if SERVER else 'CLIENT'} MODE", "info")
 
@@ -68,11 +61,9 @@ Config.write()
 
 # import subs
 from subs.input_ouput import InputOutput
-
 from subs.verify import MACADDRESS, check_serial, Encryption  # import key verification
 
 # Other Imports
-import os
 import asyncio
 
 from datetime import datetime, timedelta
@@ -81,19 +72,16 @@ from datetime import datetime, timedelta
 from kivy.properties import (ListProperty, BooleanProperty, NumericProperty,
                              StringProperty, DictProperty,
                              BoundedNumericProperty, ConfigParserProperty)
-
+from kivy.event import EventDispatcher
 from kivy.clock import Clock
 from kivy.app import App
 from kivy.uix.settings import SettingsPanel, SettingSpacer
-from kivy.uix.label import Label
 
 from subs.gui.widgets.custom_settings import (SettingsWithSidebar, 
     timestr_2_timedelta, val_type_loader,)
 from subs.gui.misc.settings_panel import settings_panel
 
-
 # Custom Widgets DO NOT REMOVE NEEDED FOR KV:
-# TODO move to classes/ modules where used
 from subs.gui.widgets.popup import MyPopup
 from subs.gui.widgets.filemanager import FileManager
 from subs.gui.widgets.wifi_manager import WifiWidget
@@ -109,8 +97,6 @@ from subs.driver.button import LedButton
 from subs.gui.vars import *
 ADMIN = False
 
-import json
-
 class RecVars(EventDispatcher):
     """
     Class which holds all the recording parameters and links them to the config files
@@ -118,8 +104,6 @@ class RecVars(EventDispatcher):
     """
 
     # TODO LINK PARS TO SAVER IN app.IO
-
-    # startrate = ConfigParserProperty(256, 'recording', "startrate", "app_config", val_type=int)
     data_length = ConfigParserProperty(3600, 'recording', "data_length", "app_config", val_type=int)                    # length of data in memory in sec.
     save_data = ConfigParserProperty(True, 'recording', "save_data", "app_config", val_type=val_type_loader)
     filename_prefix = ConfigParserProperty('data', 'recording', "filename_prefix", "app_config", val_type=str)
@@ -148,7 +132,7 @@ class RecVars(EventDispatcher):
         """
         if key in self.val_dict and isinstance(self.val_dict[key], bool):
             # convert val to bool (is saved as 1 or 0 in settings)
-            val = bool(val)
+            val = bool(int(val))
 
         # set value
         self.val_dict[key] = val
@@ -334,57 +318,56 @@ class Popup(MyPopup):
 
 if (system() == 'Linux'
     or (__name__ == "__main__")):     # needed for multiprocessing to not spawn multiple windows on mac & win (or start from run.py)
-    try:
-        # check certificates and serial
-        # pem = f"./keys/{'server' if SERVER else 'client'}.pem"
-        # cert_check = Encryption()
-        # cert_check.load_all(pem, "./keys/ca.cer")
-        # cert_check.check_certificates()
+    # try:
+    #     # check certificates and serial
+    #     # pem = f"./keys/{'server' if SERVER else 'client'}.pem"
+    #     # cert_check = Encryption()
+    #     # cert_check.load_all(pem, "./keys/ca.cer")
+    #     # cert_check.check_certificates()
 
 
-        # if not SERVER:
-        #     # check rpi serial
-        #     check_serial() 
-        #     pass            
+    #     # if not SERVER:
+    #     #     # check rpi serial
+    #     #     check_serial() 
+    #     #     pass            
 
-        async def mainCoro():
-            global app  
-            # start GUI
-            app = guiApp()        
-            await app.async_run()
+    async def mainCoro():
+        global app  
+        # start GUI
+        app = guiApp()        
+        await app.async_run()
 
-        asyncio.run(mainCoro())
+    asyncio.run(mainCoro())
 
-        # shutdown on exit
-        if not SERVER:
-            # os.system("sudo shutdown -h now")
-            pass
+    # shutdown on exit
+    if not SERVER:
+        # os.system("sudo shutdown -h now")
+        pass
 
-        app.IO.stop_all_stims()
+    app.IO.stop_all_stims()
 
     # NOTE: enable for real version (prevents hard crash)
-    except Exception as e:
-        import time
-        log(f"{type(e).__name__}: {e}", "exception")
+    # except Exception as e:
+    #     import time
+    #     log(f"{type(e).__name__}: {e}", "exception")
         
-        from kivy.core.window import Window
-        if not SERVER:
-            time.sleep(3)
-            app.stop()
-            Window.close()
+    #     from kivy.core.window import Window
+    #     if not SERVER:
+    #         time.sleep(3)
+    #         app.stop()
+    #         Window.close()
             
-            # os.system("sudo reboot")
+    #         # os.system("sudo reboot")
 
-        else:
-            # reset all chips just in case
-            from subs.driver.sensors import chip_d
-            for chip in chip_d.values():
-                chip.reset()
-                chip.init()
+    #     else:
+    #         # reset all chips just in case
+    #         from subs.driver.sensors import chip_d
+    #         for chip in chip_d.values():
+    #             chip.reset()
+    #             chip.init()
 
-            # print("REBOOT")
-            app.stop()
-            Window.close()
+    #         app.stop()
+    #         Window.close()
 
 
 

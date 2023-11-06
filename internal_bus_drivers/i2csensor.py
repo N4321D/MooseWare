@@ -57,7 +57,7 @@ class I2CSensor:
     SENT_STATUS = 0  # status that was last reported
     connected = True  # indicate if sensor is disconnected or not
     record = True  # indicate if sensor needs to be recorded or not
-    control_str = {}  # dictionary with gui objects for sensor
+    control_str = []  # list with dictionaries with gui objects for sensor
 
     sampled_data = []  # array with sampled data
 
