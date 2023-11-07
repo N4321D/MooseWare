@@ -17,7 +17,7 @@ public:
         N_PARS = 2;
         strcpy(PARAMETER_NAMES[0], "Pressure");
         strcpy(PARAMETER_NAMES[1], "Temperature");
-        strcpy(PARAMETER_SHORT_NAMES[0], "PR");
+        strcpy(PARAMETER_SHORT_NAMES[0], "PRS");
         strcpy(PARAMETER_SHORT_NAMES[1], "TMP");
 
 
@@ -46,7 +46,7 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        js["PR1"] = ((float)(((uint32_t)sampled_data[2] << 16) | ((uint32_t)sampled_data[1] << 8) | sampled_data[1])) / 5460.86912;
+        js["PRS"] = ((float)(((uint32_t)sampled_data[2] << 16) | ((uint32_t)sampled_data[1] << 8) | sampled_data[0])) / 5460.86912;
         js["TMP"] = ((float)(((uint32_t)sampled_data[4] << 8) | sampled_data[3])) / 100;
     }
 };

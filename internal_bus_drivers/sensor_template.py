@@ -42,30 +42,156 @@ except:
     bus = DummyBus().SMBus(1)  # dummy bus
 
 
-class I2CSensor:
+class Sensor():
     NAME = "NAME"  # Full name of the sensor
     SHORT_NAME = "SHORT_NAME"  # Short name of the sensor
-    ADDRESS = 0x00  # i2c address
     PARAMETER_NAMES = []  # name of the recorded parameter
     PARAMETER_SHORT_NAMES = []  # short name of the recorded parameter
-    error_count = 0  # number of i2c errors
-
-    zero_count = 0  # count zeros -> if multiple zeroes in a row, reset
-    zeros_threshold = 0xFD  # set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
-
+    
+    error_count = 0  # number of read / write errors
     STATUS = 0  # current status
     SENT_STATUS = 0  # status that was last reported
     connected = True  # indicate if sensor is disconnected or not
     record = True  # indicate if sensor needs to be recorded or not
     control_str = []  # list with dictionaries with gui objects for sensor
 
-    sampled_data = []  # array with sampled data
-
     dict_out = {}  # dictionary with parameter shortname as key and data as value'
-    bus = bus
     _TESTING = False  # indicates that dummy bus is loaded for testing
 
+    def __init__(self) -> None:
+        """
+        Python Init, specific for python drivers
+        """
+        pass
+
+    def init(self) -> None:
+        """
+        called on first connection to sensor from controller class
+        """
+        pass
+
+    def check_and_trigger(self):
+        """
+        checks if sensor needs to be resetted and triggers sensor
+        """
+        pass
+
+    def dataToJSON(self) -> None:
+        """
+        put sampled data in self.dict_out here
+        """
+        pass
+
+    def procCmd(self, key, value):
+        """
+        Custom incoming commands, overwrite in subclass
+        """
+        pass
+
+    def reset_procedure(self):
+        """
+        define reset procudure here if sensor needs it
+        """
+        pass
+
+    def sample(self) -> None:
+        """
+        sample sensor here. Does not return data
+        """
+        pass
+
+    def stop(self):
+        """
+        define stop here if needed
+
+        Returns:
+            _type_: _description_
+        """    
+        pass
+
+    def test_connection(self):
+        """
+        Test connection for specific sensor and bus
+        """
+        self.STATUS = 0
+        self.connected = True
+
+    def trigger(self):
+        """
+        called at the start of each recording loop, can be used to trigger 
+        sample point in sensor
+        """
+        pass
+
+    # final methods:
     @final
+    def getSampledData(self) -> dict:
+        """
+        called to return sampled data in dictionary
+        also checks for any status changes and returns them if any were found
+
+        Returns:
+            dict: sampled data with parameters as key and data as value
+        """
+        # called from recorder to get data
+        self.dict_out = {}
+        if (self.STATUS != self.SENT_STATUS) or (self.STATUS < 0):
+            self.dict_out["#ST"] = self.STATUS
+            self.SENT_STATUS = self.STATUS
+        self.dataToJSON()
+        return self.dict_out
+    
+    @final
+    def getInfo(self) -> dict:
+        """
+        return sensor information in idle loop
+
+        Returns:
+            dict: sensor information
+        """
+        self.SENT_STATUS = self.STATUS
+
+        return {
+            "name": self.NAME,
+            "control_str": self.control_str,
+            "#ST": self.STATUS,
+            "record": self.record,
+            "parameter_names": self.PARAMETER_NAMES,
+            "parameter_short_names": self.PARAMETER_SHORT_NAMES,
+        }
+
+    @final
+    def doCmd(self, key, value):
+        # called to process incoming commands
+        if key == "record":
+            self.record = value
+
+        else:
+            self.procCmd(key, value)
+    
+    @final
+    def reset(self):
+        """
+        Called to reset sensor when needed
+        """
+        self.STATUS = 0
+        self.zero_count = 0
+        self.error_count = 0
+        self.reset_procedure()
+        self.init()
+
+
+
+class I2CSensor(Sensor):
+    ADDRESS = 0x00  # i2c address
+    
+    zero_count = 0  # count zeros -> if multiple zeroes in a row, reset
+    zeros_threshold = 0xFD  # set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
+
+    sampled_data = []  # array with sampled data
+    
+    bus = bus
+
     def __init__(self) -> None:
         if hasattr(self.bus, "DUMMY_BUS"):
             self._TESTING = True
@@ -85,42 +211,12 @@ class I2CSensor:
             self.reset()
         self.trigger()
 
-    def trigger(self):
-        # trigger sensor if needed, overwrite in subclass
-        pass
-
     def sample(self):
         # overwrite in subclass, make sure it adds to errorcount with unsuccesful reads
         if self.readI2C(self.ADDRESS, 0x00, 0x00):
             self.error_count = 0
         else:
             self.error_count += 1
-
-    @final
-    def getSampledData(self):
-        # called from recorder to get data
-        self.dict_out = {}
-        if (self.STATUS != self.SENT_STATUS) or (self.STATUS < 0):
-            self.dict_out["#ST"] = self.STATUS
-            self.SENT_STATUS = self.STATUS
-        self.dataToJSON()
-        return self.dict_out
-
-    @final
-    def getInfo(self):
-        """
-        called from idle loop in recorder to get sensor status
-        """
-        self.SENT_STATUS = self.STATUS
-
-        return {
-            "name": self.NAME,
-            "control_str": self.control_str,
-            "#ST": self.STATUS,
-            "record": self.record,
-            "parameter_names": self.PARAMETER_NAMES,
-            "parameter_short_names": self.PARAMETER_SHORT_NAMES,
-        }
 
     def dataToJSON(self):
         # add sampled data to dict out, overwrite in subclass to compose sampled data
@@ -130,21 +226,6 @@ class I2CSensor:
         return self.dict_out
 
     @final
-    def doCmd(self, key, value):
-        # called to process incoming commands
-        if key == "record":
-            self.record = value
-
-        else:
-            self.procCmd(key, value)
-
-    def procCmd(self, key, value):
-        """
-        Custom incoming commands, overwrite in subclass
-        """
-        pass
-
-    # @final
     def test_connection(self):
         try:
             self.bus.read_byte(self.ADDRESS)
@@ -214,19 +295,3 @@ class I2CSensor:
         except OSError:
             self.STATUS = -5
 
-    def reset_procedure(self):
-        # called to reset, overwrite for specific sensors
-        pass
-
-    def stop(self):
-        # called to stop sensor, overwrite for specific sensors
-        pass
-
-    @final
-    def reset(self):
-        # called to reset, DO NOT OVERWRITE (edit reset_procedure instead)
-        self.STATUS = 0
-        self.zero_count = 0
-        self.error_count = 0
-        self.reset_procedure()
-        self.init()

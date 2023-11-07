@@ -205,6 +205,8 @@ class InterfaceFactory:
 
         async def init_interface(interface):
             await interface.async_start()
+            # if not hasattr(interface, "device"):
+            #     raise
             self.connected_internal_devices[interface.device] = interface
 
         interfaces.append(

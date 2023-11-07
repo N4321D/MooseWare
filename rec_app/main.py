@@ -4,8 +4,10 @@ Created on Tue Feb 5 23:32:39 2019
 GUI For Recording
 @author: Dmitri Yousef Yengej
 '''
+# add subfolder rec_app to sys
+import sys
+sys.path.append("./rec_app/")
 
-# IMPORTS
 from platform import system, machine
 import os
 

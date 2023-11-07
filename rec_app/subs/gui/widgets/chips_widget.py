@@ -73,18 +73,11 @@ class ChipLabel(Button):
 
         config = ConfigParser().get_configparser("app_config")
 
-        if isinstance(chip, dict):
-            self.chip_name = chip['name']
-            self.text = short_name
-            self.chip_enabled = chip['record']
-            default_opts = chip.get(default_opts, {'recording': True})
-
-        else:
-            self.chip = chip
-            self.chip_name = chip.name
-            self.text = chip.short_name
-            self.chip_enabled = chip.record
-            default_opts = chip.return_default_options()
+        self.chip = chip
+        self.chip_name = chip.name
+        self.text = chip.short_name
+        self.chip_enabled = chip.record
+        default_opts = chip.return_default_options()
         
         self.bind(chip_enabled=self._enable_disable_chip)
         
@@ -92,9 +85,9 @@ class ChipLabel(Button):
         config.setdefaults(self.chip_name, default_opts)
 
         self.settings = ChipPanel(self, config)
-        
+    
+        # restore last saved options
         for opt in config.options(self.chip_name):
-            # restore last saved options
             val = config.get(self.chip_name, opt)
             self.settings.on_config_change(config, self.chip_name, opt, val)
 
@@ -242,12 +235,6 @@ class ChipPanel(MySettingsWithNoMenu):
             # Value is string
             pass
 
-        # convert to bool specifically for booleans
-        # TODO: NOTE: not needed? test especially for serial devices!
-        # if option == "record":
-        #     # value = bool(value)  
-        #     self.parent_button.chip_enabled = value
-
         # send to chip
         self.chip.do_config(option, value)
     
@@ -259,9 +246,7 @@ class ChipPanel(MySettingsWithNoMenu):
             return super().on_touch_down(touch)
         else:
             # clicked outside widget
-            self.parent_button.close_panel()
-
-            
+            self.parent_button.close_panel()          
 
 if __name__ == "__main__":
     pass

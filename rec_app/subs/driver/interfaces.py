@@ -95,6 +95,7 @@ class Interface:
         self.connected = asyncio.Event()
         self.starttime = 0
         self.lasttime = None
+        self.device=None
 
         self.record = True  # enable or disable recording from controller
         self.run = False

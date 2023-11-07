@@ -1,4 +1,4 @@
-from i2csensor import I2CSensor
+from sensor_template import I2CSensor
 import time
 
 class OISSensor(I2CSensor):

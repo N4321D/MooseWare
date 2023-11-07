@@ -31,9 +31,7 @@ from subs.gui.screens.splash import SplashScreen
 from subs.gui.screens.sett_scr import SetScreen
 from subs.gui.screens.help import HelpScreen
 from subs.gui.screens.screensaver import ScreenSaver
-from subs.gui.screens.video import VideoScreen
 
-from subs.video.videowidget import VideoDisplay
 from subs.gui.widgets.Notes import Notes
 
 
@@ -118,8 +116,6 @@ Builder.load_string(
             name: 'Record'
         RoomScreen:
             name: 'Ambient'
-        VideoScreen:
-            name: 'Video'
         HelpScreen:
             name: 'Help'
         AboutScreen:

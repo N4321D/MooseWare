@@ -55,7 +55,8 @@ classes = import_classes_from_folder(driver_dir)
 chip_d = {
     v.SHORT_NAME: v()
     for k, v in classes.items()
-    if hasattr(v, "SHORT_NAME") and k != "I2CSensor"
+    if hasattr(v, "SHORT_NAME") and k not in  {
+        "I2CSensor", "Sensor"}
 }
 
 
@@ -97,7 +98,7 @@ class InternalBus:
     doc_in = {}  # incoming data as python dict or json
 
     # sensor list
-    I2CSensor = chip_d  # dict with i2c sensors and interfaces to sample
+    Sensors = chip_d  # dict with i2c sensors and interfaces to sample
 
     # sampling counter
     callCounter = 0  # counts the number of calls to ImterHandler by interupt clock
@@ -141,7 +142,7 @@ class InternalBus:
     ):
         # # check test mode
         if any([sens._TESTING
-            for sens in self.I2CSensor.values()
+            for sens in self.Sensors.values()
         ]):
             self.NAME += " TEST"
 
@@ -185,14 +186,14 @@ class InternalBus:
         # trigger sensor reset if needed
         [
             sens.check_and_trigger()
-            for sens in self.I2CSensor.values()
+            for sens in self.Sensors.values()
             if (sens.connected and sens.record)
         ]
 
         # sample sensors
         [
             sens.sample()
-            for sens in self.I2CSensor.values()
+            for sens in self.Sensors.values()
             if (sens.connected and sens.record)
         ]
 
@@ -202,7 +203,7 @@ class InternalBus:
             "sDt": self.sampleDT,
             **{
                 sens_name: sens.getSampledData()
-                for sens_name, sens in self.I2CSensor.items()
+                for sens_name, sens in self.Sensors.items()
                 if (sens.connected and sens.record)
             },
         }
@@ -219,18 +220,18 @@ class InternalBus:
         # self.feedback(self.texts["idle"])
 
         # test sensors & stop if running
-        [sens.test_connection() for sens in self.I2CSensor.values()]
+        [sens.test_connection() for sens in self.Sensors.values()]
 
         # get data from sensors
         self.doc_out = {
             "idle": True,
             "CTRL": {"name": self.NAME},
-            **{sens_name: sens.getInfo() for sens_name, sens in self.I2CSensor.items()},
+            **{sens_name: sens.getInfo() for sens_name, sens in self.Sensors.items()},
         }
         self.sendData()
 
     def stop_sensors(self):
-        [sens.stop() for sens in self.I2CSensor.values()]
+        [sens.stop() for sens in self.Sensors.values()]
 
 
     def run(self):
@@ -240,7 +241,7 @@ class InternalBus:
         self.feedback(self.texts["rec"])
 
         # start sensors
-        [sens.init() for sens in self.I2CSensor.values()]
+        [sens.init() for sens in self.Sensors.values()]
 
         # set sampling freq
         self.adjustFreq(self.settings["timer_freq_hz"])
@@ -252,7 +253,7 @@ class InternalBus:
 
         # split commands in controller and sensor commands and send to processing functions:
         [
-            self.control(k, v) if key == "CTRL" else self.I2CSensor[key].doCmd(k, v)
+            self.control(k, v) if key == "CTRL" else self.Sensors[key].doCmd(k, v)
             for k, v in value.items()
         ]
 
