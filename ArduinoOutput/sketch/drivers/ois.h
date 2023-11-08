@@ -4,15 +4,15 @@
 class OISSensor : public I2CSensor
 {
 private:
+    // chip specific values:
+    byte green_amps = 5; // green led mA
+    static const byte MAX_AMP = 63;
+    
     unsigned long stim_end;
     byte stim_amp = 0;
 
 public:
     uint16_t sampled_data[2]; // data is stored here
-
-    // chip specific values:
-    byte green_amps = 5; // green led mA
-    static const byte MAX_AMP = 63;
 
     OISSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
@@ -38,8 +38,9 @@ public:
                       "\"type\": \"plusminin\","
                       "\"desc\": \"Green LED power in %\","
                       "\"key\": \"amps\","
-                      "\"steps\": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+                      "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
                       "\"limits\": [0, 100],"                                             // [min, max]
+                      "\"default_value\": 25,"
                       "\"live_widget\": true}"
                       "]";
     }

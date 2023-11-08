@@ -3,7 +3,7 @@ from kivy import kivy_configure
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.settings import (SettingNumeric, SettingsWithSidebar, 
                                SettingString, SettingOptions, SettingSpacer, 
-                               SettingsWithNoMenu, SettingItem)
+                               SettingsWithNoMenu, SettingItem, SettingBoolean)
 from kivy.properties import StringProperty, ListProperty, DictProperty, BooleanProperty, NumericProperty, ObjectProperty
 from kivy.lang.builder import Builder
 from kivy.uix.scrollview import ScrollView
@@ -207,6 +207,18 @@ class SettingPassword(SettingString):
             return self.content.add_widget(widget, *largs)
 '''
 
+class MySettingBoolean(SettingBoolean):
+    """
+    Custom Boolean setting to solve issue if value is entered as true or false instead 
+    of 0 and 1
+    """
+    def on_value(self, instance, value):
+        if self.value == "True":
+            self.value = "1"
+        elif self.value == "False":
+            self.value = "0"
+        return super().on_value(instance, value)
+
 class SettingTimeDelta(SettingString):
     """
     special class of Settings Numeric which returns and handles 
@@ -406,6 +418,7 @@ class MySettingsWithNoMenu(SettingsWithNoMenu):
         self.register_type("options", SettingOptions_Scrollview)
         self.register_type("plusminin", SettingInWithPlusMinus)
         self.register_type("stim", SettingStim)
+        self.register_type("bool", MySettingBoolean)
 
 class SettingsWithSidebar(SettingsWithSidebar):
     _type_list = {bool: "bool",
@@ -425,6 +438,8 @@ class SettingsWithSidebar(SettingsWithSidebar):
         self.register_type('password', SettingPassword)
         self.register_type("plusminin", SettingInWithPlusMinus)
         self.register_type("stim", SettingStim)
+        self.register_type("bool", MySettingBoolean)
+
 
     
     def convert_type(self, var):
@@ -631,3 +646,4 @@ Button:
 
     app = MyApp()
     app.run()
+

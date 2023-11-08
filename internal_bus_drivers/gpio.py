@@ -2,6 +2,7 @@ from sensor_template import Sensor
 
 try:
     import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BCM)
 
 except:
     from math import sin
@@ -33,10 +34,10 @@ class GpioRecorder(Sensor):
     def __init__(self) -> None:
         if hasattr(GPIO, "DUMMY_GPIO"):
             self._TESTING = True
-
-    def init(self):
         self._setup_read_pins()
         self._setup_write_pins()
+
+    def init(self):
         self.STATUS = 5
 
     def dataToJSON(self):

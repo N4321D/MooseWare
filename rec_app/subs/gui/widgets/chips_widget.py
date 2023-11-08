@@ -77,19 +77,10 @@ class ChipLabel(Button):
         self.chip_name = chip.name
         self.text = chip.short_name
         self.chip_enabled = chip.record
-        default_opts = chip.return_default_options()
         
         self.bind(chip_enabled=self._enable_disable_chip)
-        
-        config.adddefaultsection(self.chip_name)
-        config.setdefaults(self.chip_name, default_opts)
 
         self.settings = ChipPanel(self, config)
-    
-        # restore last saved options
-        for opt in config.options(self.chip_name):
-            val = config.get(self.chip_name, opt)
-            self.settings.on_config_change(config, self.chip_name, opt, val)
 
     def _enable_disable_chip(self, *args):
         self.chip.record = bool(int(self.chip_enabled))
@@ -203,9 +194,14 @@ class ChipPanel(MySettingsWithNoMenu):
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
             
             # create values if not exisiting
-            default_val = None
-            if "default_value" in item:
+            default_val = True # None
+            if "default_value" in item:                
                 default_val = item.pop('default_value')
+
+                # if item['type'] == "bool":
+                #     # change bool to int otherwise settingsbool widget does not work
+                #     default_val = int(default_val)
+
             else:
                 default_val = (getattr(self.parent_button.chip, item['key']) 
                 if hasattr(self.parent_button.chip, item['key']) else 0)

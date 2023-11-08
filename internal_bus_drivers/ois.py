@@ -20,7 +20,9 @@ class OISSensor(I2CSensor):
                     "key": "amps",
                     "steps": [[0, 10, 1], [10, 20, 2], [30, 60, 5], [60, 200, 10]],
                     "limits": [0, 100],
-                    "live_widget": True},
+                    "live_widget": True,
+                    "default_value": 25,
+                    },
                    ]
 
     # Sensor specific:

@@ -58,11 +58,6 @@ class Chip():
                     self.stim_control[par].do_stim = lambda dur, amp: self.do_stim(par, dur, amp)
         
         self.__setattr__ = self.setattr
-    
-    def return_default_options(self):
-        # defaults = {d['key']: d['default_value'] for d in self.control_panel
-        #         if "default_value" in d}
-        return {"record": self.record}
 
     def setattr(self, name: str, value) -> None:
         if hasattr(self, name) and getattr(self, name) != value:

@@ -43,11 +43,13 @@ public:
                       "\"type\": \"options\","
                       "\"desc\": \"Sensitivity of the angular movement sensor in rad/s.\","
                       "\"key\": \"asens\","
+                      "\"default_value\": 8.73,"
                       "\"options\": [2.18, 4.36, 8.73, 17.45, 34.91]},"
                       "{\"title\": \"Linear Sensitivity\","
                       "\"type\": \"options\","
                       "\"desc\": \"Sensitivity of the linear movement sensor in g\","
                       "\"key\": \"lsens\","
+                      "\"default_value\": 2,"
                       "\"options\": [2, 4, 8, 16]}"
                       "]";
     }

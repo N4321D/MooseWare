@@ -127,47 +127,10 @@ _settings_panel = {
         "section": "recording",
         "key": "hdf_shuffle",
     },
-    {# guiApp.rec_vars.save_buffer
-     "title": "Save Buffer",
-        "type": "numeric",
-        "desc": "Samples to buffer before saving data (> 2x Recording Rate)",
-        "section": "recording",
-        "key": "save_buffer",
-    }
+
 
 ],
 "Other": [
-    {"title": "Alerts",
-        "type": "title",
-    },
-    {# settingsScreen.alert_enable
-    "title": "SMS Alerts",
-        "type": "bool",
-        "desc": "Toggle sms alerts",
-        "section": "other",
-        "key": "alert_enable",
-    },
-    {# settingsScreen.alert_phone_no
-    "title": "Phone Number",
-        "type": "string",
-        "desc": "Phone number to receive alerts on",
-        "section": "other",
-        "key": "alert_phone_no",
-    },
-    {# settingsScreen.alert_phone_no
-    "title": "Alert Interval",
-        "type": "timedelta",
-        "desc": "Interval between SMS alerts",
-        "section": "other",
-        "key": "alert_interval",
-    },
-    {# settingsScreen.alert_message
-    "title": "Alert Message",
-        "type": "string",
-        "desc": "Extra information to include in warning message",
-        "section": "other",
-        "key": "alert_message",
-    },
     {"title": "Logging",
         "type": "title",
     },
@@ -187,4 +150,3 @@ _settings_panel = {
 settings_panel = {k: json.dumps(v) for k, v in _settings_panel.items()}   # k: Panel name, v: panel json
 del _settings_panel
 
-# TODO: Logger Parameter section

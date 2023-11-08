@@ -216,6 +216,7 @@ class Interface:
                         ],
                         "limits": [1, 2048],
                         "live_widget": True,
+                        "default_value": 256,
                     },
                 ],
                 "#ST": 0,

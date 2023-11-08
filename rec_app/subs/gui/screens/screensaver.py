@@ -58,7 +58,6 @@ kv_str = """
 
 """
 
-
 class ScreenSaver(Screen):
     coord = ListProperty([0.5, 0.5])
 
@@ -77,6 +76,7 @@ class ScreenSaver(Screen):
         self.touch_screen = RpiTouchScreen()
         self.screen_brightness(self.max_brightness)
         self.bind(max_brightness=lambda *_: self.screen_brightness(self.max_brightness))
+        self.bind(min_brightness=lambda *_: None)    # binding automatically creates items in settings.ini
 
     def main(self, *args):
         self.coord = (np.random.random(2) * 0.6 + 0.2).tolist()

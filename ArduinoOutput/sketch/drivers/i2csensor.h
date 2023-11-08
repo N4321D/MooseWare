@@ -100,14 +100,14 @@ public:
 
     virtual void sample()
     {
-        if (readI2C(ADDRESS, 0x22, 12, &sampled_data))
-        {
-            error_count = 0;
-        }
-        else
-        {
-            error_count++;
-        };
+        // if (readI2C(ADDRESS, 0x22, 12, &sampled_data))
+        // {
+        //     error_count = 0;
+        // }
+        // else
+        // {
+        //     error_count++;
+        // };
     }
 
     void getSampledData(JsonObject js)
@@ -147,11 +147,11 @@ public:
 
     virtual void dataToJSON(JsonObject js)
     {
-        // write paraters in json object
-        for (byte i = 0; i < N_PARS; i++)
-        {
-            js[PARAMETER_SHORT_NAMES[i]] = (float)sampled_data[i] / 2;
-        };
+        // // write paraters in json object
+        // for (byte i = 0; i < N_PARS; i++)
+        // {
+        //     js[PARAMETER_SHORT_NAMES[i]] = (float)sampled_data[i] / 2;
+        // };
     }
 
     // this function processes common functions for all chips
@@ -171,11 +171,11 @@ public:
 
     virtual void procCmd(const char *key, JsonVariant value)
     {
-        // incoming commandands are processed here
-        if (strcmp(key, "cmd1") == 0)
-        {
-            float test = value.as<float>();
-        }
+        // // incoming commandands are processed here
+        // if (strcmp(key, "cmd1") == 0)
+        // {
+        //     float test = value.as<float>();
+        // }
     }
 
     void test_connection()
