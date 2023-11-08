@@ -64,6 +64,7 @@ DynamicJsonDocument doc_in(1024);
 // // init sensors
 #include "drivers/sensor_template.h"
 #include "drivers/gpio.h"
+#include "drivers/analogue.h"
 #include "drivers/gas.h"
 #include "drivers/ois.h"
 #include "drivers/motion.h"
@@ -75,6 +76,7 @@ DynamicJsonDocument doc_in(1024);
 #include "drivers/bme.h"
 
 static GPIObus gpiobus;
+static Analogue analogue;
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
@@ -84,7 +86,7 @@ static CarbonMonoxideSensor cosensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
 static BMESensor bmesensor(Wire1);
 // create sensor array
-static Sensor *ptrSensors[] = {&gpiobus, &oissensor, &motsensor, &pinsensor, 
+static Sensor *ptrSensors[] = {&gpiobus, &analogue, &oissensor, &motsensor, &pinsensor, 
   &ammsensor, &cosensor, &sgpsensor, &bmesensor};
 
 // for sampling

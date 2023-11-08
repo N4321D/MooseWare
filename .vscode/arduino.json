@@ -1,5 +1,5 @@
 {
-    "port": "/dev/ttyACM0",
+    "port": "/dev/ttyACM1",
     "board": "rp2040:rp2040:rpipico",
     "programmer": "adafruit_jlink",
     "sketch": "arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino",
