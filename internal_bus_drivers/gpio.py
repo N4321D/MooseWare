@@ -43,7 +43,7 @@ class GpioRecorder(Sensor):
     def dataToJSON(self):
         self.dict_out["OUT"] = GPIO.input(6)
         self.dict_out["IN"] = GPIO.input(18)
-        self.STATUS = 10 if self.dict_out["18"] else 5
+        self.STATUS = 10 if self.dict_out["IN"] else 5
 
     def procCmd(self, key, value):
         GPIO.output(key, value)

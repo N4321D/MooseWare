@@ -57,7 +57,6 @@ class SGPSensor : public I2CSensor
             STATUS = 2;
         }
           //createInput(init);
-        //writeI2C(ADDRESS, init, &input, sizeof(input));
     }
 
 

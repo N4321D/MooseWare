@@ -269,7 +269,7 @@ public:
      * @param numBytes The number of bytes to write.
      * @return true if the write was successful, otherwise false the error code is saved as vars.i2cerror
      */
-    bool writeI2C(byte address, byte reg, const byte *data, byte numBytes)
+    bool writeI2C(byte address, byte reg, byte numBytes, const byte *data)
     {
         wire->beginTransmission(address);
         wire->write(reg); // specify the register to write to

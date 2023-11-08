@@ -132,7 +132,7 @@ class GasSensor : public I2CSensor
         inputbuffer[0] = CHANGE_MODE;
         inputbuffer[1] = tosend;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        writeI2C(ADDRESS, 0, sizeof(_protocol), (uint8_t *)&_protocol);
         //protocolstatus(_protocol);
         readI2C(ADDRESS, 0, 9, (uint8_t *)&outputbuffer);
         //readOutput(outputbuffer);
@@ -160,7 +160,7 @@ class GasSensor : public I2CSensor
         inputbuffer[0] = CHANGE_I2C_ADDR;
         inputbuffer[1] = addr;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        writeI2C(ADDRESS, 0, sizeof(_protocol), (uint8_t *)&_protocol);
         //delay done in code. Is this necessary for us?
         readI2C(ADDRESS, 0, 9, outputbuffer);
        // sProtocol_t _protocol = pack(buf, sizeof(buf));
@@ -186,7 +186,7 @@ class GasSensor : public I2CSensor
         uint8_t outputbuffer[9] = {0};
         inputbuffer[0] = GET_VOLTAGE;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        writeI2C(ADDRESS, 0, sizeof(_protocol), (uint8_t *)&_protocol);
         //delay done in code. Is this necessary for us?
         readI2C(ADDRESS, 0, 9, outputbuffer);
        // sProtocol_t _protocol = pack(buf, sizeof(buf));

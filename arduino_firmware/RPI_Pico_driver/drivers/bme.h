@@ -55,10 +55,7 @@ class BMESensor : public I2CSensor
       //  target_temp = 300;
       //  amb_temp = 25;
       //  indices = [0xED, 0xEB, 0xEC, 0xEE, 0x02, 0x00];
-      //  writeI2C(ADDRESS, 0x74, beginningregister74, 1);//Set up first time set up for the chip
-       // writeI2C(ADDRESS, 0x72, beginningregister72, 1);
-      //  writeI2C(ADDRESS, 0x64,0x59, 1) //Heating time of 100 ms
-        
+  
     }
 
     void sample(){
@@ -145,7 +142,6 @@ class BMESensor : public I2CSensor
     {
         //Note this is a general call reset, which, according to the manufacturer's documentation, will work on any chip that supports this generic protocol
         //createInput(reset);
-        //writeI2C(ADDRESS, reset, &input, sizeof(input));
     }
 
 };

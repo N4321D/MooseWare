@@ -303,22 +303,33 @@ class InputOutput(EventDispatcher):
 
         self.running = False
 
-    def chip_command(self, chip, method, *args, **kwargs):
+    def chip_command(self, 
+                     interface, 
+                     chip, 
+                     key,
+                     value, 
+                     *args, **kwargs):
         """
         Run a function of the chip driver with args and kwargs
+        - interface: interface to send command to; use None to send to all
         - chip: chip to trigger function on
-        - method: method to trigger
-        - args: arguments to put in function
+        - key: key to send
+        - value: value to send
         - kwargs: keyword arguments to put in function
 
         example:
         `chip_command("LED_chip", 'set_led', 30, color='blue')` sets leds on on 
             this driver to 30% blue light 
         """
-        print("IO URGENT TODO: send commands to internal interface here (for roomcontrol etc)", 
-              chip, method, args, kwargs)
-        self.chip_command = lambda *_, **__: None
-        print({chip: {method: kwargs}})
+
+        if interface not in self.interfaces and interface is not None:
+            return
+        interfaces = [interface] if interface else self.interfaces
+        [self.interfaces[i]._send_cmd(
+            {chip: {key:value}}) for i in interfaces
+            if chip in self.interfaces[i].sensors  # only send if chip is in interface
+            ]
+        
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):

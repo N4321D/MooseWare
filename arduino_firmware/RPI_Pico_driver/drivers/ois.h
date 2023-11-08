@@ -53,7 +53,7 @@ public:
     {
         // trigger reading if nescessary
         static byte out[1] = {0x01};
-        writeI2C(ADDRESS, 0x47, out, 1); // trigger one shot reading
+        writeI2C(ADDRESS, 0x47, 1, out); // trigger one shot reading
     }
 
     void sample()
@@ -80,7 +80,7 @@ public:
          */
         STATUS = green ? 5 : 10;
         const byte out = green ? 0x87 : 0x97;
-        writeI2C(ADDRESS, 0x41, &out, 1);
+        writeI2C(ADDRESS, 0x41, 1, &out);
     }
 
     void set_amps(byte amp, bool green = true)
@@ -102,7 +102,7 @@ public:
             out[0] = static_cast<byte>(0b10 << 6 | amp);
             out[1] = static_cast<byte>(0b1 << 7 | amp);
         }
-        writeI2C(ADDRESS, 0x42, out, 2);
+        writeI2C(ADDRESS, 0x42, 2, out);
     }
 
     void check_stim()

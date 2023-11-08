@@ -7,8 +7,14 @@ NB: Kv String cannot contain \n -> must be \\n
 
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.properties import (BooleanProperty, ListProperty, 
-                             StringProperty, NumericProperty)
+from kivy.properties import (
+    BooleanProperty,
+    ListProperty,
+    StringProperty,
+    DictProperty,
+    NumericProperty,
+    ConfigParserProperty,
+)
 from subs.gui.vars import *
 
 from subs.gui.screens.scr import Scr
@@ -190,7 +196,7 @@ kv_str = """
     TIn:
         id: lightson
         pos_hint: {'right': 0.9, 'top': 0.77} #relative sizes 0-1
-        text: str(root.lights['on'])
+        text: root.lights_on
         # input_filter: 'float'
         size_hint: 0.1, 0.07
         foreground_color: root.text_color
@@ -205,7 +211,7 @@ kv_str = """
     TIn:
         id: lightsoff
         pos_hint: {'right': 1, 'top': 0.77} #relative sizes 0-1
-        text: str(root.lights['off'])
+        text: root.lights_off
         size_hint: 0.1, 0.07
         foreground_color: root.text_color
         on_focus:
@@ -230,7 +236,7 @@ kv_str = """
     TIn:
         id: min_brightness
         input_filter: 'float'
-        text: str(int(root.lights['brightness_cyc'] * 100))
+        text: str(int(root.lights_brightness_cyc * 100))
         pos_hint: {'right': 0.9, 'top': 0.55} #relative sizes 0-1
         foreground_color: root.text_color
         on_focus:
@@ -241,7 +247,7 @@ kv_str = """
         id: max_brightness
         input_filter: 'float'
         pos_hint: {'right': 1, 'top': 0.55} #relative sizes 0-1
-        text: str(int(root.lights['brightness_max'] * 100))
+        text: str(int(root.lights_brightness_max * 100))
         foreground_color: root.text_color
         on_focus:
             self.focusaction(root.setbrightness, self.text, 'max')
@@ -250,25 +256,25 @@ kv_str = """
         id: min_bright_plus
         pos_hint: {'right': 0.9, 'top': 0.45} #relative sizes 0-1
         on_release:
-            root.setbrightness((root.lights['brightness_cyc'] * 100) + 5, 'min')
+            root.setbrightness((root.lights_brightness_cyc * 100) + 5, 'min')
 
     MinusButton:
         id: min_bright_min
         pos_hint: {'right': 0.9, 'top': 0.35} #relative sizes 0-1
         on_release:
-            root.setbrightness((root.lights['brightness_cyc'] * 100) - 5, 'min')
+            root.setbrightness((root.lights_brightness_cyc * 100) - 5, 'min')
 
     PlusButton:
         id: max_bright_plus
         pos_hint: {'right': 1, 'top': 0.45} #relative sizes 0-1
         on_release:
-            root.setbrightness((root.lights['brightness_max'] * 100) + 5, 'max')
+            root.setbrightness((root.lights_brightness_max * 100) + 5, 'max')
 
     MinusButton:
         id: max_bright_min
         pos_hint: {'right': 1, 'top': 0.35} #relative sizes 0-1
         on_release:
-            root.setbrightness((root.lights['brightness_max'] * 100) - 5, 'max')
+            root.setbrightness((root.lights_brightness_max * 100) - 5, 'max')
 
     StdButton:
         # LIGHTS ON OFF
@@ -439,36 +445,113 @@ kv_str = """
                 markup: True
 
 """
+import ast
+
+
+def dict_loader(value):
+    if isinstance(value, str):
+        try:
+            return ast.literal_eval(value)
+        except (SyntaxError, ValueError):
+            print(value, "ERROR")
+
+    else:
+        return str(value)
+
 
 class RoomScreen(Scr):
     """
     Screen with room controls (controls lights, records pressure, humidity,
     temp)
     """
-    LIGHT_TIMEOUT = 1800                    # timeout to turn lights of in sec
-    save_pars = ('pressure_offset',)
-    light_status = BooleanProperty(False)   # light turned on with button: True
-    text_color = ListProperty(WHITE)        # text color (changes with lights)
-    menu_color = ListProperty(MO_BGR)       # menu color (changes with lights)
-    pressure_offset = NumericProperty(0)      # difference interal and ext press
+
+    LIGHT_TIMEOUT = 1800  # timeout to turn lights of in sec
+    save_pars = ("pressure_offset",)
+    light_status = BooleanProperty(False)  # light turned on with button: True
+    text_color = ListProperty(WHITE)  # text color (changes with lights)
+    menu_color = ListProperty(MO_BGR)  # menu color (changes with lights)
+    pressure_offset = NumericProperty(0)  # difference interal and ext press
     warning_color = YELLOW
+
+    # lights pars
+    lights_on = ConfigParserProperty(
+        "01:00", "ambient", "lights_on", "app_config", val_type=str
+    )
+    lights_off = ConfigParserProperty(
+        "13:00", "ambient", "lights_off", "app_config", val_type=str
+    )
+    lights_brightness_max = ConfigParserProperty(
+        1, "ambient", "lights_br_max", "app_config", val_type=float
+    )  # brightness for all leds (0-1)
+    lights_brightness_cyc = ConfigParserProperty(
+        0.6, "ambient", "lights_br_min", "app_config", val_type=float
+    )  # brightness during day cycle
+    lights_night = ConfigParserProperty(
+        int.from_bytes([0, 0, 0], byteorder="big"),
+        "ambient",
+        "lights_night",
+        "app_config",
+        val_type=int,
+    ) # RGB CODE FOR DARK CYCLE
+    lights_day = ConfigParserProperty(
+        int.from_bytes([0xff, 0xff, 0xff], byteorder="big"),
+        "ambient",
+        "lights_day",
+        "app_config",
+        val_type=int,
+    ) # RGB CODE FOR LIGHT CYCLE
+    lights_red = ConfigParserProperty(
+        int.from_bytes([0xff, 0x00, 0x00], byteorder="big"),
+        "ambient",
+        "lights_red",
+        "app_config",
+        val_type=int,
+    ) # RGB CODE FOR RED LIGHT
+    lights_cycle = ConfigParserProperty(
+        int.from_bytes([0x00, 0x00, 0x00], byteorder="big"),
+        "ambient",
+        "lights_cycle",
+        "app_config",
+        val_type=int,
+    ) # RGB CODE FOR CYCLE COLOR
+    lights_current_color = ConfigParserProperty(
+        int.from_bytes([0x00, 0x00, 0x00], byteorder="big"),
+        "ambient",
+        "lights_current_color",
+        "app_config",
+        val_type=int,
+    ) # RGB CODE FOR CYCLE COLOR
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        _f = lambda *_: None   # dummy funct to init  settings
+        self.bind(lights_on=_f)
+        self.bind(lights_off=_f)
+        self.bind(lights_brightness_max=_f)
+        self.bind(lights_brightness_cyc=_f)
+        self.bind(lights_night=_f)
+        self.bind(lights_day=_f)
+        self.bind(lights_red=_f)
+        self.bind(lights_cycle=_f)
+        self.bind(lights_current_color=_f)
+
         Builder.load_string(kv_str)
-        self.day = True                                      # is it day or not
-        self.daynightswitch = 0                      # time.time of last switch
-        self.lastadjustment = 0                  # last time cycle was adjusted
-        self.lights = {'on': '01:00',
-                       'off': '13:00',
-                       'brightness_max': 1,     # brightness for all leds (0-1)
-                       'brightness_cyc': 0.6,     # brightness during day cycle
-                       'night': [0, 0, 0],            # RGB CODE FOR DARK CYCLE
-                       'day': [0xFF, 0xFF, 0xAF],    # RGB CODE FOR LIGHT CYCLE
-                       'red_color': [0xFF, 0, 0],      # RGB CODE FOR RED LIGHT
-                       'cycle': [0, 0, 0],           # RGB CODE FOR cycle COLOR
-                       'current_color': (0, 0, 0),       # current color in rgb
-                       }
+        self.day = True  # is it day or not
+        self.daynightswitch = 0  # time.time of last switch
+        self.lastadjustment = 0  # last time cycle was adjusted
+        # self.lights = {'on': '01:00',
+        #                'off': '13:00',
+        #                'brightness_max': 1,     # brightness for all leds (0-1)
+        #                'brightness_cyc': 0.6,     # brightness during day cycle
+        #                'night': [0, 0, 0],            # RGB CODE FOR DARK CYCLE
+        #                'day': [0xFF, 0xFF, 0xAF],    # RGB CODE FOR LIGHT CYCLE
+        #                'red_color': [0xFF, 0, 0],      # RGB CODE FOR RED LIGHT
+        #                'cycle': [0, 0, 0],           # RGB CODE FOR cycle COLOR
+        #                'current_color': (0, 0, 0),       # current color in rgb
+        #                }
+        self.lights ={}
 
         # function for dimming (w = period, t1 is current time,
         # 2 * w --> only want to use half of the sinusoid
@@ -476,40 +559,64 @@ class RoomScreen(Scr):
 
         # convert string of time to time
         # self.gettime()
-        self.data = {'Humidity': {'all': None, 'last': None,
-                              'min': None, 'max': None,
-                              'lim_min': 30, 'lim_max': 70,
-                              'f': None, 'unit': ''},
-                     'Pressure Internal': {'all': None, 'last': None,
-                               'min': None, 'max': None,
-                               'lim_min': 0, 'lim_max': 2000,
-                               'f': None, 'unit': 'mBar'},
-                    'Pressure External': {'all': None, 'last': None,
-                               'min': None, 'max': None,
-                               'lim_min': 0, 'lim_max': 2000,
-                               'f': None, 'unit': 'mBar'},
-                     'Temperature External': {'all': None, 'last': None,
-                              'min': None, 'max': None,
-                              'lim_min': 20, 'lim_max': 26.11,
-                              'f': None, 'unit': 'c'}}
-        
+        self.data = {
+            "Humidity": {
+                "all": None,
+                "last": None,
+                "min": None,
+                "max": None,
+                "lim_min": 30,
+                "lim_max": 70,
+                "f": None,
+                "unit": "",
+            },
+            "Pressure Internal": {
+                "all": None,
+                "last": None,
+                "min": None,
+                "max": None,
+                "lim_min": 0,
+                "lim_max": 2000,
+                "f": None,
+                "unit": "mBar",
+            },
+            "Pressure External": {
+                "all": None,
+                "last": None,
+                "min": None,
+                "max": None,
+                "lim_min": 0,
+                "lim_max": 2000,
+                "f": None,
+                "unit": "mBar",
+            },
+            "Temperature External": {
+                "all": None,
+                "last": None,
+                "min": None,
+                "max": None,
+                "lim_min": 20,
+                "lim_max": 26.11,
+                "f": None,
+                "unit": "c",
+            },
+        }
+
         if self.app.ROOM_CONTROL:
             self.event = Clock.schedule_once(self.main, 1)
             self.light_off_event = Clock.schedule_once(
-                                        lambda *_x: self.lightsonoff(mode="off"), 
-                                        self.LIGHT_TIMEOUT)
+                lambda *_x: self.lightsonoff(mode="off"), self.LIGHT_TIMEOUT
+            )
             self.light_off_event.cancel()
 
     def main(self, *args):
-        switchnow = False   # bool to immediately switch on/off light
+        switchnow = False  # bool to immediately switch on/off light
 
         # check time
         self.gettime()
 
         # test if day or night:
-        day = self.daydetect(self.lights['on_time'],
-                             self.lights['off_time'],
-                             self.time)
+        day = self.daydetect(self.lights["on_time"], self.lights["off_time"], self.time)
         t = time.time()
 
         if day is None:
@@ -522,7 +629,7 @@ class RoomScreen(Scr):
         else:
             # set on or off depending on time of day and on/off time
             if day != self.day:
-                switchnow = True     # indicate that lights have to be switched
+                switchnow = True  # indicate that lights have to be switched
             self.daynightswitch = t
             self.day = day
 
@@ -532,86 +639,95 @@ class RoomScreen(Scr):
             self.lastadjustment = t
             self.clockcycle()
 
-        if (self.app.IO.running
-            and self.app.root.ids.scrman.current_screen.name == self.name):       # only get values if screen is in focus
-                self.get_sens_values()
+        if (
+            self.app.IO.running
+            and self.app.root.ids.scrman.current_screen.name == self.name
+        ):  # only get values if screen is in focus
+            self.get_sens_values()
 
         return self.event()
 
     def get_sens_values(self):
         """
-        Get sensor values for a given time interval, calculate the minimum, maximum, 
+        Get sensor values for a given time interval, calculate the minimum, maximum,
         and last values for each parameter,
         and check for alerts.
 
-        The function retrieves data for the parameters defined in `self.data.keys()` 
-        from the app's IO buffer and calculates 
-        the minimum, maximum, and last values for each parameter. If a parameter is 
-        outside of its limit, the parameter 
-        name is added to the `alert` list. If "Pressure Internal" and 
-        "Pressure External" parameters are present, the 
-        function also calculates the difference between the internal and 
-        external pressures and sets the text of 
-        `self.ids['press_diff']` accordingly. If either "Pressure Internal" 
-        or "Pressure External" is not present, the 
-        text of `self.ids['press_diff']` is set to indicate that the respective 
-        pressure sensor is not connected. If the 
-        `alert` list is not empty, the `send_alert` function is called with the 
+        The function retrieves data for the parameters defined in `self.data.keys()`
+        from the app's IO buffer and calculates
+        the minimum, maximum, and last values for each parameter. If a parameter is
+        outside of its limit, the parameter
+        name is added to the `alert` list. If "Pressure Internal" and
+        "Pressure External" parameters are present, the
+        function also calculates the difference between the internal and
+        external pressures and sets the text of
+        `self.ids['press_diff']` accordingly. If either "Pressure Internal"
+        or "Pressure External" is not present, the
+        text of `self.ids['press_diff']` is set to indicate that the respective
+        pressure sensor is not connected. If the
+        `alert` list is not empty, the `send_alert` function is called with the
         `alert` list as an argument.
         """
 
-        cycle = 24                       # time back in hours to check min/max
-        alert = []                          # list with pars to send alert for
+        cycle = 24  # time back in hours to check min/max
+        alert = []  # list with pars to send alert for
 
         # TODO fix -> get vals in app.IO
 
         seconds_back = cycle * 3600
 
-        pars = set(self.data.keys()).intersection(self.app.IO.buffer['data'].dtype.fields)
-        if "Pressure External" in self.app.IO.buffer['data'].dtype.fields: 
+        pars = set(self.data.keys()).intersection(
+            self.app.IO.buffer["data"].dtype.fields
+        )
+        if "Pressure External" in self.app.IO.buffer["data"].dtype.fields:
             pars.add("Pressure External")
         data = self.app.IO.get_time_back_data(seconds_back, [*pars])
 
         # define data windows:
         for key in pars:
             if data is not None:
-                self.data[key]['last'] = data[key][-1]
-                self.data[key]['min'], self.data[key]['max'] = np.nanmin(data[key]), np.nanmax(data[key])
+                self.data[key]["last"] = data[key][-1]
+                self.data[key]["min"], self.data[key]["max"] = np.nanmin(
+                    data[key]
+                ), np.nanmax(data[key])
 
                 # get min, max and current value for pars in par_list:
-                unit = self.data[key]['unit']
-                
+                unit = self.data[key]["unit"]
+
                 # get and convert last, min and max values
                 if key != "Pressure External":
-                    for subp in ('last', 'min', 'max'):
-                        self.ids[key + 'val' + subp].val = float(self.data[key][subp])         # float needed because kivy cannot handle numpy floats
-        
-                if not (self.data[key]['lim_min'] <= self.data[key]['last']
-                        <= self.data[key]['lim_max']):
+                    for subp in ("last", "min", "max"):
+                        self.ids[key + "val" + subp].val = float(
+                            self.data[key][subp]
+                        )  # float needed because kivy cannot handle numpy floats
+
+                if not (
+                    self.data[key]["lim_min"]
+                    <= self.data[key]["last"]
+                    <= self.data[key]["lim_max"]
+                ):
                     alert.append(key)
 
                 # check positive or negative room pressure
-                if (key == 'Pressure Internal'  
-                    and 'Pressure External' in pars
-                    ):
+                if key == "Pressure Internal" and "Pressure External" in pars:
                     # int. pressure:
-                    diff = self.data['Pressure Internal']['last'] - self.pressure_offset
+                    diff = self.data["Pressure Internal"]["last"] - self.pressure_offset
                     # ext. pressure:
-                    ext_press = data['Pressure External'][-1]
+                    ext_press = data["Pressure External"][-1]
                     diff -= ext_press
 
-                    if diff == diff:     # if not NaN
+                    if diff == diff:  # if not NaN
                         if diff >= 0:
-                            self.ids['press_diff'].text = '[b]POSITIVE[/b]'
+                            self.ids["press_diff"].text = "[b]POSITIVE[/b]"
                             alert.append(key)
                         else:
-                            self.ids['press_diff'].text = '[b]NEGATIVE[/b]'
+                            self.ids["press_diff"].text = "[b]NEGATIVE[/b]"
 
-        if 'Pressure Internal' not in pars:
-            self.ids['press_diff'].text = 'Internal Pressure\nSensor N.C.'
+        if "Pressure Internal" not in pars:
+            self.ids["press_diff"].text = "Internal Pressure\nSensor N.C."
 
-        if 'Pressure External' not in pars:
-            self.ids['press_diff'].text = 'External Pressure\nSensor N.C.'
+        if "Pressure External" not in pars:
+            self.ids["press_diff"].text = "External Pressure\nSensor N.C."
 
         if alert:
             self.send_alert(alert)
@@ -622,40 +738,46 @@ class RoomScreen(Scr):
 
     def calibrate_pressure(self):
         pars = self.app.IO.rec_data.keys()
-        self.pressure_offset = (self.app.IO.rec_data['Pressure Internal'][-1]
-                                if 'Pressure Internal' in pars else None)
+        self.pressure_offset = (
+            self.app.IO.rec_data["Pressure Internal"][-1]
+            if "Pressure Internal" in pars
+            else None
+        )
         if self.pressure_offset is not None:
-            self.pressure_offset -= (self.app.IO.rec_data['Pressure External'][-1]
-                                     if 'Pressure External' in pars else 0)
+            self.pressure_offset -= (
+                self.app.IO.rec_data["Pressure External"][-1]
+                if "Pressure External" in pars
+                else 0
+            )
 
     def clockcycle(self, *args):
-        '''
+        """
         this function determines if it is night or day and sets lights on or off
-        '''
+        """
         if self.day:
-            cycl = 1
-            phase = 'day'
+            self.lights_cycle = self.lights_day
         else:
-            cycl = 0
-            phase = 'night'
-        self.lights['cycle'] = [int(i * cycl)
-                                for i in self.lights[phase]]
+            self.lights_cycle = self.lights_night
+
         self.setlight()
 
     def setlight(self, rgb=[]):
         if not rgb:
             if self.light_status:
                 if self.day:
-                    rgb = self.lights['day']
+                    rgb = self.lights_day
                 else:
-                    rgb = self.lights['red_color']
+                    rgb = self.lights_red
             else:
-                rgb = self.lights['cycle']
+                rgb = self.lights_cycle
 
         if self.light_status:
-            brightness = self.lights['brightness_max']
+            brightness = self.lights_brightness_max
         else:
-            brightness = self.lights['brightness_cyc']
+            brightness = self.lights_brightness_cyc
+        
+        if isinstance(rgb, int):
+            rgb = rgb.to_bytes(3, byteorder="big")
 
         # adjust rgb for brightness
         rgb = [int(x * brightness) for x in rgb]
@@ -664,8 +786,8 @@ class RoomScreen(Scr):
         self.change_menu_color()
 
         # set lights
-        self.lights['current_color'] = rgb
-        self.app.IO.chip_command('Ambient Light', 'fill', color=rgb)
+        self.lights_current_color = int.from_bytes(rgb, byteorder="big")
+        self.app.IO.chip_command(None, "Light", "fill", rgb)
 
     def start(self):
         if not self.app.IO.running:
@@ -675,8 +797,8 @@ class RoomScreen(Scr):
 
     def setonofftime(self, t, onoff):
         try:
-            time.strptime(t, '%H:%M')  # test if input has right format
-            self.lights[onoff] = t
+            time.strptime(t, "%H:%M")  # test if input has right format
+            setattr(self, f"lights_{onoff}", t)
         except ValueError:
             return
 
@@ -692,25 +814,25 @@ class RoomScreen(Scr):
         elif brightness < 0:
             brightness = 0
 
-        if minmax == 'max':
+        if minmax == "max":
             # set brightness when lights turned on by hand
             self.ids.max_brightness.text = str(int(brightness))
-            self.lights['brightness_max'] = brightness / 100
+            self.lights_brightness_max = brightness / 100
             self.setlight()
 
-        elif minmax == 'min':
+        elif minmax == "min":
             # set brightness during autmotic day night cycle
             self.ids.min_brightness.text = str(int(brightness))
-            self.lights['brightness_cyc'] = brightness / 100
+            self.lights_brightness_cyc = brightness / 100
             self.setlight()
 
-    def lightsonoff(self, *args, mode='off'):
-        '''
+    def lightsonoff(self, *args, mode="off"):
+        """
         This function turn the daylight full on
         or the red light
-        '''
+        """
         self.light_off_event.cancel()
-        if mode == 'off':
+        if mode == "off":
             # always turn lights off if auto launched
             self.light_status = False
 
@@ -719,58 +841,58 @@ class RoomScreen(Scr):
             # (mode = 'button')
             self.light_status = not self.light_status
 
-        _status = (('Night Cycle', 'Day Cycle'), 
-                   ('Red On', 'Full On'))[self.light_status][self.day]
-                   
-        self.app.IO.add_note(f'Lights: {_status}') 
+        _status = (("Night Cycle", "Day Cycle"), ("Red On", "Full On"))[
+            self.light_status
+        ][self.day]
+
+        self.app.IO.add_note(f"Lights: {_status}")
 
         # turn lights to max during day cycle
         self.setlight()
 
         # disable lights after 30min
-        if mode == 'button' and self.light_status:
+        if mode == "button" and self.light_status:
             return self.light_off_event()
 
     def change_menu_color(self, mode=None):
         if self.day:
             self.text_color = WHITE if self.light_status else WHITE
             self.menu_color = MO_BGR
+        
         else:
-            self.text_color = ((1, 0, 0, 0.8) if self.light_status
-                               else (1, 0, 0, 0.4))
-            self.menu_color = ((1, 0, 0, 0.8) if self.light_status
-                               else (1, 0, 0, 0.4))
-        if mode == 'showoff':
-            # TODO DISCO MODE
-            pass
-
+            self.text_color = (1, 0, 0, 0.8) if self.light_status else (1, 0, 0, 0.4)
+            self.menu_color = (1, 0, 0, 0.8) if self.light_status else (1, 0, 0, 0.4)
+        
     # MISC FUNCTIONS:
     def gettime(self):
-        self.time = self.app.root.time.time()            # time in datetime
+        self.time = self.app.root.time.time()  # time in datetime
 
         str2time = self.app.root.str2time
-        self.lights['on_time'] = str2time(self.lights['on'], form="%H:%M")
-        self.lights['off_time'] = str2time(self.lights['off'], form="%H:%M")
+        self.lights["on_time"] = str2time(self.lights_on, form="%H:%M")
+        self.lights["off_time"] = str2time(self.lights_off, form="%H:%M")
 
     @staticmethod
     def daydetect(sunrise, sunset, currtime):
-        '''
+        """
         this function classifies if it is day (True) or night(False) based on
         current time
         and returns None if sunrise and sunset are the same
-        '''
-        if (currtime >= sunrise > sunset
+        """
+        if (
+            currtime >= sunrise > sunset
             or sunrise > sunset >= currtime
-                or sunset > currtime >= sunrise):
+            or sunset > currtime >= sunrise
+        ):
             # day
             return True
 
-        elif (currtime >= sunset > sunrise
-              or sunset > sunrise >= currtime
-              or sunrise > currtime >= sunset):
+        elif (
+            currtime >= sunset > sunrise
+            or sunset > sunrise >= currtime
+            or sunrise > currtime >= sunset
+        ):
             # night
             return False
-
 
 
 # TODO: use datetime to calc timedifferences in stead of time.time

@@ -62,18 +62,18 @@ public:
 
         for (byte i = 0; i < 14; i++)
         {
-            writeI2C(ADDRESS, reglist[i], 0x00, 1);
+            writeI2C(ADDRESS, reglist[i], 1, 0x00);
         };
 
         byte data = 0b01000000;
-        writeI2C(ADDRESS, 0x0D, &data, 1); // set intial data ready & FIFO bits
+        writeI2C(ADDRESS, 0x0D, 1, &data); // set intial data ready & FIFO bits
         data = 0b00000011;
-        writeI2C(ADDRESS, 0x0E, &data, 1); // set initial data ready bits
+        writeI2C(ADDRESS, 0x0E, 1, &data); // set initial data ready bits
         data = 0b00000100;
-        writeI2C(ADDRESS, 0x12, &data, 1); // set to i2c mode
+        writeI2C(ADDRESS, 0x12, 1,  &data); // set to i2c mode
         data = 0b00111000;
-        writeI2C(ADDRESS, 0x18, &data, 1); // enable X Y and Z axis on linear sensor
-        writeI2C(ADDRESS, 0x19, &data, 1); // enable X Y and Z axis on angular sensor
+        writeI2C(ADDRESS, 0x18, 1, &data); // enable X Y and Z axis on linear sensor
+        writeI2C(ADDRESS, 0x19, 1, &data); // enable X Y and Z axis on angular sensor
 
         set_lin_sensitivity();
         set_ang_sensitivity();
@@ -107,7 +107,7 @@ public:
                 };
             };
         };
-        writeI2C(ADDRESS, 0x11, &ang_sens_bytes[ang_sensitivity], 1);
+        writeI2C(ADDRESS, 0x11, 1, &ang_sens_bytes[ang_sensitivity]);
     }
 
     void set_lin_sensitivity(byte sensitivity = 0xff)
@@ -123,13 +123,13 @@ public:
                 };
             };
         };
-        writeI2C(ADDRESS, 0x10, &lin_sens_bytes[lin_sensitivity], 1);
+        writeI2C(ADDRESS, 0x10, 1, &lin_sens_bytes[lin_sensitivity]);
     }
 
     void reset_procedure()
     {
         byte data = 0x01;
-        writeI2C(ADDRESS, 0x12, &data, 1);
+        writeI2C(ADDRESS, 0x12, 1,  &data);
     }
 
     // chip specific functions

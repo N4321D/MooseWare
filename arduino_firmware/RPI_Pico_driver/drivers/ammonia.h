@@ -35,7 +35,7 @@ class AmmoniaSensor : public GasSensor
         uint8_t outputbuffer[9] = {0};
         inputbuffer[0] = GET_GAS_CONC;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        writeI2C(ADDRESS, 0, sizeof(_protocol), (uint8_t *)&_protocol);
         //protocolstatus(_protocol);
         delay(200);
         readI2C(ADDRESS, 0, 9, outputbuffer);
@@ -70,7 +70,7 @@ class AmmoniaSensor : public GasSensor
         uint8_t outputbuffer[9] = {0};
         inputbuffer[0] = GET_TEMP;
         protocol _protocol = pack(inputbuffer, sizeof(inputbuffer));
-        writeI2C(ADDRESS, 0, (uint8_t *)&_protocol, sizeof(_protocol));
+        writeI2C(ADDRESS, 0, sizeof(_protocol), (uint8_t *)&_protocol);
         readI2C(ADDRESS, 0, 9, outputbuffer);
        // readOutput(outputbuffer);
         if(FucCheckSum(outputbuffer, 8) != outputbuffer[8])
