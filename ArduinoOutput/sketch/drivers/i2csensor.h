@@ -40,51 +40,39 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-class I2CSensor
+class Sensor
 {
 private:
-    int32_t read_bytes;
-    TwoWire *wire;
 
 public:
-    static const byte MAX_PARS = 16; // max pars for all sensors
+    static const byte MAX_PARS = 32; // max pars for all sensors
+    uint32_t sampled_data[MAX_PARS]; // data is stored here
     byte N_PARS = 3;                 // max pars for this sensor
     char NAME[32];                   // full name of sensor
     char SHORT_NAME[5];              // short name of sensor
-    byte ADDRESS = 0x00;
     char PARAMETER_NAMES[MAX_PARS][16];      // name of parameters
     char PARAMETER_SHORT_NAMES[MAX_PARS][5]; // name of parameters
     uint error_count = 0;                    // count errors
-
-    byte zero_count = 0;        // count zeros -> if multiple zeroes in a row, reset
-    byte zeros_treshold = 0xfd; // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
-
     int8_t STATUS = 0;      // current status
     int8_t SENT_STATUS = 0; // status that was last reported
     bool connected = true;  // indicate if sensor is disconnected or not
     bool record = true;     // indicate if sensor needs to be recorded or not
+    byte zero_count = 0;        // count zeros -> if multiple zeroes in a row, reset (only use for specific sensors)
+    byte zeros_treshold = 0;    // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
+
     String control_str;
 
-    // sensor specific
-    uint32_t sampled_data[MAX_PARS]; // data is stored here
-
-    I2CSensor(TwoWire &wire_in)
-    {
-        wire = &wire_in;
-        strcpy(NAME, "Sensor");
-        strcpy(SHORT_NAME, "SENS");
-        strcpy(PARAMETER_NAMES[0], "Parameter 1");
-        strcpy(PARAMETER_NAMES[1], "Parameter 2");
-        strcpy(PARAMETER_NAMES[2], "Parameter 3");
-        strcpy(PARAMETER_SHORT_NAMES[0], "PAR1");
-        strcpy(PARAMETER_SHORT_NAMES[1], "PAR2");
-        strcpy(PARAMETER_SHORT_NAMES[2], "PAR3");
-    }
-
-    virtual void init() // virtual works as placeholder: e.g. if function is overwritten in subclass it calls subclass function
-    {
-        // call to initialize sensor with correct settings
-    }
+    Sensor(){
+        // example code:
+        // strcpy(NAME, "Sensor");
+        // strcpy(SHORT_NAME, "SENS");
+        // strcpy(PARAMETER_NAMES[0], "Parameter 1");
+        // strcpy(PARAMETER_NAMES[1], "Parameter 2");
+        // strcpy(PARAMETER_NAMES[2], "Parameter 3");
+        // strcpy(PARAMETER_SHORT_NAMES[0], "PAR1");
+        // strcpy(PARAMETER_SHORT_NAMES[1], "PAR2");
+        // strcpy(PARAMETER_SHORT_NAMES[2], "PAR3");
+    };
 
     void check_and_trigger()
     {
@@ -93,36 +81,21 @@ public:
         trigger();
     };
 
-    virtual void trigger()
+    // this function processes common functions for all chips
+    // if the command is chip specific it is sent to the chip specific
+    // procCmd function
+    void doCmd(const char *key, JsonVariant value)
     {
-        // trigger reading if nescessary
-    }
-
-    virtual void sample()
-    {
-        // if (readI2C(ADDRESS, 0x22, 12, &sampled_data))
-        // {
-        //     error_count = 0;
-        // }
-        // else
-        // {
-        //     error_count++;
-        // };
-    }
-
-    void getSampledData(JsonObject js)
-    {
-        // called by loop
-        // if (STATUS >= 0)
-        //     dataToJSON(js);
-        if (STATUS != SENT_STATUS || STATUS < 0)
+        if (strcmp(key, "record") == 0)
         {
-            js["#ST"] = STATUS;
-            SENT_STATUS = STATUS;
+            record = value.as<bool>();
+        }
+        else
+        {
+            procCmd(key, value);
         };
-        dataToJSON(js);
-    }
-
+    };
+   
     void getInfo(JsonObject js)
     {
         js["name"] = NAME;
@@ -139,43 +112,124 @@ public:
             par_names.add(PARAMETER_NAMES[i]);
             par_short_names.add(PARAMETER_SHORT_NAMES[i]);
         }
-    }
+    };
 
-    /**
-     * NOTE ADD THIS FUNCTION TO EACH SUBCLASS!!!
-     */
+    void getSampledData(JsonObject js)
+    {
+        // called by loop
+        // if (STATUS >= 0)
+        //     dataToJSON(js);
+        if (STATUS != SENT_STATUS || STATUS < 0)
+        {
+            js["#ST"] = STATUS;
+            SENT_STATUS = STATUS;
+        };
+        dataToJSON(js);
+    };
+    
+    void reset()
+    {
+        // call to reset sensor, DO NOT OVERWRITE IN SUBCLASS
+        STATUS = 0;
+        zero_count = 0; // reset zero count
+        error_count = 0;
+        reset_procedure();
+        init();
+    };
+
+    // VIRTUAL METHODS
+    virtual void init() // virtual works as placeholder: e.g. if function is overwritten in subclass it calls subclass function
+    {
+        // call to initialize sensor with correct settings
+    };
+
+    virtual void trigger()
+    {
+        // trigger reading if nescessary
+    };
+
+    virtual void sample()
+    {
+        /**
+         * Sample data here and store in some local variable such as sampled data
+         * tranfer to json object later in dataToJSON
+        */
+        // if (readI2C(ADDRESS, 0x22, 12, &sampled_data))
+        // {
+        //     error_count = 0;
+        // }
+        // else
+        // {
+        //     error_count++;
+        // };
+    };
 
     virtual void dataToJSON(JsonObject js)
-    {
-        // // write paraters in json object
+    {    /**
+         * fill Json object with recorded data in this function
+         * - js: json object
+        */
+        // Example:
         // for (byte i = 0; i < N_PARS; i++)
         // {
         //     js[PARAMETER_SHORT_NAMES[i]] = (float)sampled_data[i] / 2;
         // };
-    }
-
-    // this function processes common functions for all chips
-    // if the command is chip specific it is sent to the chip specific
-    // procCmd function
-    void doCmd(const char *key, JsonVariant value)
-    {
-        if (strcmp(key, "record") == 0)
-        {
-            record = value.as<bool>();
-        }
-        else
-        {
-            procCmd(key, value);
-        };
-    }
+    };
 
     virtual void procCmd(const char *key, JsonVariant value)
-    {
-        // // incoming commandands are processed here
+    {   /**
+        * process incoming commands here
+        */
+        // Example:
         // if (strcmp(key, "cmd1") == 0)
         // {
         //     float test = value.as<float>();
         // }
+    };
+
+    virtual void test_connection()
+    {
+        /**
+         * test connection here to see if bus / sensors are available
+        */
+        STATUS = 0; // reset status
+        // Connection test here
+        if (STATUS < 0)
+            connected = false;
+        else
+            connected = true;
+    };
+
+    virtual void reset_procedure()
+    {
+        // overwrite with specific reset commands
+    };
+
+    virtual void stop()
+    {
+        // call stop things here
+    };
+
+
+};
+
+
+class I2CSensor : public Sensor
+{
+private:
+    TwoWire *wire;
+
+public:
+    // I2C Sensor specific    
+    byte ADDRESS = 0x00;
+
+    // sensor specific
+    byte zeros_treshold = 0xfd; // set to 0 to not reset, else sensor is resetted if zero_count > zeros_theshold
+
+    I2CSensor(TwoWire &wire_in)
+    {
+        wire = &wire_in;
+
     }
 
     void test_connection()
@@ -267,23 +321,4 @@ public:
         return (_err == 0);
     }
 
-    virtual void reset_procedure()
-    {
-        // overwrite with specific reset commands
-    }
-
-    virtual void stop()
-    {
-        // call stop things here
-    }
-
-    void reset()
-    {
-        // call to reset sensor, DO NOT OVERWRITE IN SUBCLASS
-        STATUS = 0;
-        zero_count = 0; // reset zero count
-        error_count = 0;
-        reset_procedure();
-        init();
-    }
 };

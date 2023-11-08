@@ -372,7 +372,7 @@ class Interface:
         """
         if isinstance(data, (bytes, bytearray)):
             data = data.decode()
-        if data[-4:] == " Hz\r":
+        if isinstance(data, str) and data[-4:] == " Hz\r":
             try:
                 self.current_rate = float(data[:-4])
             except ValueError:

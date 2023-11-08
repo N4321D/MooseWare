@@ -62,7 +62,8 @@ DynamicJsonDocument doc_out(JSON_CAP);
 DynamicJsonDocument doc_in(1024);
 
 // // init sensors
-#include "drivers/i2csensor.h"
+#include "drivers/sensor_template.h"
+#include "drivers/gpio.h"
 #include "drivers/gas.h"
 #include "drivers/ois.h"
 #include "drivers/motion.h"
@@ -73,6 +74,7 @@ DynamicJsonDocument doc_in(1024);
 #include "drivers/carbonmonoxide.h"
 #include "drivers/bme.h"
 
+static GPIObus gpiobus;
 static OISSensor oissensor(Wire1);
 static MOTSensor motsensor(Wire1);
 static PInSensor pinsensor(Wire1);
@@ -82,7 +84,8 @@ static CarbonMonoxideSensor cosensor(Wire1);
 static SGPSensor sgpsensor(Wire1);
 static BMESensor bmesensor(Wire1);
 // create sensor array
-static I2CSensor *ptrSensors[] = {&oissensor, &motsensor, &pinsensor, &ammsensor, &cosensor, &sgpsensor, &bmesensor};
+static Sensor *ptrSensors[] = {&gpiobus, &oissensor, &motsensor, &pinsensor, 
+  &ammsensor, &cosensor, &sgpsensor, &bmesensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock

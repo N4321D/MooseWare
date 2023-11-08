@@ -1442,3 +1442,19 @@
 2023-11-07 15:54:04,013 - kivy - WARNING - stderr:     time.sleep(1 / 10.)
 
 2023-11-07 15:54:04,014 - kivy - WARNING - stderr: KeyboardInterrupt
+
+2023-11-07 21:54:46,014 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7fed6655e200>" was accessed, it will be removed in a future version
+
+2023-11-07 21:54:47,253 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2023-11-07 21:54:47,253 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2023-11-07 21:54:47,257 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2023-11-07 21:54:47,257 - kivy - WARNING - Factory: Ignored class "SetTimeIn" re-declaration. Current -  module: None, cls: None, baseclass: TIn, filename: None. Ignored -  module: None, cls: None, baseclass: TIn, filename: None.
+
+2023-11-07 21:54:47,257 - kivy - WARNING - Factory: Ignored class "SetIntMethod" re-declaration. Current -  module: None, cls: None, baseclass: DROPB, filename: None. Ignored -  module: None, cls: None, baseclass: DROPB, filename: None.
+
+2023-11-07 21:54:47,257 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2023-11-07 21:54:49,389 - kivy - WARNING - MTD: Unable to open device "/dev/input/event4". Please ensure you have the appropriate permissions.

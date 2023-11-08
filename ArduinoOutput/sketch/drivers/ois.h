@@ -7,7 +7,6 @@ private:
     // chip specific values:
     byte green_amps = 5; // green led mA
     static const byte MAX_AMP = 63;
-    
     unsigned long stim_end;
     byte stim_amp = 0;
 
