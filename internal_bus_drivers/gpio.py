@@ -28,8 +28,8 @@ class GpioRecorder(Sensor):
     """
     NAME = "GPIO Pins"
     SHORT_NAME = "GPIO"
-    PARAMETER_NAMES = ("GPIO 6", "GPIO 18")
-    PARAMETER_SHORT_NAMES = ("6", "18")
+    PARAMETER_NAMES = ("GPIO 6 OUT", "GPIO 18 IN")
+    PARAMETER_SHORT_NAMES = ("OUT", "IN")
 
     def __init__(self) -> None:
         if hasattr(GPIO, "DUMMY_GPIO"):
@@ -41,8 +41,8 @@ class GpioRecorder(Sensor):
         self.STATUS = 5
 
     def dataToJSON(self):
-        self.dict_out["6"] = GPIO.input(6)
-        self.dict_out["18"] = GPIO.input(18)
+        self.dict_out["OUT"] = GPIO.input(6)
+        self.dict_out["IN"] = GPIO.input(18)
         self.STATUS = 10 if self.dict_out["18"] else 5
 
     def procCmd(self, key, value):
