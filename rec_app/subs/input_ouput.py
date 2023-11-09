@@ -53,7 +53,7 @@ def log(message, level="info"):
         print(f"{cls_name} - {level}: {message}")
 
 
-# lines of notes in memory, TODO: get from max in notes widgets
+# lines of notes in memory,
 NOTES_LENGTH = 2000
 
 # PARAMETERS TO REMOVE FROM PLOT CHOICES
@@ -143,7 +143,7 @@ class InputOutput(EventDispatcher):
     sending = False
     # blocksize (in data items) to send over network
     NW_BLOCK = 32000
-    # nw_tr = None                                                      # Thread with nw functions
+    NETWORK_READY = asyncio.Event()
 
     # plotting vars:
     # list with the graphs for plotting the data
@@ -529,6 +529,7 @@ class InputOutput(EventDispatcher):
         self.interface_factory = InterfaceFactory(
             on_connect=self.connect_interface,
             on_disconnect=self.disconnect_interface,
+            IO=self,
             EXIT=self.EXIT,
             interfaces=self.interfaces,
         )
@@ -593,10 +594,6 @@ class InputOutput(EventDispatcher):
 
         self.shared_buffer.add_to_buf(par, data)
 
-    def send(self, data, protocol="TCP"):
-        print(f'OBSOLETE IO.send, remove! {protocol} {data}')
-        return
-
     async def send_data(self, data):
         # TODO: "send data here, nbytes: {data.nbytes}"
 
@@ -645,7 +642,7 @@ class InputOutput(EventDispatcher):
         if self.client is not None:
             await self.server.send_ws(msg)
 
-    def serv_client(self):
+    async def serv_client(self):
         """
         Sets up a server or client instance based on the app configuration.
 
@@ -667,13 +664,16 @@ class InputOutput(EventDispatcher):
             self.server.on_ws_msg = self.proc_cmds
             self.server.on_big_object = self.proc_cmds
             self.client = None
-            return self.server.start()
+            start = self.server.start()
 
         else:
             self.client = nw_client.Client()
             self.client.name = self.app.setupname
             self.server = None
-            return self.client.start()
+            start = self.client.start()
+        await start
+        self.NETWORK_READY.set()
+
 
     def switch_client(self, client, *args):
         if client in self.client_ip_list:
@@ -682,7 +682,7 @@ class InputOutput(EventDispatcher):
                 ("VAR", ('app', 'IO.sending', (False, ))))  # send disconnect
             self.clear()
             # connect new client:
-            self.client_ip = self.server.names[client]
+            self.client_ip = self.server.clients[self.server.client_lookup[client]]
             self.server.active_client = self.client_ip
             self.server.send_data(("CONNECT", None))
             self.app.setupname = client

@@ -21,6 +21,10 @@ class Controller:
         self.__dict__.update(kwargs)
         self._setup()
 
+    @final
+    def _log(self, message, level="info"):
+        getattr(logger, level)(f"CTRL:{self.name}: {message}")
+
     async def start(self) -> None:
         pass
 
@@ -87,10 +91,6 @@ class Controller:
             data (_type_): _description_
         """
         self.do(data)
-
-    @final
-    def _log(self, message, level="info"):
-        getattr(logger, level)(f"CTRL:{self.name}: {message}")
   
     def exit(self, *args, **kwargs):
         pass

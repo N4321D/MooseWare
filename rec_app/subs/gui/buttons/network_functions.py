@@ -97,9 +97,11 @@ def get_id(cls):
 
 def send(cls, scr, idName, action):
     if idName is not None:
-        scr.app.IO.send(('VAR', 
-                          (scr.name, 'ids.{}.{}'.format(idName, 
-                           action[0]), *action[1:])))               # action [1] = args, action[2] = kwargs
+        # scr.app.IO.send(('VAR', 
+        #                   (scr.name, 'ids.{}.{}'.format(idName, 
+        #                    action[0]), *action[1:])))               # action [1] = args, action[2] = kwargs
+        # TODO: send data here
+        pass
 
 def cr_cmd(varname, *value, a=(), kwa={}):
     """

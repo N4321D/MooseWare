@@ -17,6 +17,8 @@ class Server(ServClientShared):
     clients = {}                    # dict with clients 
     client_lookup = {}              # dict with clientname: ip lookup
 
+    
+
     def __init__(self) -> None:
         self.stop_flag = asyncio.Event()
         super().__init__()

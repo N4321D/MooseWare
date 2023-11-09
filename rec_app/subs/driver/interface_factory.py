@@ -9,12 +9,12 @@ from serial.tools import list_ports
 from subs.driver.interfaces import Interface
 from subs.driver.interface_drivers.internal_controller import InternalController
 from subs.driver.interface_drivers.serial_controller import SerialController
+from subs.driver.interface_drivers.broadcast_receiver import BroadCastController
 
 import asyncio
 import traceback
 from subs.log import create_logger
 
-logger = create_logger()
 
 
 def extract_tb(e):
@@ -28,6 +28,8 @@ def extract_tb(e):
         str: traceback
     """
     return f"{type(e).__name__}: " + "".join(traceback.format_exception(e))
+
+logger = create_logger()
 
 
 def log(message, level="info"):
@@ -52,6 +54,7 @@ class InterfaceFactory:
         on_connect=lambda *x: x,
         on_disconnect=lambda *x: x,
         EXIT=None,
+        IO = None,    # Parent class
         interfaces={},  # pass interfaces of parent class
     ) -> None:
         """
@@ -66,7 +69,7 @@ class InterfaceFactory:
             self.EXIT = EXIT
 
         self.interfaces = interfaces
-
+        self.IO = IO
         self.external_on_connect = on_connect
         self.external_on_disconnect = on_disconnect
 
@@ -205,8 +208,6 @@ class InterfaceFactory:
 
         async def init_interface(interface):
             await interface.async_start()
-            # if not hasattr(interface, "device"):
-            #     raise
             self.connected_internal_devices[interface.device] = interface
 
         interfaces.append(
@@ -217,6 +218,17 @@ class InterfaceFactory:
                 device="internalbus",
             )
         )
+
+        # broadcast receiver
+        interfaces.append(
+            Interface(
+                BroadCastController,
+                on_connect=self.on_connect,
+                on_disconnect=self.on_disconnect,
+                device="broadcast",
+            )
+        )
+
 
         await asyncio.gather(
             *[init_interface(interface) for interface in interfaces],
