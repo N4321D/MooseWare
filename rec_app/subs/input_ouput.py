@@ -212,13 +212,9 @@ class InputOutput(EventDispatcher):
         tasks.add(self.plot())
 
         # setup network
-        # tasks.add(self.serv_client())
-        # # TODO: this blocks recording/plotting when running as client
-        print("TODO SETUP SERVER OR CLIENT HERE")
+        tasks.add(self.serv_client())
 
-        if self.client is not None:
-            tasks.add(self.network_loop())
-
+        # start interface factory
         tasks.add(self.interface_loop())
 
         # async execute all tasks here
@@ -325,7 +321,7 @@ class InputOutput(EventDispatcher):
         if interface not in self.interfaces and interface is not None:
             return
         interfaces = [interface] if interface else self.interfaces
-        [self.interfaces[i]._send_cmd(
+        [self.interfaces[i].write(
             {chip: {key:value}}) for i in interfaces
             if chip in self.interfaces[i].sensors  # only send if chip is in interface
             ]
@@ -377,13 +373,6 @@ class InputOutput(EventDispatcher):
 
     async def update_plot_pars(self, *_):
         self._update_plot_pars()
-
-        if self.client is not None:
-            # send connected sensors to server
-            await self.client.send_data(('VAR', ('app', 'IO.sensors', (dict(self.sensors),))))
-            # send available plot pars to server
-            await self.client.send_data(('VAR', ('app', 'IO.choices', (list(self.choices),))))
-            # pass
 
     def _update_plot_pars(self, *_):
         """
@@ -581,32 +570,6 @@ class InputOutput(EventDispatcher):
                         sc.stop_stim() 
                     except:
                         pass
-
-
-    # NETWORK FUNCTIONS:
-      # Data gather functions:
-    async def network_loop(self, *args):
-        """
-        This method checks for new input from the recorder and the network
-        and processes it if necessary.
-        """
-        return
-
-        while not self.EXIT.is_set():
-            # Send data if client
-            if self.client is not None and self.sending:
-                if self.shared_buffer.get_n_items('added', 'network', 'data') >= self.NW_BLOCK:
-                    for par in self.buffer:
-                        end = self.data_structure.get('added', par)
-                        _data = self.shared_buffer.get_buf(par,
-                                                           start=self.data_structure.get(
-                                                               'network', par),
-                                                           end=end)
-                        if _data is not None:
-                            self.send(
-                                (f'DATA/{par}', _data.tobytes(), _data.dtype, ))
-                            self.data_structure.set(end, 'network', par)
-            await asyncio.sleep(self.dt['input'])
 
     def _proc_data(self, par, data, dtype=None, shape=None):
         """

@@ -224,7 +224,7 @@ class Interface:
                 "parameter_short_names": [],
             },
             self,
-            send_cmd=self._send_cmd,
+            send_cmd=self.write,
         )
 
         self.sensors["CTRL"].name = self.name
@@ -267,7 +267,7 @@ class Interface:
             status = chip_d.pop("#ST") if "#ST" in chip_d else 0
             if name not in self.sensors:
                 # Create chip widget
-                self.sensors[name] = Chip(name, chip_d, self, send_cmd=self._send_cmd)
+                self.sensors[name] = Chip(name, chip_d, self, send_cmd=self.write)
             else:
                 # update chip widget stats
                 self.sensors[name].update(chip_d)
@@ -340,7 +340,7 @@ class Interface:
                         par,
                         {"status": _status if _status is not None else 0},
                         self,
-                        send_cmd=self._send_cmd,
+                        send_cmd=self.write,
                     )
                 if _status is None or _status >= 0:
                     # if status is ok, add dtype to pars
@@ -422,7 +422,7 @@ class Interface:
             n = self.samplerate * 60  # ema over 1 min
             self.emarate = (self.emarate - (self.emarate / n)) + ((1 / dt) / n)
 
-    def _send_cmd(self, value):
+    def write(self, value):
         # process controller commands / config
         try:
             # cmd is record and intended for interface
@@ -436,7 +436,7 @@ class Interface:
     def rename(self, name):
         if name != self.name:
             self.name = name
-            self._send_cmd({"CTRL": {"name": name}})
+            self.write({"CTRL": {"name": name}})
 
     def check_name(self,
                    current_name: str, 
