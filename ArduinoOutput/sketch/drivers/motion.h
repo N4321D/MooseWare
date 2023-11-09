@@ -1,10 +1,8 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/drivers/motion.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/motion.h"
 /**
  * Driver for movement sensor LMS6DS3
- * 
- * */ 
-
-// #include "i2csensor.h"
+ *
+ * */
 
 class MOTSensor : public I2CSensor
 {
@@ -40,8 +38,20 @@ public:
         strcpy(PARAMETER_SHORT_NAMES[3], "LX");
         strcpy(PARAMETER_SHORT_NAMES[4], "LY");
         strcpy(PARAMETER_SHORT_NAMES[5], "LZ");
-
-        output_text = "";
+        control_str = "["
+                      "{\"title\": \"Angular Sensitivity\","
+                      "\"type\": \"options\","
+                      "\"desc\": \"Sensitivity of the angular movement sensor in rad/s.\","
+                      "\"key\": \"asens\","
+                      "\"default_value\": 8.73,"
+                      "\"options\": [2.18, 4.36, 8.73, 17.45, 34.91]},"
+                      "{\"title\": \"Linear Sensitivity\","
+                      "\"type\": \"options\","
+                      "\"desc\": \"Sensitivity of the linear movement sensor in g\","
+                      "\"key\": \"lsens\","
+                      "\"default_value\": 2,"
+                      "\"options\": [2, 4, 8, 16]}"
+                      "]";
     }
 
     void init()
@@ -53,21 +63,22 @@ public:
 
         for (byte i = 0; i < 14; i++)
         {
-            writeI2C(ADDRESS, reglist[i], 0x00, 1);
+            writeI2C(ADDRESS, reglist[i], 1, 0x00);
         };
 
         byte data = 0b01000000;
-        writeI2C(ADDRESS, 0x0D, &data, 1); // set intial data ready & FIFO bits
+        writeI2C(ADDRESS, 0x0D, 1, &data); // set intial data ready & FIFO bits
         data = 0b00000011;
-        writeI2C(ADDRESS, 0x0E, &data, 1); // set initial data ready bits
+        writeI2C(ADDRESS, 0x0E, 1, &data); // set initial data ready bits
         data = 0b00000100;
-        writeI2C(ADDRESS, 0x12, &data, 1); // set to i2c mode
+        writeI2C(ADDRESS, 0x12, 1,  &data); // set to i2c mode
         data = 0b00111000;
-        writeI2C(ADDRESS, 0x18, &data, 1); // enable X Y and Z axis on linear sensor
-        writeI2C(ADDRESS, 0x19, &data, 1); // enable X Y and Z axis on angular sensor
+        writeI2C(ADDRESS, 0x18, 1, &data); // enable X Y and Z axis on linear sensor
+        writeI2C(ADDRESS, 0x19, 1, &data); // enable X Y and Z axis on angular sensor
 
         set_lin_sensitivity();
         set_ang_sensitivity();
+        STATUS = 5;
     }
 
     void sample()
@@ -83,31 +94,54 @@ public:
     };
 
     // chip specific functions
-
-    void set_ang_sensitivity(byte sensitivity = 0xff)
-    {   
-        if (sensitivity != 0xff) ang_sensitivity = sensitivity;
-        writeI2C(ADDRESS, 0x11, &ang_sens_bytes[ang_sensitivity], 1);
+    void set_ang_sensitivity(float sensitivity = 0.0)
+    {
+        if (sensitivity != 0.0)
+        {
+            // find position of value in index
+            for (byte i = 0; i < 6; i++)
+            {
+                if (sensitivity == ang_sens_vals[i])
+                {
+                    ang_sensitivity = i;
+                    break;
+                };
+            };
+        };
+        writeI2C(ADDRESS, 0x11, 1, &ang_sens_bytes[ang_sensitivity]);
     }
 
     void set_lin_sensitivity(byte sensitivity = 0xff)
     {
-        if (sensitivity != 0xff) lin_sensitivity = sensitivity;
-        writeI2C(ADDRESS, 0x10, &lin_sens_bytes[lin_sensitivity], 1);
+        if (sensitivity != 0xff){
+            // find position of value in index
+            for (byte i = 0; i < 5; i++)
+            {
+                if (sensitivity == lin_sens_vals[i])
+                {
+                    lin_sensitivity = i;
+                    break;
+                };
+            };
+        };
+        writeI2C(ADDRESS, 0x10, 1, &lin_sens_bytes[lin_sensitivity]);
     }
 
     void reset_procedure()
     {
         byte data = 0x01;
-        writeI2C(ADDRESS, 0x12, &data, 1);
+        writeI2C(ADDRESS, 0x12, 1,  &data);
     }
 
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        for (byte i=0; i < N_PARS; i++){
-            if (i<3) js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * ang_sens_vals[ang_sensitivity];
-            else js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * lin_sens_vals[lin_sensitivity] * 2;  // *2 is because range is +/-
+        for (byte i = 0; i < N_PARS; i++)
+        {
+            if (i < 3)
+                js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * ang_sens_vals[ang_sensitivity];
+            else
+                js[PARAMETER_SHORT_NAMES[i]] = ((float)sampled_data[i] / 0x7FFF) * lin_sens_vals[lin_sensitivity] * 2; // *2 is because range is +/-
         };
     }
 
@@ -115,8 +149,10 @@ public:
     {
         // incoming commandands are processed here
 
-        // set led amps
-        if (strcmp(key, "a_sens") == 0) set_ang_sensitivity(value.as<unsigned short>());
-        if (strcmp(key, "l_sens") == 0) set_lin_sensitivity(value.as<unsigned short>());
+        // set sensitivity
+        if (strcmp(key, "asens") == 0)
+            set_ang_sensitivity(value.as<float>());
+        if (strcmp(key, "lsens") == 0)
+            set_lin_sensitivity(value.as<unsigned short>());
     }
 };

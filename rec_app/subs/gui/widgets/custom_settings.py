@@ -3,7 +3,7 @@ from kivy import kivy_configure
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.settings import (SettingNumeric, SettingsWithSidebar, 
                                SettingString, SettingOptions, SettingSpacer, 
-                               SettingsWithNoMenu, SettingItem)
+                               SettingsWithNoMenu, SettingItem, SettingBoolean)
 from kivy.properties import StringProperty, ListProperty, DictProperty, BooleanProperty, NumericProperty, ObjectProperty
 from kivy.lang.builder import Builder
 from kivy.uix.scrollview import ScrollView
@@ -12,15 +12,23 @@ from kivy.core.window import Window
 from kivy.metrics import dp
 from kivy.uix.widget import Widget
 
+from kivy.clock import Clock
+
 from kivy.uix.popup import Popup
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
+from kivy.app import App
+
+from kivy.uix.screenmanager import Screen
 
 from bisect import bisect
 
 from datetime import timedelta, time as dt_time
 import re
 import ast
+from ast import literal_eval
+
+from subs.gui.misc.Stimulation import StimPanel
 
 from cryptography.fernet import Fernet
 
@@ -73,7 +81,7 @@ Builder.load_string(
             rgba: (0, 0, 0, self.disabled * 0.6)   
         Rectangle:
             pos: self.x, self.y + 1
-            size: self.size 
+            size: self.size
 
 <Popup>:
     title_color: MO
@@ -93,6 +101,9 @@ Builder.load_string(
 <SettingsButton>:
     color: WHITE
     background_color: MO_BGR
+
+<StartStimButton@SettingsButton>:
+    disabled: False if app.IO.running else True
 
 <SettingInWithPlusMinus>:
     Button:
@@ -118,6 +129,9 @@ class SettingsToggle(ToggleButton):
     pass
 
 class SettingsButton(Button):
+    pass
+
+class StartStimButton(SettingsButton):
     pass
 
 def val_type_loader(inp):
@@ -192,6 +206,18 @@ class SettingPassword(SettingString):
         if isinstance(widget, PasswordLabel):
             return self.content.add_widget(widget, *largs)
 '''
+
+class MySettingBoolean(SettingBoolean):
+    """
+    Custom Boolean setting to solve issue if value is entered as true or false instead 
+    of 0 and 1
+    """
+    def on_value(self, instance, value):
+        if self.value == "True":
+            self.value = "1"
+        elif self.value == "False":
+            self.value = "0"
+        return super().on_value(instance, value)
 
 class SettingTimeDelta(SettingString):
     """
@@ -269,9 +295,7 @@ class SettingInWithPlusMinus(SettingNumeric):
     
     def do_disb(self, *args):
         print(*args)
-        
-
-    
+           
     def on_panel(self, instance, value):
         super().on_panel(instance, value)
         self.funbind('on_release', self._create_popup)   # unbind creating popup when clicking on widget
@@ -317,7 +341,73 @@ class SettingInWithPlusMinus(SettingNumeric):
 
         _val = _type(_val)      # make sure type stays the same
         self.value = str(_val)
-      
+    
+class SettingStim(SettingItem):
+    stim_control = {}
+
+    def __init__(self, live_widget=None, **kwargs):
+        self.stim_panel = None
+        super().__init__(**kwargs)
+        self.app = App.get_running_app()
+        self.config = self.panel.config
+        self.buttons = {
+            'create': SettingsButton(text='Create\nStim', 
+                                     on_release=self.create_stim),
+            'startstop': StartStimButton(text='Start\nStim', 
+                                        on_release=self.start_stop_stim,
+                                        ),
+            'reset': SettingsButton(text='Reset\nStim', 
+                                    on_release=self.reset_stim),
+
+        }
+
+        [self.add_widget(b) for b in self.buttons.values()]
+        Clock.schedule_once(self.add_chip, 0)
+
+    def add_chip(self, *args):
+        self.chip = self.panel.parent.chip
+        self.stim_control = self.chip.stim_control[self.key]
+        try:
+            saved_val = literal_eval(self.value)
+            self.stim_control.stim_pars.update(saved_val)  # loaded saved values
+        except (ValueError, TypeError):
+            pass
+        self.stim_control.bind(run=self.change_start_stop_button)
+        self.stim_control.bind(stim_pars=lambda *_:self.on_value(None, 
+            self.stim_control.stim_pars)) #  save stimpars in config
+    
+        self.current_screen = self.get_current_screen()
+
+    def change_start_stop_button(self, *args):
+        self.buttons['startstop'].text = ("Stop\nStim" if self.stim_control.run 
+                                          else "Start\nStim")
+
+    def create_stim(self, button):
+        if self.stim_panel is None:
+            self.stim_panel = self.stim_control.get_panel()
+        # self.get_parent_window()
+        self.get_current_screen().add_widget(self.stim_panel)
+
+    def start_stop_stim(self, button):
+        if self.stim_control.run:
+            self.stim_control.stop_stim()
+        else:
+            self.stim_control.start_stim()
+    
+    def reset_stim(self, button):
+        self.stim_control.reset_stim()
+
+    def on_value(self, instance, value):
+        # do stuff here
+        super().on_value(instance, value)        
+    
+    def get_current_screen(self, *args):
+        """
+        Returns the current screen instance for this widget.
+        """
+        for screen in self.walk_reverse():
+            if isinstance(screen, Screen):
+                return screen
 
 class MySettingsWithNoMenu(SettingsWithNoMenu):
     def __init__(self, *args, **kargs):
@@ -325,10 +415,10 @@ class MySettingsWithNoMenu(SettingsWithNoMenu):
         # register new class to settings
         self.register_type("timedelta", SettingTimeDelta)
         self.register_type("time", SettingTime)
-
         self.register_type("options", SettingOptions_Scrollview)
         self.register_type("plusminin", SettingInWithPlusMinus)
-
+        self.register_type("stim", SettingStim)
+        self.register_type("bool", MySettingBoolean)
 
 class SettingsWithSidebar(SettingsWithSidebar):
     _type_list = {bool: "bool",
@@ -344,10 +434,12 @@ class SettingsWithSidebar(SettingsWithSidebar):
         # register new class to settings
         self.register_type("timedelta", SettingTimeDelta)
         self.register_type("time", SettingTime)
-
         self.register_type("options", SettingOptions_Scrollview)
         self.register_type('password', SettingPassword)
         self.register_type("plusminin", SettingInWithPlusMinus)
+        self.register_type("stim", SettingStim)
+        self.register_type("bool", MySettingBoolean)
+
 
     
     def convert_type(self, var):
@@ -357,7 +449,6 @@ class SettingsWithSidebar(SettingsWithSidebar):
         """
         _type = self._type_list.get(type(var), "string")
         return _type
-
 
 class SettingOptions_Scrollview(SettingOptions):
     '''
@@ -374,7 +465,6 @@ class SettingOptions_Scrollview(SettingOptions):
         
 
         content = GridLayout(cols=1, spacing='5dp')
-        #content.bind(minimum_height=window.setter('height'))
         window.add_widget(content)
         popup_content.add_widget(window)
       
@@ -385,7 +475,7 @@ class SettingOptions_Scrollview(SettingOptions):
         uid = str(self.uid)
         for option in self.options:
             state = 'down' if option == self.value else 'normal'
-            btn = SettingsToggle(text=option, state=state, group=uid,
+            btn = SettingsToggle(text=str(option), state=state, group=uid,
                                size_hint_y=None, height='40sp')
             btn.bind(on_release=self._set_option)
             content.add_widget(btn)
@@ -404,9 +494,9 @@ class SettingOptions_Scrollview(SettingOptions):
         # and open the popup !
         popup.open()
 
-
 if __name__ == "__main__":
-    from kivy.app import App
+    from subs.gui.buttons.Server_Button import Server_Button
+    from subs.gui.buttons.DropDownB import DropDownB    
     import json
 
     class MyApp(App):
@@ -416,8 +506,60 @@ if __name__ == "__main__":
             self.settings_cls = SettingsWithSidebar
             print("Press f1 to open settings")
 
+            class IO():
+                running = True
+            
+            self.IO = IO()
+
         def build(self):
-            return super().build()
+            return Builder.load_string(
+r"""
+#:set STIM_PAR_HEIGHT 0.9  # height of stimpar buttons
+#:set MO (1,1,1,1)
+
+<DROPB@DropDownB>: # general DropDown, set types to change (types: ['1','2'])
+    id: selplot
+    pos_hint: {'x': 0.2, 'top': 0.8}
+    text: 'Menu'
+    size_hint: 0.1, 0.05
+    halign: 'center'
+
+<StdButton@Server_Button>:                                                             # settings for all buttons
+    font_size: '15sp'
+    size_hint: 0.1, 0.1  # relative size
+    halign: 'center'
+    valign: 'center'
+    markup: True
+    idName: None   # save id name in here for triggering later
+    send_nw: False  # can be set to false to disable sending for specific buttons
+
+<TIn>:
+    size_hint: (.1, .07)
+    text_size: self.size
+    multiline: False
+    foreground_color: 1,1,1,1
+    background_color: 0.2,0.2,0.2,0.9
+    font_size: '15sp'
+    base_direction: 'rtl'
+    halign: 'right'
+    valign: 'middle'
+    use_bubble: True
+
+<setLab@Label>:
+    # labels for stimulation and settings
+    pos_hint: {'right': 0.8, 'top': 0.62} #relative sizes 0-1
+    halign: 'right'
+    size_hint: 0.1, 0.05
+    text: 'LABEL'
+    font_size: '15sp'
+    color: (1,1,1,1)
+
+Button:
+    text: "Open settings"
+    on_release: 
+        app.open_settings()
+"""
+)
 
         def build_config(self, config):
             config.adddefaultsection("test")
@@ -435,6 +577,8 @@ if __name__ == "__main__":
                                                    second=34, 
                                                    ))
             config.setdefault('test', "numplusmin", 25.8)
+            config.setdefault('test', "stim", 25.8)
+
 
             return super().build_config(config)
         
@@ -489,9 +633,17 @@ if __name__ == "__main__":
                 "key": "numplusmin",
                 "steps": [[0, 10, 1], [10, 20, 2], [20, 100, 10]],  # [low range, high range, step]
                 "limits": [0, 65],   # [min, max]
-            }
+            },
+            # {"title": "SettingStim",
+            #     "type": "stim",
+            #     "desc": "Stim settings button",
+            #     "section": "test",
+            #     "key": "stim",
+            # }
+            
             ]
             settings.add_json_panel("Test", self.config, data=json.dumps(panel))
 
     app = MyApp()
     app.run()
+

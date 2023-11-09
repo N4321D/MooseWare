@@ -1,4 +1,4 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/drivers/pressure.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/pressure.h"
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
 
 class PInSensor : public I2CSensor
@@ -17,18 +17,18 @@ public:
         N_PARS = 2;
         strcpy(PARAMETER_NAMES[0], "Pressure");
         strcpy(PARAMETER_NAMES[1], "Temperature");
-        strcpy(PARAMETER_SHORT_NAMES[0], "PR");
+        strcpy(PARAMETER_SHORT_NAMES[0], "PRS");
         strcpy(PARAMETER_SHORT_NAMES[1], "TMP");
 
-        output_text = "";
 
     }
 
     void init()
     {
         // call to initialize sensor with correct settings
+        STATUS = 5;
         byte out[1] = {0x50};
-        writeI2C(ADDRESS, 0x10, out, 1); // set intial data ready & FIFO bits
+        writeI2C(ADDRESS, 0x10, 1, out); // set intial data ready & FIFO bits
     }
 
     void sample()
@@ -46,7 +46,7 @@ public:
     // chip specific functions
     void dataToJSON(JsonObject js)
     {
-        js["PR1"] = ((float)(((uint32_t)sampled_data[2] << 16) | ((uint32_t)sampled_data[1] << 8) | sampled_data[1])) / 5460.86912;
+        js["PRS"] = ((float)(((uint32_t)sampled_data[2] << 16) | ((uint32_t)sampled_data[1] << 8) | sampled_data[0])) / 5460.86912;
         js["TMP"] = ((float)(((uint32_t)sampled_data[4] << 8) | sampled_data[3])) / 100;
     }
 };

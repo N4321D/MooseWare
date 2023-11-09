@@ -65,21 +65,23 @@ kv_str = """
             root.start_stop()
     
     DROPB:
-        id: microbutt
+        id: interfacebutt
         drop_but_font_size: '15sp'          # must be before types and text
         drop_but_size: '48sp'         # size of drop down buttons 
         font_size: '15sp'
         pos_hint: {'x': 0.7, 'top': 0.1}
         size_hint: (.2, .1)
-        text: 'Select\\nInput'
-        types: ['Internal', *app.IO.micro_controllers]
+        text: app.IO.selected_interface
+        types: app.IO.interfaces
         text_size: self.size
-        color: WHITE if app.IO.plot_micro != "Internal" else MO
-        background_color: MO_BGR if app.IO.plot_micro != "Internal" else BUT_BGR
+        color: WHITE # if app.IO.selected_interface != "Internal" else MO
+        background_color: MO_BGR # if app.IO.selected_interface != "Internal" else BUT_BGR
         halign: "center"
         valign: "center"
         on_text:
-            root.toggle_micro(self.text)
+            root.toggle_interface(self.text)
+        on_types:
+            root.interface_disconnect(self.text)
 
 
     Label:
@@ -112,27 +114,16 @@ kv_str = """
         on_release:
             root.open_autostim()
 
-    Label:
-        id: stimstat_text
-        size_hint: 0.1, 0.1
-        pos_hint: {'right': 1, 'top': 0.63}
-        font_size: '16sp' if self.text == '[i]last\\nstim[/i]' else '14sp'
-        text: '[i]last\\nstim[/i]'
-        color: WHITE if app.IO.sensor_status.get("OIS:status", (0, ))[0] > 1 else GREY
-        halign: 'center' if self.text == '[i]last\\nstim[/i]' else 'right'
-        markup: True
-    
     StdButton:
         id: bluebutt
         font_size: '16sp'
         pos_hint: {'right': 1, 'top': 0.8}
         size_hint: 0.2, 0.1
-        text: "STIM"
-        color: (0.5, 0.5, 0.5, 0.9) 
-        background_color: BUT_BGR
-        disabled: not app.IO.running
+        text: "STOP\\nSTIMS"
+        color: WHITE
+        background_color: MO_BGR
         on_release:
-            root.stimchoice()
+            app.IO.stop_all_stims()
 
 
     # TIME RANGE
@@ -220,13 +211,13 @@ kv_str = """
         id: splot1
         pos_hint: {'x': 0.07, 'top': 0.88}
         types: app.IO.choices
-        text: self.types[0] if len(self.types) > 1 else 'Not Connected'
+        text: "OIS_SIG" if "OIS_SIG" in self.types else (self.types[0] if len(self.types) > 1 else 'Not Connected')
 
     SPLOT:
         id: splot2
         pos_hint: {'x': 0.07, 'top': 0.428}
         types: app.IO.choices
-        text: self.types[1] if len(self.types) > 2 else 'Not Connected'
+        text: "MOT_AX" if "MOT_AX" in self.types else (self.types[1] if len(self.types) > 2 else 'Not Connected')
 
 """
 
@@ -265,14 +256,13 @@ class RecScreen(Scr):
         self.plotonoff_event = Clock.schedule_once(self.plotonoff, 0)
         
         # hardware button
-        self.Button = self.app.Button
-        self.Button.on_press = self.button_press
-        self.Button.on_release = self.button_release
+        # self.Button = self.app.Button
+        # self.Button.on_press = self.button_press
+        # self.Button.on_release = self.button_release
     
-        self.app.IO.bind(sensor_status=self.ois_updates)
-
-        # bind ois_ma to change OIS function
-        self.app.rec_vars.bind(ois_ma=lambda inst, val: self.plusminbut('ledma', val))
+        self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
+                                                       self.app.IO.selected_interface))
+        
 
         Clock.schedule_once(self.__kv_init__, 0)
     
@@ -281,10 +271,8 @@ class RecScreen(Scr):
         init to run when kivy app is built
         """
         self.app.root.bind(UTC=lambda *_: self.toggle_utc(self.app.root.UTC))
-        self.Button.start_detection()
-        self.plusminbut("ledma", self.app.rec_vars.ois_ma)
+        # self.Button.start_detection()
         return
-
 
     def main(self, *args, stop=False):
         if stop:
@@ -310,77 +298,6 @@ class RecScreen(Scr):
                 
         return self.event()
 
-    def stimchoice(self, *args):
-        # Choose stimulation (reset or continue) and send it to rec
-
-        if self.app.IO.sensor_status.get("OIS:status", [0,])[0] >= 3:
-            # stim running: stop stim
-            return self._stop_stim()
-
-        if not self.app.IO.running or not self.app.stim.protocol:
-            # not recording or no stim protocol
-            log('Error: Not Recording or No Stimulus Defined...', 'warning')
-            return
-
-        if 0 < self.app.stimstat[0] < len(self.app.stim.protocol):
-            # stim started and paused but not finished
-            return self._stim_popup()
-        
-        else:
-            # start stim
-            return self._start_stim()
-
-    def _start_stim(self):
-        # (re-)starts stim protocol
-        self._start_stim_prot(self.app.stim.protocol)
-
-    def _stop_stim(self):
-        # stop protocol when running
-        self.app.IO.chip_command('OIS', 'set_stim_protocol', [(0, 0, 0)])
-
-    def _continue_stim(self):
-         # CONTINUE STIM
-        prot = self.app.stim.protocol[self.app.stimstat[0]:]
-
-        # substract startime to start left over protocol immediately:
-        offset = prot[0][0]
-        prot = [(i[0] - offset, i[1] - offset, i[2]) for i in prot]
-        return self._start_stim_prot(prot)
-    
-    def _do_1_stim(self, reset=False):
-        """
-        only triggers the next stim step in protocol and pauses,
-        NB. Ignores interval defined in stim  protocol between stims
-        use reset=True to restart from strart of protocol
-        """
-
-        prot = self.app.stim.protocol[self.app.stimstat[0]]
-        
-        # correct for offset in on to start immediately:
-        prot = [(0, prot[0][1] - prot[0][0], prot[0][2])]    # prot [(on, off, mA), ....]
-
-        self._start_stim_prot(prot)
-
-    def _stim_popup(self, *args):
-         # Popup (continue, restart, cancel stim)
-        self.app.popup.load_defaults()
-        self.app.popup.title = 'Stimulation Protocol not Finished'
-        self.app.popup.size_hint = 0.5, 0.3
-        self.app.popup.buttons = {'CONTINUE\nSTIM.':
-                                    {"do": self._continue_stim},
-                                    'RESTART\nSTIM.':
-                                    {"do": self._start_stim},
-                                    'CANCEL': {},
-                                    }
-        return self.app.popup.open()
-
-    def _start_stim_prot(self, protocol, *args, **kwargs):
-        """
-        helper function to start a specific stim protocol
-        (sends it to recorder)
-        """
-        self.app.IO.chip_command('OIS', 'set_stim_protocol', protocol)
-
     def plusminbut(self, func, inp):
         """
         this function controls +/- button behaviour
@@ -396,7 +313,6 @@ class RecScreen(Scr):
             # get value
             out = {'time': self.app.IO.secondsback,
                    'zoom': self.app.IO.yzoom,
-                   'ledma': self.app.rec_vars.ois_ma
                    }[func]
 
             # find step size
@@ -435,18 +351,6 @@ class RecScreen(Scr):
             else:
                 self.ids['yzoomin'].text = f'{self.app.IO.yzoom:.0f} %'
 
-        if func == 'ledma':
-            # limit mA within range:
-            if out < 0:
-                out = 0
-            if out > 60:
-                out = 60
-
-            self.app.rec_vars.ois_ma = out
-            if self.app.IO.running:
-                self.app.IO.add_note(f'Green LED power (mA): {out}')
-            self.app.IO.chip_command('OIS', 'ledcontrol', 'pulse', (out, out))
-
     def change_rec_name(self, name, *args):
         if (self.app.IO.running or not name
             or not isinstance(name, str)):
@@ -472,36 +376,6 @@ class RecScreen(Scr):
         if auto:
             return self.plotonoff_event()
 
-    def button_press(self, lastpresstime):
-        if not self.nudging:
-            self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, True)
-        else:
-            # stop wakeup protocol when pressing button
-            self.autostim.stop_wakeup_prot()
-            self.nudging = False
-
-    def button_release(self, touch_duration, *args):
-        if not self.nudging:
-            self.app.IO.sensors['GPIO Interface'].set_gpio_pin(6, False)
-            if self.app.IO.running:
-                self.app.IO.add_note(f'Button Pressed for {touch_duration:.2f} seconds')
-
-    def ois_updates(self, *args):
-        _i = self.app.IO.sensor_status["OIS:status"][0]
-        self.ids.bluebutt.text = ('STIM', 'STIM', 'START\nSTIM', 'STOP\nSTIM', 'STOP\nSTIM')[_i]
-        self.ids.bluebutt.color = ((0.5, 0.5, 0.5, 0.9), (0.5, 0.5, 0.5, 0.9), WHITE, (1, 0, 0, 1), (1, 0, 0, 1))[_i]   # start with greyed out text
-        self.ids.bluebutt.background_color = (BUT_BGR, BUT_BGR, MO_BGR, BLUE, BLUE)[_i]
-        if not self.app.IO.running:
-            self.ids.bluebutt.disabled = False if _i > 1 else True
-        
-        # set stim counter
-        if _i > 1:
-            count = self.app.IO.sensor_status['OIS:stim_count'][0]
-            if count > 0:
-                ma = self.app.IO.sensor_status['OIS:last_stim_mA'][0]
-                dur = round(self.app.IO.sensor_status['OIS:last_stim_dur'][0], 2)
-                self.ids.stimstat_text.text = f"{count}\n{dur} s.\n{ma} mA"
-            
     # Autostimulation
     def open_autostim(self,):
         # self.autostim_pan.open()
@@ -515,11 +389,12 @@ class RecScreen(Scr):
 
     def setup_autostim(self):
         # define what to do at stop and start
-        self.autostim.start_stim = partial(self._do_1_stim, reset=True)
-        self.autostim.stop_stim = self._stop_stim
-        self.autostim.continue_stim = self._do_1_stim
-        self.autostim.custom_protocol = self._start_stim_prot
-    
+        # self.autostim.start_stim = partial(self._do_1_stim, reset=True)
+        # self.autostim.stop_stim = self._stop_stim
+        # self.autostim.continue_stim = self._do_1_stim
+        # self.autostim.custom_protocol = self._start_stim_prot
+        pass
+
     def wake_up(self, state):
         self.nudging = True
         if state is None:
@@ -541,5 +416,10 @@ class RecScreen(Scr):
         self.ids['graf1'].utc = utc
         self.ids['graf2'].utc = utc
 
-    def toggle_micro(self, micro):
-        self.app.IO.toggle_micro(micro)
+    def toggle_interface(self, interface):
+        self.ids['chip_widget'].create_buttons()
+        self.app.IO.toggle_interface(interface)
+
+    def interface_disconnect(self, interface):
+        if interface not in self.ids.interfacebutt.types: 
+            self.toggle_interface(self.ids.interfacebutt.types[-1])

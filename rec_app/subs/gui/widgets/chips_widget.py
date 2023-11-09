@@ -18,13 +18,12 @@ from kivy.lang import Builder
 from subs.gui.widgets.custom_settings import MySettingsWithNoMenu
 from kivy.config import ConfigParser
 
-from subs.driver.sensors import chip_d
 
 from kivy.properties import BooleanProperty
 
 from kivy.clock import Clock
 
-from subs.gui.vars import SENSOR_COLORS, CW_BUT_BGR_EN,CW_BUT_BGR_DIS, CW_BUT_BGR_RES
+from subs.gui.vars import SENSOR_COLORS, CW_BUT_BGR_EN,CW_BUT_BGR_DIS, CW_BUT_BGR_RES, CW_BUT_BGR_LOST
 
 import json
 
@@ -54,8 +53,8 @@ kv_str = """
             width: 2
             rectangle: self.x, self.y, self.width, self.height
 
-    size_hint: (0.5, 0.5)
-    pos_hint: {"x": 0.25, "y":0.25}
+    size_hint: (0.7, 0.6)
+    pos_hint: {"x": 0.15, "y":0.2}
 
 """
 
@@ -67,28 +66,26 @@ class ChipLabel(Button):
     chip_name = ""
     chip_enabled = BooleanProperty(True)
 
-    def __init__(self, chip, app, **kwargs):
+    def __init__(self, chip, short_name, app, box, **kwargs):
         super().__init__(**kwargs)
+        self.box=box
         self.app = app
+
+        config = ConfigParser().get_configparser("app_config")
+
         self.chip = chip
-        self.chip_name = self.chip.name
-        self.text = chip.short_name # chip.short_name.replace(" ", "\n")
+        self.chip_name = chip.name
+        self.text = chip.short_name
         self.chip_enabled = chip.record
         
         self.bind(chip_enabled=self._enable_disable_chip)
-        
-        config = ConfigParser().get_configparser("app_config")
-        config.adddefaultsection(chip.name)
-        config.setdefaults(chip.name, chip.return_default_options())
+
         self.settings = ChipPanel(self, config)
-        
-        for opt in config.options(chip.name):
-            # restore last saved options
-            val = config.get(chip.name, opt)
-            self.settings.on_config_change(config, chip.name, opt, val)
 
     def _enable_disable_chip(self, *args):
         self.chip.record = bool(int(self.chip_enabled))
+
+        # update plotpars
         Clock.schedule_once(lambda dt:
             asyncio.run_coroutine_threadsafe(
                 self.app.IO.update_plot_pars(), 
@@ -100,14 +97,12 @@ class ChipLabel(Button):
         self.open_panel()
 
     def open_panel(self, *args):
-        # if self.parent.app.IO.running is True:
-        #     return # stop opening panel when running
         self.on_release = self.close_panel
-        self.parent.parent.add_widget(self.settings)
+        self.box.parent.add_widget(self.settings)
     
     def close_panel(self, *args):
         self.on_release = self.open_panel
-        self.parent.parent.remove_widget(self.settings)
+        self.box.parent.remove_widget(self.settings)
 
 class ChipWidget(BoxLayout):
     """
@@ -115,30 +110,44 @@ class ChipWidget(BoxLayout):
     """
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.chip_labels = {}
         self.app = App.get_running_app()
-        self.sensor_status = self.app.IO.sensor_status
         
         Builder.load_string(kv_str)
+        self.create_buttons()
+        self.app.IO.bind(sensors=self.create_buttons)
+        Clock.schedule_interval(
+            self.change_color, 0.25)
 
-        self.chip_labels = {name: ChipLabel(chip_d[name], self.app) 
-                                            for name in chip_d}
-        for i, c in enumerate(self.chip_labels.values()):
-            self.add_widget(c, index=i) 
+    def create_buttons(self, *args):
+        self.clear_widgets()
+        self.chip_labels.clear()
+        self.chip_labels = {name: ChipLabel(self.app.IO.sensors[name], name, self.app, self) 
+                                            for name in self.app.IO.sensors}
+
+        # add widgets sorted on chip name
+        for i, c in enumerate(sorted(self.chip_labels, 
+                                     key=lambda x: 0 if x == "CTRL" else 1)[::-1]):
+            self.add_widget(self.chip_labels[c], index=i)
         
-        self.app.IO.bind(sensor_status=self.change_color)
-        Clock.schedule_once(self.__kv_init__, 0)
-    
-    def __kv_init__(self, dt):
-        self.change_color
+        # add empty buttons if low number of buttons
+        min_buttons = 8
+        if len(self.chip_labels) < min_buttons:
+            [self.add_widget(Button(background_color=CW_BUT_BGR_EN)) 
+             for i in range(min_buttons - len(self.chip_labels))]
+        
+        self.change_color()
 
     def change_color(self, *args):
         for chip in self.chip_labels:
             _live_widget = self.chip_labels[chip].settings.contains_live_widgets
 
-            _resets = self.app.IO.sensor_status.get(f"{chip}:reset_count", (0,))[0]
-
             # status color
-            status_color = self.app.IO.sensor_status.get(f"{chip}:status", (0,))[0]
+            status_color = self.chip_labels[chip].chip.status
+
+            if status_color < -1:
+                status_color = -1
+            
             if self.chip_labels[chip].color != SENSOR_COLORS[status_color]:
                 self.chip_labels[chip].color = SENSOR_COLORS[status_color]
 
@@ -148,44 +157,82 @@ class ChipWidget(BoxLayout):
             else:
                 bg_col = CW_BUT_BGR_EN
             
+            # Resets
+            _resets = self.chip_labels[chip].chip.resets
             if _resets and self.app.IO.running:
                 bg_col = (*CW_BUT_BGR_RES[:3], 0.3 if not _live_widget else 0.6)
+            
+            try:
+                if (status_color < 0 and self.app.IO.running 
+                    and self.chip_labels[chip].chip.connected):
+                    bg_col = (*CW_BUT_BGR_LOST[:3], 0.3 if not _live_widget else 0.6)
+            
+            except Exception as e:
+                raise e
 
             if self.chip_labels[chip].background_color != bg_col:
                 self.chip_labels[chip].background_color = bg_col
 
-    
 class ChipPanel(MySettingsWithNoMenu):
     """
     Settings panel for each chip
-    """    
+    """
     def __init__(self, parent_button, config, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parent_button = parent_button
+        self.chip = self.parent_button.chip
         self.config = config
-        self._create_self()
+        Clock.schedule_once(self._create_self, 0)
 
     def _create_self(self, *args):
-        json_list = self.parent_button.chip.json_panel()
+        json_list = self.chip.json_panel()
 
         # create live settings (items that can be changed during recording)
         for item in json_list:
             # if chip setting has no live widget = True in json assume it is not a live widget
             if item.setdefault('live_widget', False) is True:
                 self.contains_live_widgets = True    # prevents changing color when recording when containing live widgets
+            
+            # create values if not exisiting
+            default_val = True # None
+            if "default_value" in item:                
+                default_val = item.pop('default_value')
 
-        self.add_json_panel(self.parent_button.chip.name, self.config, 
+                # if item['type'] == "bool":
+                #     # change bool to int otherwise settingsbool widget does not work
+                #     default_val = int(default_val)
+
+            else:
+                default_val = (getattr(self.parent_button.chip, item['key']) 
+                if hasattr(self.parent_button.chip, item['key']) else 0)
+
+            if not self.config.has_section(item['section']):
+                self.config.add_section(item['section'])
+                
+            self.config.setdefault(item['section'], item['key'], default_val)
+
+        self.add_json_panel(self.chip.name, self.config, 
                             data=json.dumps(json_list))
-
+    
+        self.interface.container.chip = self.chip    # make chip accessible to settings items
+        self.update_chip_val()
+    
+    def update_chip_val(self, *args):
+        # send values to chip
+        [self.on_config_change(self.config, item['section'], item['key'], 
+                            self.config.get(item['section'], item['key']))
+                            for item in self.chip.json_panel()]
+                
     def on_config_change(self, config, section, option, value):
-        if option == "recording":
-            self.parent_button.chip_enabled = config.getboolean(section, option)
-        else:
-            try:
-                value = literal_eval(value)
-            except:
-                pass
-            self.parent_button.chip.do_config(option, value)
+        # convert string to number
+        try:
+            value = literal_eval(value)
+        except (ValueError, SyntaxError):
+            # Value is string
+            pass
+
+        # send to chip
+        self.chip.do_config(option, value)
     
     def on_touch_down(self, touch):
         """
@@ -195,34 +242,7 @@ class ChipPanel(MySettingsWithNoMenu):
             return super().on_touch_down(touch)
         else:
             # clicked outside widget
-            self.parent_button.close_panel()
-            
+            self.parent_button.close_panel()          
 
 if __name__ == "__main__":
-    from random import randint
-    from kivy.clock import Clock
-    from kivy.properties import DictProperty
-    from kivy.event import EventDispatcher
-
-    class SIO(EventDispatcher):
-        sensors = DictProperty(chip_d)
-        sensor_status = DictProperty({f"{i}:status": 0 for i in chip_d})
-
-        def change_status(self, *args):
-            self.sensor_status.update({i: randint(0, 4) for i in self.sensor_status})
-
-    class MyApp(App):
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.IO = SIO()
-            
-        def build(self,):
-            Clock.schedule_interval(lambda *x: self.IO.change_status(), 1)
-            self.chip = ChipWidget()
-            return self.chip
-    
-    app = MyApp()
-    app.run()
-
-
-# TODO: make sure settings panel starts with right values for bools -> use 1 and 0 and convert to true & false
+    pass

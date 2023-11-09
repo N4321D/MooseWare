@@ -57,6 +57,7 @@ import time
 # import global vars with colors, see description:
 try:
     from subs.gui.vars import *
+    
 except Exception as e:
     log("Vars import error, loading defaults: {}".format(e), "warning")
     MO = (0, 1, 0.1, 1)   # Color of line,
@@ -213,6 +214,7 @@ class Graph(FloatLayout):
         # correct values for canvas size
         if min_dat == max_dat:                        # if data is a straight line
             data.fill(dim[0] + 0.5 * dim[1])
+
         else:
             data = dim[0] + ((data - min_dat) * (dim[1] / abs(max_dat - min_dat)))
         
@@ -330,7 +332,8 @@ class Graph(FloatLayout):
         n_labels = self.steps + 1    
         
         xlist = np.linspace(minx + t_off, 
-                            maxx + t_off, n_labels,
+                            maxx + t_off, 
+                            n_labels,
                             dtype='datetime64[s]')
 
         y_list = [miny + ((maxy - miny) / self.steps) * i 

@@ -11,7 +11,7 @@ controls recording, saving and plotting of the data
 """
 
 import asyncio
-from subs.gui.vars import SETTINGS_VAR, MAX_MEM
+from subs.gui.vars import SETTINGS_VAR
 from functools import partial
 import numpy as np
 import threading as tr
@@ -21,8 +21,8 @@ import subs.network.client as nw_client     # import network client
 import subs.network.server as nw_server     # import network client
 
 from subs.recording.saver import Saver
-from subs.recording.recorder import Recorder, chip_d, get_connected_chips_and_pars, ReadWrite, TESTING, shared_vars
-from subs.driver.arduino import Controller
+
+from subs.driver.interface_factory import InterfaceFactory
 
 from subs.recording.buffer import SharedBuffer
 from kivy.properties import (BooleanProperty, NumericProperty,
@@ -53,11 +53,11 @@ def log(message, level="info"):
         print(f"{cls_name} - {level}: {message}")
 
 
-# lines of notes in memory, TODO: get from max in notes widgets
+# lines of notes in memory,
 NOTES_LENGTH = 2000
 
 # PARAMETERS TO REMOVE FROM PLOT CHOICES
-REMOVE_PARS = {'OIS Stimulation Current', "us", "sDt", "time"}
+REMOVE_PARS = {"us", "sDt", "time"}
 
 
 def proc_async_exceptions(results):
@@ -105,36 +105,26 @@ class InputOutput(EventDispatcher):
     app = None
 
     # main vars
-    dt = {'input': 0.01,
-          'plotting': 1,
-          'sensor stats': 0.2,
+    dt = {'plotting': 1,
           }                                                              # Wait times for input & plot loop
     recording_name = ConfigParserProperty("Untitled", "recording",
                                           "recording_name", "app_config",
                                           val_type=str,)                 # Name of the curren recording
 
-    # Dictionary with connected sensors
+    # Dictionary with connected sensors for current interface
     sensors = DictProperty({})
+
     # list with plottable pars (to choose in graph)
     choices = ListProperty([])
-    # function to read & write directly to chips
-    readwrite = ReadWrite()
-    # dictionary with connected microcontroller
-    micro_controllers = DictProperty({})
+    
+    # dictionary with connected interfaces
+    interfaces = DictProperty({})
     # plot micro or internal sensors
-    plot_micro = StringProperty("Internal")
+    selected_interface = StringProperty("")
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
-    # kivy dict with sensor status created from _sensor_stats
-    sensor_status = DictProperty({})
-    # dict with sensorname: shared table with sensor readouts
-    _sensor_status = shared_vars
-
-    # placholder for recorder
-    rec = None
-    # mp process for recorder
-    rec_pr = None
+    
     # placeholder for saver
     sav = None
     # interval to create new file
@@ -153,7 +143,7 @@ class InputOutput(EventDispatcher):
     sending = False
     # blocksize (in data items) to send over network
     NW_BLOCK = 32000
-    # nw_tr = None                                                      # Thread with nw functions
+    NETWORK_READY = asyncio.Event()
 
     # plotting vars:
     # list with the graphs for plotting the data
@@ -163,12 +153,6 @@ class InputOutput(EventDispatcher):
                                    if x > 10000 else 0)                 # zoom of Y ax in %
     # time frame to plot
     secondsback = NumericProperty(10)
-    default_plot_pars = {"OIS Signal": 0,                               # default plotting pars (TODO: remember last ones -> save in app.settings)
-                         "Motion Ang. X": 1,
-                         "GPIO 6": float('inf'),
-                         "GPIO 18": float('inf'),
-                         "OIS_SIG": 0,
-                         "MOT_AX": 1, }
 
     # Switches & events
     # Event to signal that app is closing
@@ -208,8 +192,6 @@ class InputOutput(EventDispatcher):
         self.bind(secondsback=limit_secondsback)
 
         Clock.schedule_once(self.__kv_init__, 0)
-        Clock.schedule_interval(
-            self._update_sensor_stats, self.dt['sensor stats'])
 
         self.async_main_coro_task = asyncio.create_task(self.main_coro())
 
@@ -230,14 +212,10 @@ class InputOutput(EventDispatcher):
         tasks.add(self.plot())
 
         # setup network
-        # tasks.add(self.serv_client())
-        # # TODO: this blocks recording/plotting when running as client
-        print("TODO SETUP SERVER OR CLIENT HERE")
+        tasks.add(self.serv_client())
 
-        if self.client is not None:
-            tasks.add(self.network_loop())
-
-        tasks.add(self.micro_loop())
+        # start interface factory
+        tasks.add(self.interface_loop())
 
         # async execute all tasks here
         proc_async_exceptions(
@@ -266,9 +244,7 @@ class InputOutput(EventDispatcher):
             save (bool, optional): Flag indicating whether to save the data or not. Defaults to True.
 
         Attributes:
-            rec (Recorder): Recording object.
             sav (Saver): Saver object.
-            rec_pr (Process): Process for running the recorder.
             running (bool): Flag indicating if recording has started.
             shared_buffer (data structure): Shared memory buffer containing recorded data.
             app (App): The main application object.
@@ -281,20 +257,7 @@ class InputOutput(EventDispatcher):
         self.add_note(f"Recording Started")
 
         if not self.client_ip:
-            self.rec = Recorder(start_rate=self.app.rec_vars.startrate,
-                                MAX_MEM=MAX_MEM)                                # MAX_MEM is defined in vars.py
-
-            # limit viewable data to max buffered data
-            self.app.rec_vars.data_length = int(self.rec.buffer_length
-                                                / self.app.rec_vars.startrate)
-
-            self.rec_pr = self.rec.start()
-
-            # start micro controllers
-            for dev_name in self.micro_controllers:
-                self.micro_controllers[dev_name].samplerate = self.app.rec_vars.startrate
-                self.micro_controllers[dev_name].start_stop(True)
-
+            # create saver
             if save:
                 self.sav = Saver(recname=self.recording_name,
                                  NEW_FILE_INTERVAL=self.new_file_interval)
@@ -302,6 +265,13 @@ class InputOutput(EventDispatcher):
 
             else:
                 self.sav = None
+
+            # start controllers
+            for dev_name in self.interfaces:
+                if self.interfaces[dev_name].record:
+                    self.interfaces[dev_name].start_stop(True)
+
+
 
             # update links to shared memory for new parameters
             self.shared_buffer.check_new()
@@ -317,38 +287,45 @@ class InputOutput(EventDispatcher):
         has stopped
         """
         if not self.client_ip:
-            self.rec.stop()
+            self.stop_all_stims()
 
-            for dev_name in self.micro_controllers:
-                self.micro_controllers[dev_name].start_stop(False)
+            for dev_name in self.interfaces:
+                self.interfaces[dev_name].start_stop(False)
 
             if self.sav:
                 self.sav.stop()
 
-            self.rec_pr.join()
-            self.rec_pr = None
             self.add_note(f"Recording stopped")
 
         self.running = False
 
-    def chip_command(self, chip, method, *args, **kwargs):
+    def chip_command(self, 
+                     interface, 
+                     chip, 
+                     key,
+                     value, 
+                     *args, **kwargs):
         """
         Run a function of the chip driver with args and kwargs
+        - interface: interface to send command to; use None to send to all
         - chip: chip to trigger function on
-        - method: method to trigger
-        - args: arguments to put in function
+        - key: key to send
+        - value: value to send
         - kwargs: keyword arguments to put in function
 
         example:
         `chip_command("LED_chip", 'set_led', 30, color='blue')` sets leds on on 
             this driver to 30% blue light 
         """
-        if self.running:
-            self.rec.q_in.put((chip, method, args, kwargs))
 
-        else:
-            if chip in self.sensors:
-                getattr(self.sensors[chip], method)(*args, **kwargs)
+        if interface not in self.interfaces and interface is not None:
+            return
+        interfaces = [interface] if interface else self.interfaces
+        [self.interfaces[i].write(
+            {chip: {key:value}}) for i in interfaces
+            if chip in self.interfaces[i].sensors  # only send if chip is in interface
+            ]
+        
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):
@@ -385,41 +362,38 @@ class InputOutput(EventDispatcher):
             # wait for all tasks to finish:
             proc_async_exceptions(await asyncio.gather(*tasks,
                                                        return_exceptions=True))
-            await asyncio.sleep(self.dt['plotting'])
+            
+            plot_dt = self.dt['plotting']
+            if self.secondsback > 300:
+                plot_dt *= 2
+
+            await asyncio.sleep(plot_dt)
 
         return self.exit()
 
     async def update_plot_pars(self, *_):
         self._update_plot_pars()
 
-        if self.client is not None:
-            # send connected sensors to server
-            await self.client.send_data(('VAR', ('app', 'IO.sensors', (dict(self.sensors),))))
-            # send available plot pars to server
-            await self.client.send_data(('VAR', ('app', 'IO.choices', (list(self.choices),))))
-            # pass
-
     def _update_plot_pars(self, *_):
         """
         Check connected sensors and status
-
-        # TODO: dont copy to dict but directly link to shared values? 
         """
-        if self.plot_micro != "Internal":
-            dev = self.micro_controllers[self.plot_micro]
-            sensors = {k: v for k, v in dev.sensors.items()
-                       if v.get('i2c_status') == 0}
-            pars = dev.parameters
-        else:
-            sensors, pars = get_connected_chips_and_pars(filter_pars=True)
+        dev = self.interfaces.get(self.selected_interface)
+        if not dev:
+            return
+        if dev.name != self.selected_interface:
+            self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = dev.name
+
+        sensors = {k: v for k, v in dev.sensors.items()
+                    if v.connected}
+        pars = dev.parameters
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
         # Create list of plottable sensors
-        choices = set(pars).difference(REMOVE_PARS)
-
-        choices = sorted(choices,
-                         key=lambda x: self.default_plot_pars.get(x, 2)
+        choices = sorted(set(pars).difference(REMOVE_PARS),
+                         key = lambda x: ("GPIO" in x, x),
                          ) + ['Off']
 
         if sensors != self.sensors or choices != self.choices:
@@ -427,21 +401,6 @@ class InputOutput(EventDispatcher):
             self.sensors.clear()
             self.sensors.update(sensors)
             self.choices = choices
-
-    def _update_sensor_stats(self, *_):
-        """
-        updates self.sensor_stats with
-        "sensor name:parameter": parameter
-        from shared tables of chip.shv (self._sensor_status)
-
-        Note: this is not to actively probe if the sensor is connected but to 
-        get reset counts, current settings etc
-        """
-        sensor_stats = {f"{chip}:{par}": val.get(par)
-                        for chip, val in self._sensor_status.items()
-                        for par in val.array.dtype.fields}
-
-        self.sensor_status.update(sensor_stats)
 
     async def _update_rec_pars(self, *_):
         """
@@ -452,14 +411,8 @@ class InputOutput(EventDispatcher):
         - maxrate: float, max limit sample rate
         - emarate: float, current exponential avg theoretical max sample rate
         """
-    
-        if self.plot_micro == "Internal" and self.rec is not None:
-            _new_pars = {k: self.rec.pars.get(k)[0]
-                            for k in self.rec.pars.array.dtype.fields}
-            self.rec_pars.update(_new_pars)
-
-        elif self.plot_micro != "Internal" and self.micro_controllers:
-            dev = self.micro_controllers[self.plot_micro]
+        if self.interfaces:
+            dev = self.interfaces[self.selected_interface]
             _new_pars = {
                 "samplerate": dev.current_rate,
                 "emarate": dev.emarate,
@@ -488,11 +441,7 @@ class InputOutput(EventDispatcher):
         [('parameter', graph1, kwargs),
         ('parameter', graph2, kwargs), etc.]
         """
-        if self.plot_micro != "Internal":
-            plot_buff_name = self.plot_micro
-            
-        else:
-            plot_buff_name = "data"
+        plot_buff_name = self.selected_interface 
 
         if ((not self.plotting
                 and not (self.sending and self.client))
@@ -558,8 +507,8 @@ class InputOutput(EventDispatcher):
 
         # exceptions for specific sensors
         # TODO: move the exceptions and functions to different file, maybe driver?
-        if par[-1] == 'OIS Signal':
-            par.append('OIS Stimulation Current')
+        if par[-1] == "OIS_SIG":
+            par.append('OIS_STIM')
 
         # Get Data
         try:
@@ -574,56 +523,54 @@ class InputOutput(EventDispatcher):
             log(f"Parameter not in memory or no data yet: {e}", 'warning')
         
 
-    # Micro controllers
-    async def micro_loop(self):
-        if self.app.TESTING:
-            _controller = Controller(testing=True,
-                                     on_connect=self.connect_micro,
-                                     on_disconnect=self.disconnect_micro)
+    # Interfaces
+    async def interface_loop(self):
+        # create interface factory
+        self.interface_factory = InterfaceFactory(
+            on_connect=self.connect_interface,
+            on_disconnect=self.disconnect_interface,
+            IO=self,
+            EXIT=self.EXIT,
+            interfaces=self.interfaces,
+        )
+        # start scan loop
+        await self.interface_factory.scan()
 
-        while not self.EXIT.is_set():
-            # print("\nCONNECT LOOP " *10)
-            # setup micro contoller TODO: move to loop and add function to add mulitple controllers
-            
-            _controller = Controller(on_connect=self.connect_micro,
-                                     on_disconnect=self.disconnect_micro)
-            await _controller.async_start()
+    def connect_interface(self, interface):
+        self.interfaces[interface.name] = interface
+        interface.start_stop(False)   # force stop
+        self.selected_interface = interface.name
 
-    def connect_micro(self, micro):
-        self.micro_controllers[micro.name] = micro
-        micro.start_stop(False)   # force stop micro
+    def disconnect_interface(self, interface):
+        if interface.name in self.interfaces:
+            del self.interfaces[interface.name]
 
-    def disconnect_micro(self, micro):
-        del self.micro_controllers[micro.name]
-
-    def toggle_micro(self, micro, *args):
-        self.plot_micro = micro
-        self._update_plot_pars()
-
-    # NETWORK FUNCTIONS:
-      # Data gather functions:
-    async def network_loop(self, *args):
+    def toggle_interface(self, interface, *args):
+        if self.selected_interface != interface:
+            self.selected_interface = interface
+            self._update_plot_pars()
+    
+    def stop_all_stims(self, *args):
         """
-        This method checks for new input from the recorder and the network
-        and processes it if necessary.
+        (Force) Stop all stimulation by sending stim 0, 0 to all sensors
         """
-        return
-
-        while not self.EXIT.is_set():
-            # Send data if client
-            if self.client is not None and self.sending:
-                if self.shared_buffer.get_n_items('added', 'network', 'data') >= self.NW_BLOCK:
-                    for par in self.buffer:
-                        end = self.data_structure.get('added', par)
-                        _data = self.shared_buffer.get_buf(par,
-                                                           start=self.data_structure.get(
-                                                               'network', par),
-                                                           end=end)
-                        if _data is not None:
-                            self.send(
-                                (f'DATA/{par}', _data.tobytes(), _data.dtype, ))
-                            self.data_structure.set(end, 'network', par)
-            await asyncio.sleep(self.dt['input'])
+        
+        for m in self.interfaces.values():
+            for s in m.sensors.values():
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
+        
+        
+        for s in self.sensors.values():
+            if hasattr(s, "stim_control"):
+                for sc in s.stim_control.values():
+                    try:
+                        sc.stop_stim() 
+                    except:
+                        pass
 
     def _proc_data(self, par, data, dtype=None, shape=None):
         """
@@ -634,7 +581,7 @@ class InputOutput(EventDispatcher):
         - shape:    shape of array (only required if multiple dim)
         """
         data = np.frombuffer(data, dtype=dtype).reshape(shape)
-        _max_len = self.app.rec_vars.startrate * self.app.rec_vars.data_length
+        _max_len = self.rec_pars['samplerate'] * self.app.rec_vars.data_length
 
         if shape is not None:
             max_shape = (_max_len,) + shape[1:]
@@ -646,10 +593,6 @@ class InputOutput(EventDispatcher):
             self.shared_buffer.add_parameter(par, dtype, *max_shape)
 
         self.shared_buffer.add_to_buf(par, data)
-
-    def send(self, data, protocol="TCP"):
-        print(f'OBSOLETE IO.send, remove! {protocol} {data}')
-        return
 
     async def send_data(self, data):
         # TODO: "send data here, nbytes: {data.nbytes}"
@@ -699,7 +642,7 @@ class InputOutput(EventDispatcher):
         if self.client is not None:
             await self.server.send_ws(msg)
 
-    def serv_client(self):
+    async def serv_client(self):
         """
         Sets up a server or client instance based on the app configuration.
 
@@ -721,13 +664,16 @@ class InputOutput(EventDispatcher):
             self.server.on_ws_msg = self.proc_cmds
             self.server.on_big_object = self.proc_cmds
             self.client = None
-            return self.server.start()
+            start = self.server.start()
 
         else:
             self.client = nw_client.Client()
             self.client.name = self.app.setupname
             self.server = None
-            return self.client.start()
+            start = self.client.start()
+        await start
+        self.NETWORK_READY.set()
+
 
     def switch_client(self, client, *args):
         if client in self.client_ip_list:
@@ -736,7 +682,7 @@ class InputOutput(EventDispatcher):
                 ("VAR", ('app', 'IO.sending', (False, ))))  # send disconnect
             self.clear()
             # connect new client:
-            self.client_ip = self.server.names[client]
+            self.client_ip = self.server.clients[self.server.client_lookup[client]]
             self.server.active_client = self.client_ip
             self.server.send_data(("CONNECT", None))
             self.app.setupname = client
@@ -862,8 +808,6 @@ class InputOutput(EventDispatcher):
             self.send_var('app', 'IO.running', val=bool(self.running))
             self.send_var('app', 'IO.recording_name',
                           val=str(self.recording_name))
-            self.send_var('app', 'IO.sensor_status',
-                          val=dict(self.sensor_status))
             self.send_var('app', 'stim.protocol', val=self.app.stim.protocol)
             self.send_var("Record", 'ids.splot1.text', val=str(
                 self.app.root.ids.scrman.get_screen('Record').ids['splot1'].text))
@@ -933,23 +877,24 @@ class InputOutput(EventDispatcher):
         runs on exit to clean up
         async clean is done in main_coro
         """
+        self.stop_all_stims()
+        print("stop stims")
         self.EXIT.set()
+        print("exit")
         self.stop_recording() if self.running else ...
-
+        print("stop recording")
         # stop micro controllers
-        for dev in self.micro_controllers.values():
-            dev.exit()
+        for interface in self.interfaces.values():
+            interface.exit()
+        print("stop micros")
 
         self.shared_buffer.close_all()
         self.shared_buffer.unlink_all()
-
-        [chip.unlink() for chip in self._sensor_status.values()]
-
+    
 
 # TESTING
 if __name__ == '__main__':
     # disable chips
-    chip_d['Humidity Temperature'].record = False
     Saver.NEW_FILE_INTERVAL = timedelta(seconds=30)
 
     class testApp(App):
@@ -962,7 +907,6 @@ if __name__ == '__main__':
             class RecVars():
                 pass
             self.rec_vars = RecVars()
-            self.rec_vars.startrate = 25600
             self.rec_vars.data_length = 3600
 
             self.root = self

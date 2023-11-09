@@ -1,5 +1,5 @@
 {
-  "additionalFiles": "../../..,../../..,../../..,../../..,../../..",
+  "additionalFiles": "../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..,../../..",
   "builtInToolsFolders": "",
   "compiler.optimization_flags": "",
   "customBuildProperties": "",
@@ -7,5 +7,5 @@
   "hardwareFolders": "/home/dmitri/.arduino15/packages",
   "otherLibrariesFolders": "/home/dmitri/Arduino/libraries",
   "runtime.ide.version": "10607",
-  "sketchLocation": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt"
+  "sketchLocation": "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver"
 }

@@ -43,8 +43,6 @@ class MenuBut(Button):
         super().__init__(**kwargs)
         self.app = App.get_running_app()
         Clock.schedule_once(self.get_screens, 0)
-        if not self.app.SERVER:
-            self.del_vars.append("Video")
 
     def get_screens(self, *args):
         # get screen names from screen manager

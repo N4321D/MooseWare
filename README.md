@@ -21,9 +21,11 @@
 |   |   ||     ||     |\    ||     |\      / |  |  ||  .  \|     |
 |   |   | \   /  \   /  \   ||     | \ /\ /  |  |  ||  |\ ||     |
 ```
+
 **Neureflect**<sup>inc</sup> 2023  
 Recording Software  
 *by Dmitri Yousef Yengej*
+
 
 ## Table of Contents
 

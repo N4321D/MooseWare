@@ -1,33 +1,47 @@
-#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/arduino_send_interrupt/drivers/ois.h"
+#line 1 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/arduino_firmware/RPI_Pico_driver/drivers/ois.h"
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
 
 class OISSensor : public I2CSensor
 {
 private:
+    // chip specific values:
+    byte green_amps = 5; // green led mA
+    static const byte MAX_AMP = 63;
     unsigned long stim_end;
     byte stim_amp = 0;
 
 public:
     uint16_t sampled_data[2]; // data is stored here
 
-    // chip specific values:
-    byte green_amps = 5; // green led mA
-    static const byte MAX_AMP = 63;
-
     OISSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
         strcpy(NAME, "Optical Intrisic Signal");
         strcpy(SHORT_NAME, "OIS");
         ADDRESS = 0x5B;
-        N_PARS = 3;
+        N_PARS = 4;
         strcpy(PARAMETER_NAMES[1], "OIS Signal");
         strcpy(PARAMETER_NAMES[0], "OIS Background");
         strcpy(PARAMETER_NAMES[2], "OIS Stimulation mA");
+        strcpy(PARAMETER_NAMES[3], "OIS Green LED mA");
         strcpy(PARAMETER_SHORT_NAMES[1], "SIG");
         strcpy(PARAMETER_SHORT_NAMES[0], "BGR");
         strcpy(PARAMETER_SHORT_NAMES[2], "STIM");
+        strcpy(PARAMETER_SHORT_NAMES[3], "PWR");
 
-        output_text = "";
+        control_str = "["
+                      "{\"title\": \"Blue Light Stimulation\","
+                      "\"type\": \"stim\","
+                      "\"desc\": \"Create / Start / Stop blue light stimulation protocol\","
+                      "\"key\": \"stim\"},"
+                      "{\"title\": \"Green Led Intensity\","
+                      "\"type\": \"plusminin\","
+                      "\"desc\": \"Green LED power in %\","
+                      "\"key\": \"amps\","
+                      "\"steps\": [[0, 10, 1], [10, 20, 2], [20, 60, 5], [60, 200, 10]]," // [min of range, max of range, step in range]
+                      "\"limits\": [0, 100],"                                             // [min, max]
+                      "\"default_value\": 25,"
+                      "\"live_widget\": true}"
+                      "]";
     }
     void init()
     {
@@ -40,7 +54,7 @@ public:
     {
         // trigger reading if nescessary
         static byte out[1] = {0x01};
-        writeI2C(ADDRESS, 0x47, out, 1); // trigger one shot reading
+        writeI2C(ADDRESS, 0x47, 1, out); // trigger one shot reading
     }
 
     void sample()
@@ -62,22 +76,22 @@ public:
     {
         /*
          * modes:
-         *   0: "green"
-         *   1: "ir / blue"
+         *   0: "ir"
+         *   1: "green"
          */
-
+        STATUS = green ? 5 : 10;
         const byte out = green ? 0x87 : 0x97;
-        writeI2C(ADDRESS, 0x41, &out, 1);
+        writeI2C(ADDRESS, 0x41, 1, &out);
     }
 
-    void set_amps(byte amp, bool ir = false)
+    void set_amps(byte amp, bool green = true)
     {
         if (amp > MAX_AMP)
             amp = MAX_AMP;
 
         static byte out[2];
 
-        if (!ir)
+        if (green)
         {
             green_amps = amp;
             out[0] = amp;
@@ -89,7 +103,7 @@ public:
             out[0] = static_cast<byte>(0b10 << 6 | amp);
             out[1] = static_cast<byte>(0b1 << 7 | amp);
         }
-        writeI2C(ADDRESS, 0x42, out, 2);
+        writeI2C(ADDRESS, 0x42, 2, out);
     }
 
     void check_stim()
@@ -100,7 +114,7 @@ public:
             {
                 // stop stim
                 stim_amp = 0;
-                set_amps(green_amps, false);
+                set_amps(green_amps, true);
                 set_mode(true);
             }
         }
@@ -109,16 +123,17 @@ public:
     void start_stim(JsonArray time_amps)
     {
         stim_end = millis() + time_amps[0].as<unsigned long>();
-        byte amp = time_amps[1].as<unsigned short>();
+        byte amp = (byte)((time_amps[1].as<float>() / 100) * MAX_AMP);
         if (amp > 0)
         {
-            set_amps(amp, true);
+            // pulse on
+            set_amps(amp, false);
             set_mode(false);
         }
         else
         {
-            set_amps(green_amps, false);
-            set_mode(true);
+            // pulse off
+            set_amps(green_amps, true);
         }
     }
 
@@ -128,6 +143,7 @@ public:
         js["SIG"] = (float)sampled_data[1] / 0xFFFF;
         js["BGR"] = (float)sampled_data[0] / 0xFFFF;
         js["STIM"] = stim_amp;
+        js["PWR"] = green_amps;
     }
 
     void procCmd(const char *key, JsonVariant value)
@@ -136,7 +152,8 @@ public:
 
         // set led amps
         if (strcmp(key, "amps") == 0)
-            set_amps(value.as<unsigned short>());
+            set_amps((byte)((value.as<float>() / 100) * MAX_AMP), true);
+        // start stim
         if (strcmp(key, "stim") == 0)
             start_stim(value.as<JsonArray>());
     }
@@ -144,7 +161,7 @@ public:
     void stop()
     {
         // stop stim
-        set_amps(green_amps, false);
+        set_amps(green_amps, true);
         set_mode(true);
     }
 };

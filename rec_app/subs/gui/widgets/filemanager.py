@@ -73,6 +73,7 @@ Builder.load_string(
         multiselect: True
         dirselect: True
 
+
     # copy button
     FM_Button:
         id: copybut
@@ -152,11 +153,12 @@ def sec_2_t_passed(sec):
     return days, hours, mins, secs
 
 def convert_bytes(num_bytes):
-    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 1)]
+    units = [("TB", 1e12), ("GB", 1e9), ("MB", 1e6), ("KB", 1e3), ("bytes", 0)]  # keep bytes to zero set later to 1 to prevent crash if num_bytes == 0
     for unit, value in units:
         if num_bytes >= value:
-            quotient = num_bytes / value
-            return f"{quotient:.2f} {unit}" if quotient < 100 else f"{quotient:.0f} {unit}"
+            quotient = num_bytes / (value or 1) # set value to 1 if using bytes
+            return (f"{quotient:.2f} {unit}" if quotient < 100 
+                    else f"{quotient:.0f} {unit}")
 
 
 def check_disk_space(directory, bitrate=float("NaN"), warning=None,
@@ -248,7 +250,11 @@ def copy_file(src, dst, overwrite=True, make_parents=True,
     # Make parent dirs
     if make_parents:
         dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.parent.chmod(mode)
+        try:
+            dst.parent.chmod(mode)
+            
+        except Exception as e:
+            log(f"Cannot change dir priveliges: {e}", "warning")
 
     # Copy:
     if (platform.system() == 'Windows') or force_copy2:
@@ -368,8 +374,6 @@ class FileManager(FloatLayout):
                   # extra time (not included in calculation)
                   "spare_t": 3600,
                   }
-    # can be changed when calling an instance
-    UPDATE_NAME = "MOOSE.update"
 
     # concurrent processing vars
     futures = []                                # list with futures running in executor
@@ -396,13 +400,6 @@ class FileManager(FloatLayout):
         self._init_widgets()
 
 
-    def update_func(_x): 
-        """
-        placeholder for called update function if update file is found
-        """
-        return _x
-
-
     def _init_widgets(self, *args):
         """
         This is laumched when kivy app starts
@@ -414,7 +411,13 @@ class FileManager(FloatLayout):
         # update label with changing selection:
         self.filechooser.bind(selection=lambda *x: setattr(self.sel_lbl,
                                                            "text",
-                                                           "Selected: {}".format(len(self.filechooser.selection))))
+                                                           f"Selected: {len(self.filechooser.selection)}"))
+        
+        # Clear selection when changing directory
+        self.filechooser.bind(path=Clock.schedule_once(
+            lambda *x: setattr(self.filechooser, "selection", []), 
+            0))                                                                 # use clock here otherwise it is switched back to rootpath
+
 
     def main_loop(self, *args):
         """
@@ -635,7 +638,7 @@ class FileManager(FloatLayout):
             return
 
         action_list, txt = [], f"{operation} Please Wait..."
-        self.fb_lbl.text = "{operation}...\nPlease Wait"
+        self.fb_lbl.text = f"{operation}...\nPlease Wait"
 
         if operation == 'Delete':
             def act(src):
@@ -672,15 +675,18 @@ class FileManager(FloatLayout):
                 # add destination subfolders
                 dst /= src.relative_to(Path(self.rootpath).absolute())
                 copy_file(src, dst)
-                return str(err) if err else None
+                return str(err) if err else ""
 
             action_list = [Action(partial(act, src, dst),
                     text=f"{src.name}{convert_bytes(src.stat().st_size): >10}")
-                    for src in file_list if (not src.is_dir() and src.exists())]
+                    for src in file_list if (not src.is_dir() and src.exists())
+                    ]
 
             txt = "Parallel Copying:"
 
         self.do_with_pb(action_list, txt)
+
+        self.filechooser.selection = []   # clear selection
 
     def switch_view(self, *args):
         """
@@ -694,12 +700,6 @@ class FileManager(FloatLayout):
                 self.copybut.disabled = True
                 self.viewusbbut.text = "View HDD"
 
-                # update if update file found on usb root
-                update_loc = Path(self.filechooser.path) / self.UPDATE_NAME
-                if update_loc.exists():
-                    self.confirmation("Update System?", partial(
-                        self.run_update, update_loc))
-
             except KeyError as e:
                 log(e, level="debug")
         else:
@@ -710,22 +710,6 @@ class FileManager(FloatLayout):
         
         self.update_file_list()
 
-    def run_update(self, update_loc, *args):
-        self.fb_lbl.text = "Updating..."
-        try:
-            log("Updating", "info")
-            _actions = self.update_func(update_loc)
-            _actions.append(partial(setattr, self.fb_lbl,
-                            "text", "Update Successful"))
-            self.do_with_pb(_actions,
-                            text="Installing Update...")
-            log("Update Successful", "info")
-
-        except Exception as e:
-            log(f"Cannot Update: {e}", "error")
-            self.fb_lbl.text = f"Update Failed: {e}"
-
-        return
 
     # MISC METHODS
     def _hide_pb(self):
@@ -771,11 +755,16 @@ class FileManager(FloatLayout):
                 or "/media/" in part.mountpoint   # RPI
                 ):
                 drive = part._asdict()
-                drive.update(
-                    {'usage': psutil.disk_usage(part.mountpoint)._asdict()})
-                drive['name'] = f"USB{usb_i}: {convert_bytes(drive['usage']['total'])}"
-                usb_i += 1
-                drives[drive['name']] = drive
+                try:
+                    drive.update(
+                        {'usage': psutil.disk_usage(part.mountpoint)._asdict()})
+                    drive['name'] = f"USB{usb_i}: {convert_bytes(drive['usage']['total'])}"
+                    usb_i += 1
+                    drives[drive['name']] = drive
+      
+                except PermissionError:
+                    # needed for Windows
+                    pass
 
         return drives
 
