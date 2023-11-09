@@ -1,4 +1,4 @@
-/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/rec_app/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_GrayOLED.cpp.o: \
+/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/ArduinoOutput/libraries/Adafruit_GFX_Library/Adafruit_GrayOLED.cpp.o: \
  /home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GrayOLED.cpp \
  /home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GrayOLED.h \
  /home/dmitri/Arduino/libraries/Adafruit_GFX_Library/Adafruit_GFX.h \
