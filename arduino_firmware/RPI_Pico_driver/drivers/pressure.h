@@ -1,6 +1,6 @@
 // #include "i2csensor.h"  // (already included in arduino_send_interrupt.ino
 
-class PInSensor : public I2CSensor
+class PSensor : public I2CSensor
 {
 private:
 public:
@@ -8,18 +8,16 @@ public:
 
     // chip specific values:
 
-    PInSensor(TwoWire &wire_in) : I2CSensor(wire_in)
+    PSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
-        strcpy(NAME, "Pressure Internal");
-        strcpy(SHORT_NAME, "PInt");
-        ADDRESS = 0x5C;
+        // strcpy(NAME, "Pressure Internal");
+        // strcpy(SHORT_NAME, "PInt");
+        // ADDRESS = 0x5C;
         N_PARS = 2;
         strcpy(PARAMETER_NAMES[0], "Pressure");
         strcpy(PARAMETER_NAMES[1], "Temperature");
         strcpy(PARAMETER_SHORT_NAMES[0], "PRS");
         strcpy(PARAMETER_SHORT_NAMES[1], "TMP");
-
-
     }
 
     void init()
@@ -47,5 +45,29 @@ public:
     {
         js["PRS"] = ((float)(((uint32_t)sampled_data[2] << 16) | ((uint32_t)sampled_data[1] << 8) | sampled_data[0])) / 5460.86912;
         js["TMP"] = ((float)(((uint32_t)sampled_data[4] << 8) | sampled_data[3])) / 100;
+    }
+};
+
+class PInSensor : public PSensor
+{
+private:
+public:
+    PInSensor(TwoWire &wire_in) : PSensor(wire_in)
+    {
+        strcpy(NAME, "Pressure Internal");
+        strcpy(SHORT_NAME, "PInt");
+        ADDRESS = 0x5C;
+    }
+};
+
+class PExSensor : public PSensor
+{
+private:
+public:
+    PExSensor(TwoWire &wire_in) : PSensor(wire_in)
+    {
+        strcpy(NAME, "Pressure External");
+        strcpy(SHORT_NAME, "PExt");
+        ADDRESS = 0x5D;
     }
 };

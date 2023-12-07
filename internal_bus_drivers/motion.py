@@ -23,7 +23,7 @@ class MOTSensor(I2CSensor):
     lin_sens_val = (2, 4, 8, 16)
     lin_sens_unit = "g"
     ang_sensitivity = 2
-    lin_sensitivity = 0
+    lin_sensitivity = 1
     control_str = [
         {
             "title": "Angular Sensitivity",
@@ -39,7 +39,7 @@ class MOTSensor(I2CSensor):
             "desc": f"Sensitivity of the linear movement sensor in {lin_sens_unit}",
             "key": "lsens",
             "options": lin_sens_val,
-            "default_value": 2,
+            "default_value": 4,
         },
     ]
 

@@ -26,11 +26,12 @@
 
 
 
-Adafruit_SSD1306 display(128 /* OLED display width, in pixels*/, 64 /* OLED display height, in pixels*/, &Wire, -1 /* Reset pin # (or -1 if sharing Arduino reset pin)*/);
+
+Adafruit_SSD1306 display(128 /* OLED display width, in pixels*/, 64 /* OLED display height, in pixels*/, &Wire1, -1 /* Reset pin # (or -1 if sharing Arduino reset pin)*/);
 
 // interrupt timer libs:
-# 32 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 33 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 34 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 struct adjustableSettings
 {
@@ -63,7 +64,6 @@ DynamicJsonDocument doc_out(10 * 1024U);
 DynamicJsonDocument doc_in(1024);
 
 // // init sensors
-# 66 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 67 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 68 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 69 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
@@ -75,20 +75,22 @@ DynamicJsonDocument doc_in(1024);
 # 75 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 76 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 # 77 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 78 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 static GPIObus gpiobus;
 static Analogue analogue;
-static OISSensor oissensor(Wire1);
-static MOTSensor motsensor(Wire1);
-static PInSensor pinsensor(Wire1);
-static AmmoniaSensor ammsensor(Wire1);
-static CarbonMonoxideSensor cosensor(Wire1);
+static OISSensor oissensor(Wire);
+static MOTSensor motsensor(Wire);
+static PInSensor pinsensor(Wire);
+static PExSensor pexsensor(Wire);
+static AmmoniaSensor ammsensor(Wire);
+static CarbonMonoxideSensor cosensor(Wire);
 // static OxygenSensor o2sensor(Wire1);
-static SGPSensor sgpsensor(Wire1);
-static BMESensor bmesensor(Wire1);
+static SGPSensor sgpsensor(Wire);
+static BMESensor bmesensor(Wire);
 // create sensor array
 static Sensor *ptrSensors[] = {&gpiobus, &analogue, &oissensor, &motsensor, &pinsensor,
-  &ammsensor, &cosensor, &sgpsensor, &bmesensor};
+&pexsensor, &ammsensor, &cosensor, &sgpsensor, &bmesensor};
 
 // for sampling
 uint callCounter = 0; // counts the number of calls to ImterHandler by interupt clock
@@ -108,7 +110,7 @@ bool START = false;
 
 char NAME[32]; // name of controller
 
-# 111 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
+# 113 "/home/dmitri/Documents/Work/Coding/App/0_0_Recording_Apps/20231109/MooseWare/arduino_firmware/RPI_Pico_driver/RPI_Pico_driver.ino" 2
 
 // Init RPI_PICO_Timer
 RPI_PICO_Timer ITimer(0);
@@ -408,15 +410,23 @@ void setup()
   pinMode((25u), OUTPUT);
   setLed(1);
 
-  // i2c display
-  Wire.setSDA(0); // Add these lines  // 0 for regular rpi, 24 for qtpy
-  Wire.setSCL(1); // 1 for regular rpi, 25 for qtpy0
-  Wire.begin(); //
-  Wire.setClock(400000); // i2c clockspeed (call after begin)
-  Wire.setTimeout(1);
+  // i2c for display
+  Serial.println("Setting up display i2c");
+  Wire1.setSDA(2); // 2 for regular rpi, 22 for qtpy
+  Wire1.setSCL(3); // 3 for regular rpi, 23 for qtpy
+  Wire1.begin();
+  Wire1.setClock(400000); // i2c clockspeed (call after begin)
+  Wire1.setTimeout(1); // timeout in us
 
-  Serial.begin(100000);
+  feedback("Waiting for serial...");
+
+  Serial.begin(1000000);
   Serial.setTimeout(0); // set serial timeout in ms
+  while (!Serial)
+  {
+    delay(10);
+  }; // wait for serial
+  Serial.println(welcome_text);
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if (!display.begin(0x02 /*|< Gen. display voltage from 3.3V*/, 0x3C /* See datasheet for Address; 0x3C*/))
@@ -425,27 +435,16 @@ void setup()
   }
   display.clearDisplay();
 
-  feedback("Waiting for Serial");
-
-  while (!Serial)
-  {
-    feedback("Waiting for Serial");
-    delay(10);
-  }; // wait for serial
-  Serial.println(welcome_text);
+  // i2c for sensors
+  Serial.println("Setting up sensor i2c");
+  Wire.setSDA(12); // Add these lines  // 0 for regular rpi, 24 for qtpy
+  Wire.setSCL(13); // 1 for regular rpi, 25 for qtpy0
+  Wire.begin(); //
+  Wire.setClock(400000); // i2c clockspeed (call after begin)
+  Wire.setTimeout(1);
 
   loadName();
-
-  feedback("setting up i2c");
-  // NOTE: pico has 2 i2c controllers 1 and 2 check which one can use which pins!!
-  Wire1.setSDA(2); // 2 for regular rpi, 22 for qtpy
-  Wire1.setSCL(3); // 3 for regular rpi, 23 for qtpy
-  Wire1.begin();
-  Wire1.setClock(400000); // i2c clockspeed (call after begin)
-  Wire1.setTimeout(1); // timeout in us
-
   adjustFreq(settings.idle_freq_hz);
-
   startTime = micros();
   loopCounter = callCounter - 1;
 }

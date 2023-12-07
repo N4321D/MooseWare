@@ -18,7 +18,7 @@ public:
     byte lin_sens_vals[4] = {2, 4, 8, 16};
     const char lin_sens_unit[2] = "g";
     byte ang_sensitivity = 2;
-    byte lin_sensitivity = 0;
+    byte lin_sensitivity = 1;
 
     MOTSensor(TwoWire &wire_in) : I2CSensor(wire_in)
     {
@@ -49,7 +49,7 @@ public:
                       "\"type\": \"options\","
                       "\"desc\": \"Sensitivity of the linear movement sensor in g\","
                       "\"key\": \"lsens\","
-                      "\"default_value\": 2,"
+                      "\"default_value\": 4,"
                       "\"options\": [2, 4, 8, 16]}"
                       "]";
     }
