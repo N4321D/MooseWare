@@ -117,6 +117,7 @@ class InternalBus:
     START = False
 
     NAME = "InternalBus"  # Name of interface
+    UNIQUE_ID = "INTERNALBUS"
 
     Serial = None  # Placeholder for Faked Serial interface
 
@@ -225,7 +226,9 @@ class InternalBus:
         # get data from sensors
         self.doc_out = {
             "idle": True,
-            "CTRL": {"name": self.NAME},
+            "CTRL": {"name": self.NAME,
+                     "ID": self.UNIQUE_ID,
+                     },
             **{sens_name: sens.getInfo() for sens_name, sens in self.Sensors.items()},
         }
         self.sendData()
