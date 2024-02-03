@@ -117,7 +117,7 @@ class InternalBus:
     START = False
 
     NAME = "InternalBus"  # Name of interface
-    UNIQUE_ID = "INTERNALBUS"
+    UNIQUE_ID = "_INTERNALBUS"
 
     Serial = None  # Placeholder for Faked Serial interface
 
