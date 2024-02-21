@@ -183,12 +183,14 @@ class Interface:
         await self.settings_received.wait()  # wait for name etc to arrive
 
         if not self.name:
-            self.name = "USB"
+            self.name = "NAMELESS_INTERFACE"
 
-        name = self.check_name(self.name, self.other_names)
-        self.rename(name)
+        # TODO RENAME HERE?
+        # name = self.check_name(self.name, self.other_names)
+        # self.rename(name)
 
         self.connect_buffer()
+
         self.sensors["CTRL"] = Chip(
             "CTRL",
             {
@@ -228,9 +230,9 @@ class Interface:
         )
 
         self.sensors["CTRL"].name = self.name
-        # self.record = self.sensors["CTRL"].record
 
         self.on_connect(self)
+
 
     def on_connect(self, dev):
         pass
@@ -265,18 +267,23 @@ class Interface:
 
         for name, chip_d in data.items():
             status = chip_d.pop("#ST") if "#ST" in chip_d else 0
+
+            # save control settings as interface variables
+            if name == "CTRL":
+                [setattr(self, k, v) for k, v in chip_d.items()]
+                self.settings_received.set()
+            
             if name not in self.sensors:
                 # Create chip widget
                 self.sensors[name] = Chip(name, chip_d, self, send_cmd=self.write)
+
             else:
                 # update chip widget stats
                 self.sensors[name].update(chip_d)
 
             self.sensors[name].status = status
+            
 
-            if name == "CTRL":
-                [setattr(self, k, v) for k, v in chip_d.items()]
-                self.settings_received.set()
 
         self.parameters = {
             f"{k}_{par}": k

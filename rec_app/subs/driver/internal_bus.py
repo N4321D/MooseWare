@@ -153,7 +153,6 @@ class InternalBus:
         # setup
         self.setup()
 
-
     def timerHandler(self, *args):
         self.callCounter += 1
 

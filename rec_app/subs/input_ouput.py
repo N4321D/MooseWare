@@ -381,9 +381,9 @@ class InputOutput(EventDispatcher):
         dev = self.interfaces.get(self.selected_interface)
         if not dev:
             return
-        if dev.name != self.selected_interface:
-            self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
-            self.selected_interface = dev.name
+        if dev.ID != self.selected_interface:
+            self.interfaces[dev.ID] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = dev.ID
 
         sensors = {k: v for k, v in dev.sensors.items()
                     if v.connected}
@@ -537,13 +537,16 @@ class InputOutput(EventDispatcher):
         await self.interface_factory.scan()
 
     def connect_interface(self, interface):
-        self.interfaces[interface.name] = interface
+        # self.interfaces[interface.name] = interface
+        self.interfaces[interface.ID] = interface
         interface.start_stop(False)   # force stop
-        self.selected_interface = interface.name
+        self.selected_interface = interface.ID
 
     def disconnect_interface(self, interface):
-        if interface.name in self.interfaces:
-            del self.interfaces[interface.name]
+        # if interface.name in self.interfaces:
+        #     del self.interfaces[interface.name]
+        if interface.ID in self.interfaces:
+            del self.interfaces[interface.ID]
 
     def toggle_interface(self, interface, *args):
         if self.selected_interface != interface:

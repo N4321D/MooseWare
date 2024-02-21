@@ -27,7 +27,7 @@ class Chip():
     def __init__(self, short_name, chip_dict, interface, **kwargs) -> None:
         self.interface = interface
         self.stim_control = {}
-        self.parent_name = interface.name if interface is not None else ""      
+        self.parent_name = interface.ID #  if interface is not None else "NAMELESS_DEVICE"      
         self.connected = True
         self.status = 0                  # indicates what chip is doing (see vars.py sensor status) negative values are errors
         self.resets = 0                  # counts number of resets #TODO: implement
@@ -63,6 +63,7 @@ class Chip():
         if hasattr(self, name) and getattr(self, name) != value:
             if name == 'status':
                 self.connected = (value >= 0)
+                
             else:
                 self.send_cmd({self.short_name: {name: value}})
 
