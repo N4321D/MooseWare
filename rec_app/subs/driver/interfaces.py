@@ -131,6 +131,9 @@ class Interface:
             self.shared_buffer.reset(par=self.name)
 
     def set_buffer_dims(self, *args):
+        """
+        Create shared numpy array to store data in buffer under name of the interface
+        """
         bytes_per_samplepoint = self.line_buffer.nbytes
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
@@ -185,9 +188,8 @@ class Interface:
         if not self.name:
             self.name = "NAMELESS_INTERFACE"
 
-        # TODO RENAME HERE?
-        # name = self.check_name(self.name, self.other_names)
-        # self.rename(name)
+        name = self.check_name(self.name, self.other_names)
+        self.rename(name)
 
         self.connect_buffer()
 
