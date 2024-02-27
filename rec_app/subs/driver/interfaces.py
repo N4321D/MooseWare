@@ -121,6 +121,8 @@ class Interface:
 
         self.shared_buffer = SharedBuffer()
 
+        self.ID = "_______"   # will be overwritten with serial number / unique ID of interface
+
 
     def connect_buffer(self):
         self.data_structure = self.shared_buffer.data_structure
@@ -128,7 +130,7 @@ class Interface:
 
         if self.name in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=self.name)
+            self.shared_buffer.reset(par=self.name) # (par= self.name)
 
     def set_buffer_dims(self, *args):
         """
@@ -191,7 +193,7 @@ class Interface:
         name = self.check_name(self.name, self.other_names)
         self.rename(name)
 
-        self.connect_buffer()
+        self.connect_buffer()   # NOTE: this does not need name yet, buffer with name will be created on first data
 
         self.sensors["CTRL"] = Chip(
             "CTRL",
@@ -464,14 +466,23 @@ class Interface:
         Returns:
             str: The new name.
         """
-        base_name = re.sub(r'\d+$', '', current_name)
-        number = re.findall(r'\d+$', current_name)
-        start = int(number[0]) if number else 1
+        # base_name = re.sub(r'\d+$', '', current_name)
+        # number = re.findall(r'\d+$', current_name)
+        # start = int(number[0]) if number else 1
+
+        # new_name = current_name
+        # while new_name in existing_names:
+        #     new_name = f"{base_name}{start}"
+        #     start += 1
 
         new_name = current_name
-        while new_name in existing_names:
-            new_name = f"{base_name}{start}"
-            start += 1
+
+        if new_name in existing_names:
+            log(f"{new_name} already used, adding ID to name", "info")
+            # remove bracets
+            if " (" in new_name:
+                new_name = new_name[:new_name.find(" (")]
+            new_name = f"{new_name} ({self.ID})"
 
         return new_name
 

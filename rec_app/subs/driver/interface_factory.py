@@ -241,6 +241,8 @@ class InterfaceFactory:
 
         This function calls the external_on_connect callback with the given interface.
 
+        It is called from the Interface class when connected
+
         Args:
             interface: The interface that has been connected.
         """
@@ -251,6 +253,8 @@ class InterfaceFactory:
         Handle a disconnection event.
 
         This function calls the external_on_disconnect callback with the given interface.
+        
+        It is called from the Interface class when disconnected
 
         Args:
             interface: The interface that has been disconnected.

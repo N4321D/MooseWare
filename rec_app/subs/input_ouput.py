@@ -378,16 +378,17 @@ class InputOutput(EventDispatcher):
         """
         Check connected sensors and status
         """
-        dev = self.interfaces.get(self.selected_interface)
-        if not dev:
+        interface = self.interfaces.get(self.selected_interface)
+        if not interface:
             return
-        if dev.ID != self.selected_interface:
-            self.interfaces[dev.ID] = self.interfaces.pop(self.selected_interface)
-            self.selected_interface = dev.ID
+        
+        if interface.name != self.selected_interface:
+            self.interfaces[interface.name] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = interface.name
 
-        sensors = {k: v for k, v in dev.sensors.items()
+        sensors = {k: v for k, v in interface.sensors.items()
                     if v.connected}
-        pars = dev.parameters
+        pars = interface.parameters
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
@@ -538,15 +539,15 @@ class InputOutput(EventDispatcher):
 
     def connect_interface(self, interface):
         # self.interfaces[interface.name] = interface
-        self.interfaces[interface.ID] = interface
+        self.interfaces[interface.name] = interface
         interface.start_stop(False)   # force stop
-        self.selected_interface = interface.ID
+        self.selected_interface = interface.name
 
     def disconnect_interface(self, interface):
         # if interface.name in self.interfaces:
         #     del self.interfaces[interface.name]
-        if interface.ID in self.interfaces:
-            del self.interfaces[interface.ID]
+        if interface.name in self.interfaces:
+            del self.interfaces[interface.name]
 
     def toggle_interface(self, interface, *args):
         if self.selected_interface != interface:
