@@ -282,10 +282,10 @@ class InternalBus:
     def setName(self, name):
         self.NAME = name
         self.feedback(name)
-        print("TODO save name in settings?")
 
     def loadName(self):
-        print("TODO load name from settings?")
+        # not used, just for consistency with micro driver
+        pass
 
     def readInput(self):
         while self.Serial.available():

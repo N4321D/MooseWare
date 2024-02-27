@@ -382,9 +382,9 @@ class InputOutput(EventDispatcher):
         if not interface:
             return
         
-        if interface.name != self.selected_interface:
-            self.interfaces[interface.name] = self.interfaces.pop(self.selected_interface)
-            self.selected_interface = interface.name
+        if interface.ID != self.selected_interface:
+            self.interfaces[interface.ID] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = interface.ID
 
         sensors = {k: v for k, v in interface.sensors.items()
                     if v.connected}
@@ -538,16 +538,13 @@ class InputOutput(EventDispatcher):
         await self.interface_factory.scan()
 
     def connect_interface(self, interface):
-        # self.interfaces[interface.name] = interface
-        self.interfaces[interface.name] = interface
+        self.interfaces[interface.ID] = interface
         interface.start_stop(False)   # force stop
-        self.selected_interface = interface.name
+        self.selected_interface = interface.ID
 
     def disconnect_interface(self, interface):
-        # if interface.name in self.interfaces:
-        #     del self.interfaces[interface.name]
-        if interface.name in self.interfaces:
-            del self.interfaces[interface.name]
+        if interface.ID in self.interfaces:
+            del self.interfaces[interface.ID]
 
     def toggle_interface(self, interface, *args):
         if self.selected_interface != interface:
@@ -842,6 +839,7 @@ class InputOutput(EventDispatcher):
             time_stamp (float, optional): timestamp for note, if nothing is entered, current time will be used
         """
         time_stamp = time_stamp or time.time()
+        note = f"{self.selected_interface}: {note}"   # add selected interface to note
         self.shared_buffer.add_1_to_buffer('notes', (time_stamp, note))
         self.update_feedback()
 
@@ -857,8 +855,14 @@ class InputOutput(EventDispatcher):
             _dt_f = datetime.fromtimestamp
 
         # covert timestamp to readable format zip notes and timestamps & limit charaters per line
-        _text = map(lambda _t, n:
-                    f"{n.decode()[:19]} {_dt_f(_t).strftime('%X')}" if n else " ",
+        def convert_note(t, n):
+            if not n:
+                return " "
+            n = n.decode()
+            n = n.replace(f"{self.selected_interface}: ", "")
+            return f"{n[:19]} {_dt_f(t).strftime('%X')}"
+
+        _text = map(convert_note,
                     _notes['time'], _notes['note'])
 
         self._set_feedback_txt(_text)

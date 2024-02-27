@@ -524,3 +524,41 @@
 2024-02-20 16:38:07,744 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x7823c0997e70>" was accessed, it will be removed in a future version
 
 2024-02-20 16:38:11,101 - kivy - WARNING - MTD: Unable to open device "/dev/input/event4". Please ensure you have the appropriate permissions.
+
+2024-02-27 11:56:22,961 - kivy - WARNING - Deprecated property "<BooleanProperty name=allow_stretch>" of object "<kivy.uix.image.Image object at 0x761c77f17ee0>" was accessed, it will be removed in a future version
+
+2024-02-27 11:56:26,655 - kivy - WARNING - MTD: Unable to open device "/dev/input/event4". Please ensure you have the appropriate permissions.
+
+2024-02-27 11:56:43,998 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2024-02-27 11:56:43,999 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2024-02-27 11:56:44,004 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2024-02-27 11:56:44,004 - kivy - WARNING - Factory: Ignored class "SetTimeIn" re-declaration. Current -  module: None, cls: None, baseclass: TIn, filename: None. Ignored -  module: None, cls: None, baseclass: TIn, filename: None.
+
+2024-02-27 11:56:44,004 - kivy - WARNING - Factory: Ignored class "SetIntMethod" re-declaration. Current -  module: None, cls: None, baseclass: DROPB, filename: None. Ignored -  module: None, cls: None, baseclass: DROPB, filename: None.
+
+2024-02-27 11:56:44,004 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2024-02-27 11:57:59,395 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2024-02-27 11:57:59,396 - kivy - WARNING - Factory: Ignored class "SetTimeIn" re-declaration. Current -  module: None, cls: None, baseclass: TIn, filename: None. Ignored -  module: None, cls: None, baseclass: TIn, filename: None.
+
+2024-02-27 11:57:59,396 - kivy - WARNING - Factory: Ignored class "SetIntMethod" re-declaration. Current -  module: None, cls: None, baseclass: DROPB, filename: None. Ignored -  module: None, cls: None, baseclass: DROPB, filename: None.
+
+2024-02-27 11:57:59,397 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2024-02-27 11:57:59,403 - kivy - WARNING - Factory: Ignored class "Graph3" re-declaration. Current -  module: None, cls: None, baseclass: Graph, filename: None. Ignored -  module: None, cls: None, baseclass: Graph, filename: None.
+
+2024-02-27 11:57:59,404 - kivy - WARNING - Factory: Ignored class "SetTimeIn" re-declaration. Current -  module: None, cls: None, baseclass: TIn, filename: None. Ignored -  module: None, cls: None, baseclass: TIn, filename: None.
+
+2024-02-27 11:57:59,404 - kivy - WARNING - Factory: Ignored class "SetIntMethod" re-declaration. Current -  module: None, cls: None, baseclass: DROPB, filename: None. Ignored -  module: None, cls: None, baseclass: DROPB, filename: None.
+
+2024-02-27 11:57:59,404 - kivy - WARNING - Factory: Ignored class "StimPanel" re-declaration. Current -  module: None, cls: <class 'subs.gui.misc.Stimulation.StimPanel'>, baseclass: None, filename: None. Ignored -  module: None, cls: None, baseclass: FloatLayout, filename: None.
+
+2024-02-27 11:58:08,660 - kivy - WARNING - INTERFACE: Cannot unpack sample rate: {256.0 Hz
+
+2024-02-27 11:58:35,159 - kivy - WARNING - INTERFACE: Cannot unpack sample rate: {256.0 Hz
+
+2024-02-27 12:00:54,899 - kivy - WARNING - INTERFACE: Cannot unpack sample rate: {"idle":true,"GPIO":{"name":"GPIO Interface","control_str":"[{\"title\": \"GPIO Output\",\"type\": \"stim\",\"desc\": \"Create / Start / Stop gpio output protocol\",\"live_widget\": true,\"key\": \"output\"}]","#ST":0,"record":true,"parameter_names":["GPIO2.0 Hz
