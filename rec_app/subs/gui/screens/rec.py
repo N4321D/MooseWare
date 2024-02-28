@@ -260,8 +260,15 @@ class RecScreen(Scr):
         # self.Button.on_press = self.button_press
         # self.Button.on_release = self.button_release
     
-        self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
-                                                       self.app.IO.interfaces[self.app.IO.selected_interface].name))
+        def _change_text_on_interface_change(*_):
+            interface = self.app.IO.interfaces.get(self.app.IO.selected_interface)
+            if interface:
+                name = interface.name
+            else:
+                name = 'Select Interface'
+            setattr(self.ids['interfacebutt'], 'text', name)
+
+        self.app.IO.bind(selected_interface=_change_text_on_interface_change)
         
 
         Clock.schedule_once(self.__kv_init__, 0)

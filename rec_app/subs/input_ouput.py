@@ -378,9 +378,9 @@ class InputOutput(EventDispatcher):
         for ID, dev in self.interfaces.items():
             name = dev.__dict__.get("name", ID)
             if name in names:
-                # device name used already: RENAME!v
-                print("RENAME!!! " * 10)
-                name = f"{name} ({ID})"
+                # device name used already: RENAME!
+                name = f"{name}\n({ID})"
+                dev.rename(name)
 
             names[name] = dev
 
