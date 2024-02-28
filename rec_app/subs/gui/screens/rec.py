@@ -67,15 +67,15 @@ kv_str = """
     DROPB:
         id: interfacebutt
         drop_but_font_size: '15sp'          # must be before types and text
-        drop_but_size: '48sp'         # size of drop down buttons 
+        drop_but_size: '48sp'               # size of drop down buttons 
         font_size: '15sp'
         pos_hint: {'x': 0.7, 'top': 0.1}
         size_hint: (.2, .1)
-        text: app.IO.selected_interface
-        types: app.IO.interfaces
+        text: "Select Interface"
+        types: app.IO.interfaces_names
         text_size: self.size
-        color: WHITE # if app.IO.selected_interface != "Internal" else MO
-        background_color: MO_BGR # if app.IO.selected_interface != "Internal" else BUT_BGR
+        color: WHITE
+        background_color: MO_BGR
         halign: "center"
         valign: "center"
         on_text:
@@ -261,7 +261,7 @@ class RecScreen(Scr):
         # self.Button.on_release = self.button_release
     
         self.app.IO.bind(selected_interface=lambda *x: setattr(self.ids['interfacebutt'], 'text', 
-                                                       self.app.IO.selected_interface))
+                                                       self.app.IO.interfaces[self.app.IO.selected_interface].name))
         
 
         Clock.schedule_once(self.__kv_init__, 0)
@@ -418,8 +418,16 @@ class RecScreen(Scr):
 
     def toggle_interface(self, interface):
         self.ids['chip_widget'].create_buttons()
-        self.app.IO.toggle_interface(interface)
+        interface_id = self.app.IO.interfaces_names.get(interface)
+        if interface_id is not None:
+            self.app.IO.toggle_interface(interface_id.ID)
+            self.ids['interfacebutt'].text = interface
+        else:
+            log(f"Interface {interface} - {interface_id} not found", "debug")
 
     def interface_disconnect(self, interface):
         if interface not in self.ids.interfacebutt.types: 
-            self.toggle_interface(self.ids.interfacebutt.types[-1])
+            if self.ids.interfacebutt.types:
+                self.toggle_interface(self.ids.interfacebutt.types[-1])
+            else:
+                self.ids.interfacebutt.text = "Select Interface"

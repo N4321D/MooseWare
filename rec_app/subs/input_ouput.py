@@ -116,15 +116,17 @@ class InputOutput(EventDispatcher):
 
     # list with plottable pars (to choose in graph)
     choices = ListProperty([])
-    
+
     # dictionary with connected interfaces
     interfaces = DictProperty({})
+    interfaces_names = DictProperty({})  # lookup table for interface names
+
     # plot micro or internal sensors
     selected_interface = StringProperty("")
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
-    
+
     # placeholder for saver
     sav = None
     # interval to create new file
@@ -271,8 +273,6 @@ class InputOutput(EventDispatcher):
                 if self.interfaces[dev_name].record:
                     self.interfaces[dev_name].start_stop(True)
 
-
-
             # update links to shared memory for new parameters
             self.shared_buffer.check_new()
 
@@ -325,7 +325,6 @@ class InputOutput(EventDispatcher):
             {chip: {key:value}}) for i in interfaces
             if chip in self.interfaces[i].sensors  # only send if chip is in interface
             ]
-        
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):
@@ -362,7 +361,7 @@ class InputOutput(EventDispatcher):
             # wait for all tasks to finish:
             proc_async_exceptions(await asyncio.gather(*tasks,
                                                        return_exceptions=True))
-            
+
             plot_dt = self.dt['plotting']
             if self.secondsback > 300:
                 plot_dt *= 2
@@ -374,28 +373,45 @@ class InputOutput(EventDispatcher):
     async def update_plot_pars(self, *_):
         self._update_plot_pars()
 
+    def _update_interface_names(self, *_):
+        names = {}
+        for ID, dev in self.interfaces.items():
+            name = dev.__dict__.get("name", ID)
+            if name in names:
+                # device name used already: RENAME!v
+                print("RENAME!!! " * 10)
+                name = f"name ({ID})"
+
+            names[name] = dev
+
+        if names != self.interfaces_names:
+            self.interfaces_names.clear()
+            self.interfaces_names.update(names)
+
     def _update_plot_pars(self, *_):
         """
-        Check connected sensors and status
+        Check connected intrefaces, sensors and status
         """
+        self._update_interface_names()
+
         interface = self.interfaces.get(self.selected_interface)
         if not interface:
             return
-        
+
         if interface.ID != self.selected_interface:
             self.interfaces[interface.ID] = self.interfaces.pop(self.selected_interface)
             self.selected_interface = interface.ID
 
-        sensors = {k: v for k, v in interface.sensors.items()
-                    if v.connected}
+        sensors = {k: v for k, v in interface.sensors.items() if v.connected}
         pars = interface.parameters
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
         # Create list of plottable sensors
-        choices = sorted(set(pars).difference(REMOVE_PARS),
-                         key = lambda x: ("GPIO" in x, x),
-                         ) + ['Off']
+        choices = sorted(
+            set(pars).difference(REMOVE_PARS),
+            key=lambda x: ("GPIO" in x, x),
+        ) + ["Off"]
 
         if sensors != self.sensors or choices != self.choices:
             # do only when new sensor connected/disconnected
@@ -522,7 +538,6 @@ class InputOutput(EventDispatcher):
 
         except (KeyError, AttributeError) as e:
             log(f"Parameter not in memory or no data yet: {e}", 'warning')
-        
 
     # Interfaces
     async def interface_loop(self):
@@ -550,12 +565,12 @@ class InputOutput(EventDispatcher):
         if self.selected_interface != interface:
             self.selected_interface = interface
             self._update_plot_pars()
-    
+
     def stop_all_stims(self, *args):
         """
         (Force) Stop all stimulation by sending stim 0, 0 to all sensors
         """
-        
+
         for m in self.interfaces.values():
             for s in m.sensors.values():
                 for sc in s.stim_control.values():
@@ -563,8 +578,7 @@ class InputOutput(EventDispatcher):
                         sc.stop_stim() 
                     except:
                         pass
-        
-        
+
         for s in self.sensors.values():
             if hasattr(s, "stim_control"):
                 for sc in s.stim_control.values():
@@ -674,7 +688,6 @@ class InputOutput(EventDispatcher):
             start = self.client.start()
         await start
         self.NETWORK_READY.set()
-
 
     def switch_client(self, client, *args):
         if client in self.client_ip_list:
@@ -898,7 +911,7 @@ class InputOutput(EventDispatcher):
 
         self.shared_buffer.close_all()
         self.shared_buffer.unlink_all()
-    
+
 
 # TESTING
 if __name__ == '__main__':
