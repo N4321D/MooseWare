@@ -117,7 +117,7 @@ class InternalBus:
     START = False
 
     NAME = "InternalBus"  # Name of interface
-    UNIQUE_ID = "_INTERNALBUS"  # inque id in microcontrollers is hex value, use _ to make sure it is not overlapping any hex values
+    UNIQUE_ID = "INTERNALBUS"  # inque id in microcontrollers is hex value, use _ to make sure it is not overlapping any hex values
 
     Serial = None  # Placeholder for Faked Serial interface
 

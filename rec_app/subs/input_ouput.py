@@ -380,7 +380,7 @@ class InputOutput(EventDispatcher):
             if name in names:
                 # device name used already: RENAME!v
                 print("RENAME!!! " * 10)
-                name = f"name ({ID})"
+                name = f"{name} ({ID})"
 
             names[name] = dev
 
@@ -458,7 +458,12 @@ class InputOutput(EventDispatcher):
         [('parameter', graph1, kwargs),
         ('parameter', graph2, kwargs), etc.]
         """
-        plot_buff_name = self.selected_interface 
+        interface = self.interfaces.get(self.selected_interface)
+        if not interface:
+            log("Interface {interface} not found in interfaces for plotting", "debug")
+            return
+        
+        plot_buff_name = interface.get_buffer_name()
 
         if ((not self.plotting
                 and not (self.sending and self.client))

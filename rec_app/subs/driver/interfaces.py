@@ -123,14 +123,14 @@ class Interface:
 
         self.ID = None   # will be overwritten with serial number / unique ID of interface
 
-
     def connect_buffer(self):
+        name_id = self.get_buffer_name()
         self.data_structure = self.shared_buffer.data_structure
         self.buffer = self.shared_buffer.buffer
 
-        if self.ID in self.buffer:
+        if  name_id in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=self.ID) # (par= self.name)
+            self.shared_buffer.reset(par=name_id) # (par= self.name)
 
     def set_buffer_dims(self, *args):
         """
@@ -140,14 +140,16 @@ class Interface:
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
         self.shared_buffer.add_parameter(
-            self.ID, self.line_buffer.dtype, self.buffer_length
+            self.get_buffer_name(), 
+            self.line_buffer.dtype, 
+            self.buffer_length
         )
 
         self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
         await self.controller.start()
-    
+
     async def async_run(self):
         await self.controller.run()
         self.exit()
@@ -238,7 +240,6 @@ class Interface:
 
         self.on_connect(self)
 
-
     def on_connect(self, dev):
         pass
 
@@ -277,7 +278,7 @@ class Interface:
             if name == "CTRL":
                 [setattr(self, k, v) for k, v in chip_d.items()]
                 self.settings_received.set()
-            
+
             if name not in self.sensors:
                 # Create chip widget
                 self.sensors[name] = Chip(name, chip_d, self, send_cmd=self.write)
@@ -287,8 +288,6 @@ class Interface:
                 self.sensors[name].update(chip_d)
 
             self.sensors[name].status = status
-            
-
 
         self.parameters = {
             f"{k}_{par}": k
@@ -370,7 +369,7 @@ class Interface:
     ):
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
-            self.ID,
+            self.get_buffer_name(),
             # tuple(data.values())
             self.line_buffer,
         )
@@ -390,7 +389,7 @@ class Interface:
             except ValueError:
                 log(f"Cannot unpack sample rate: {data}", "warning")
         else:
-            print(f"FEEDBACK:{self.ID} ({self.name}):    {data}")
+            print(f"FEEDBACK ({self.get_buffer_name()}): {data}")
 
     def set_dev(self, dev):
         txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
@@ -448,40 +447,17 @@ class Interface:
 
     def rename(self, name):        
         if name != self.name:
-            name = self.check_name(name, self.other_names)
             self.name = name
             self.write({"CTRL": {"name": name}})
 
-    def check_name(self,
-                   current_name: str, 
-                   existing_names: iter,
-                   ) -> str:
+    def get_buffer_name(self):
         """
-        Create a new name if the current name already exists.
-
-        If the current name ends with a number, increment that number. 
-        Otherwise, append an incremental number to the current name.
-
-        Args:
-            current_name (str): The current name.
-            existing_names (iterable): The set of existing names.
+        returns the name that is used in the buffer to save the data for this interface
 
         Returns:
-            str: The new name.
+            str: name (Key) that is used in the buffer for this interface
         """
-        new_name = current_name
-
-        base_name = re.sub(r'\d+$', '', new_name)
-        number = re.findall(r'\d+$', new_name)
-        start = int(number[0]) if number else 1
-
-        while new_name in existing_names:
-            device = existing_names.get(new_name)
-            if device and device.get("ID") != self.ID:
-                new_name = f"{base_name}{start}"
-                start += 1
-
-        return new_name
+        return f"{self.name} ({self.ID})"
 
     def exit(self):
         self.start_stop(False)
