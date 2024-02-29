@@ -117,6 +117,7 @@ class InternalBus:
     START = False
 
     NAME = "InternalBus"  # Name of interface
+    UNIQUE_ID = "INTERNALBUS"  # inque id in microcontrollers is hex value, use _ to make sure it is not overlapping any hex values
 
     Serial = None  # Placeholder for Faked Serial interface
 
@@ -151,7 +152,6 @@ class InternalBus:
 
         # setup
         self.setup()
-
 
     def timerHandler(self, *args):
         self.callCounter += 1
@@ -225,7 +225,9 @@ class InternalBus:
         # get data from sensors
         self.doc_out = {
             "idle": True,
-            "CTRL": {"name": self.NAME},
+            "CTRL": {"name": self.NAME,
+                     "ID": self.UNIQUE_ID,
+                     },
             **{sens_name: sens.getInfo() for sens_name, sens in self.Sensors.items()},
         }
         self.sendData()
@@ -280,10 +282,10 @@ class InternalBus:
     def setName(self, name):
         self.NAME = name
         self.feedback(name)
-        print("TODO save name in settings?")
 
     def loadName(self):
-        print("TODO load name from settings?")
+        # not used, just for consistency with micro driver
+        pass
 
     def readInput(self):
         while self.Serial.available():

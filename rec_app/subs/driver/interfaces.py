@@ -90,7 +90,7 @@ class Interface:
         self.parameters = {}
         self.data_dtype_fields = {}
         self.name = None
-        self.other_names = set()         # iterable with names of other interfaces (for renaming)
+        self.other_names = set()         # iterable with names of other interfaces (for renaming) == interfaces dictionary from IO
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
         self.starttime = 0
@@ -121,28 +121,35 @@ class Interface:
 
         self.shared_buffer = SharedBuffer()
 
+        self.ID = None   # will be overwritten with serial number / unique ID of interface
 
     def connect_buffer(self):
+        name_id = self.get_buffer_name()
         self.data_structure = self.shared_buffer.data_structure
         self.buffer = self.shared_buffer.buffer
 
-        if self.name in self.buffer:
+        if  name_id in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=self.name)
+            self.shared_buffer.reset(par=name_id) # (par= self.name)
 
     def set_buffer_dims(self, *args):
+        """
+        Create shared numpy array to store data in buffer under name of the interface
+        """
         bytes_per_samplepoint = self.line_buffer.nbytes
 
         self.buffer_length = int(self.MAX_MEM / bytes_per_samplepoint)
         self.shared_buffer.add_parameter(
-            self.name, self.line_buffer.dtype, self.buffer_length
+            self.get_buffer_name(), 
+            self.line_buffer.dtype, 
+            self.buffer_length
         )
 
         self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
         await self.controller.start()
-    
+
     async def async_run(self):
         await self.controller.run()
         self.exit()
@@ -183,12 +190,13 @@ class Interface:
         await self.settings_received.wait()  # wait for name etc to arrive
 
         if not self.name:
-            self.name = "USB"
+            self.name = "NAMELESS_INTERFACE"
 
-        name = self.check_name(self.name, self.other_names)
-        self.rename(name)
+        # name = self.check_name(self.name, self.other_names)
+        # self.rename(name)
 
-        self.connect_buffer()
+        self.connect_buffer()   # NOTE: this does not need name yet, buffer with name will be created on first data
+
         self.sensors["CTRL"] = Chip(
             "CTRL",
             {
@@ -199,6 +207,7 @@ class Interface:
                         "type": "string",
                         "desc": "set / change the name of the controller",
                         "key": "name",
+                        "default_value": self.name,
                     },
                     {
                         "title": "Recording Frequency",
@@ -227,8 +236,7 @@ class Interface:
             send_cmd=self.write,
         )
 
-        self.sensors["CTRL"].name = self.name
-        # self.record = self.sensors["CTRL"].record
+        # self.sensors["CTRL"].name = self.name
 
         self.on_connect(self)
 
@@ -237,7 +245,7 @@ class Interface:
 
     def _on_disconnect(self, dev):
         self.on_disconnect(self)
-        self.name = ""
+        self.ID = None
 
     def on_disconnect(self, dev):
         pass
@@ -260,23 +268,26 @@ class Interface:
     def do_idle(self, data):
         del data["idle"]
 
-        if self.name is None and "CTRL" not in data:
+        if self.ID is None and "CTRL" not in data:
             return  # wait for control pars to be received first
 
         for name, chip_d in data.items():
             status = chip_d.pop("#ST") if "#ST" in chip_d else 0
+
+            # save control settings as interface variables
+            if name == "CTRL":
+                [setattr(self, k, v) for k, v in chip_d.items()]
+                self.settings_received.set()
+
             if name not in self.sensors:
                 # Create chip widget
                 self.sensors[name] = Chip(name, chip_d, self, send_cmd=self.write)
+
             else:
                 # update chip widget stats
                 self.sensors[name].update(chip_d)
 
             self.sensors[name].status = status
-
-            if name == "CTRL":
-                [setattr(self, k, v) for k, v in chip_d.items()]
-                self.settings_received.set()
 
         self.parameters = {
             f"{k}_{par}": k
@@ -358,7 +369,7 @@ class Interface:
     ):
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
-            self.name,
+            self.get_buffer_name(),
             # tuple(data.values())
             self.line_buffer,
         )
@@ -378,7 +389,7 @@ class Interface:
             except ValueError:
                 log(f"Cannot unpack sample rate: {data}", "warning")
         else:
-            print(f"FEEDBACK:{self.name}:    {data}")
+            print(f"FEEDBACK ({self.get_buffer_name()}): {data}")
 
     def set_dev(self, dev):
         txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
@@ -430,41 +441,23 @@ class Interface:
             self.sensors["CTRL"].record = value["CTRL"]["record"]
 
         except KeyError:
+
             # send cmd to controller
             self.controller.write(value)
 
-    def rename(self, name):
+    def rename(self, name):        
         if name != self.name:
             self.name = name
             self.write({"CTRL": {"name": name}})
 
-    def check_name(self,
-                   current_name: str, 
-                   existing_names: iter,
-                   ) -> str:
+    def get_buffer_name(self):
         """
-        Create a new name if the current name already exists.
-
-        If the current name ends with a number, increment that number. 
-        Otherwise, append an incremental number to the current name.
-
-        Args:
-            current_name (str): The current name.
-            existing_names (iterable): The set of existing names.
+        returns the name that is used in the buffer to save the data for this interface
 
         Returns:
-            str: The new name.
+            str: name (Key) that is used in the buffer for this interface
         """
-        base_name = re.sub(r'\d+$', '', current_name)
-        number = re.findall(r'\d+$', current_name)
-        start = int(number[0]) if number else 1
-
-        new_name = current_name
-        while new_name in existing_names:
-            new_name = f"{base_name}{start}"
-            start += 1
-
-        return new_name
+        return f"{self.name} ({self.ID})"
 
     def exit(self):
         self.start_stop(False)

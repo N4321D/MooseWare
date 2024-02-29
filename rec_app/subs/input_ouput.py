@@ -116,15 +116,17 @@ class InputOutput(EventDispatcher):
 
     # list with plottable pars (to choose in graph)
     choices = ListProperty([])
-    
+
     # dictionary with connected interfaces
     interfaces = DictProperty({})
+    interfaces_names = DictProperty({})  # lookup table for interface names
+
     # plot micro or internal sensors
     selected_interface = StringProperty("")
 
     rec_pars = DictProperty({'samplerate': 0,
                              'emarate': 0})                             # pars from recorder
-    
+
     # placeholder for saver
     sav = None
     # interval to create new file
@@ -271,8 +273,6 @@ class InputOutput(EventDispatcher):
                 if self.interfaces[dev_name].record:
                     self.interfaces[dev_name].start_stop(True)
 
-
-
             # update links to shared memory for new parameters
             self.shared_buffer.check_new()
 
@@ -325,7 +325,6 @@ class InputOutput(EventDispatcher):
             {chip: {key:value}}) for i in interfaces
             if chip in self.interfaces[i].sensors  # only send if chip is in interface
             ]
-        
 
     # PLOT FUNCTIONS:
     async def plot(self, *_):
@@ -362,7 +361,7 @@ class InputOutput(EventDispatcher):
             # wait for all tasks to finish:
             proc_async_exceptions(await asyncio.gather(*tasks,
                                                        return_exceptions=True))
-            
+
             plot_dt = self.dt['plotting']
             if self.secondsback > 300:
                 plot_dt *= 2
@@ -374,27 +373,45 @@ class InputOutput(EventDispatcher):
     async def update_plot_pars(self, *_):
         self._update_plot_pars()
 
+    def _update_interface_names(self, *_):
+        names = {}
+        for ID, dev in self.interfaces.items():
+            name = dev.__dict__.get("name", ID)
+            if name in names:
+                # device name used already: RENAME!
+                name = f"{name}\n({ID})"
+                dev.rename(name)
+
+            names[name] = dev
+
+        if names != self.interfaces_names:
+            self.interfaces_names.clear()
+            self.interfaces_names.update(names)
+
     def _update_plot_pars(self, *_):
         """
-        Check connected sensors and status
+        Check connected intrefaces, sensors and status
         """
-        dev = self.interfaces.get(self.selected_interface)
-        if not dev:
-            return
-        if dev.name != self.selected_interface:
-            self.interfaces[dev.name] = self.interfaces.pop(self.selected_interface)
-            self.selected_interface = dev.name
+        self._update_interface_names()
 
-        sensors = {k: v for k, v in dev.sensors.items()
-                    if v.connected}
-        pars = dev.parameters
+        interface = self.interfaces.get(self.selected_interface)
+        if not interface:
+            return
+
+        if interface.ID != self.selected_interface:
+            self.interfaces[interface.ID] = self.interfaces.pop(self.selected_interface)
+            self.selected_interface = interface.ID
+
+        sensors = {k: v for k, v in interface.sensors.items() if v.connected}
+        pars = interface.parameters
 
         # TODO: extra pars in sensor driver such as off or combinations of 2 (e.g. pressure = pressure int - pressure ext)
 
         # Create list of plottable sensors
-        choices = sorted(set(pars).difference(REMOVE_PARS),
-                         key = lambda x: ("GPIO" in x, x),
-                         ) + ['Off']
+        choices = sorted(
+            set(pars).difference(REMOVE_PARS),
+            key=lambda x: ("GPIO" in x, x),
+        ) + ["Off"]
 
         if sensors != self.sensors or choices != self.choices:
             # do only when new sensor connected/disconnected
@@ -441,7 +458,12 @@ class InputOutput(EventDispatcher):
         [('parameter', graph1, kwargs),
         ('parameter', graph2, kwargs), etc.]
         """
-        plot_buff_name = self.selected_interface 
+        interface = self.interfaces.get(self.selected_interface)
+        if not interface:
+            log("Interface {interface} not found in interfaces for plotting", "debug")
+            return
+        
+        plot_buff_name = interface.get_buffer_name()
 
         if ((not self.plotting
                 and not (self.sending and self.client))
@@ -521,7 +543,6 @@ class InputOutput(EventDispatcher):
 
         except (KeyError, AttributeError) as e:
             log(f"Parameter not in memory or no data yet: {e}", 'warning')
-        
 
     # Interfaces
     async def interface_loop(self):
@@ -537,24 +558,24 @@ class InputOutput(EventDispatcher):
         await self.interface_factory.scan()
 
     def connect_interface(self, interface):
-        self.interfaces[interface.name] = interface
+        self.interfaces[interface.ID] = interface
         interface.start_stop(False)   # force stop
-        self.selected_interface = interface.name
+        self.selected_interface = interface.ID
 
     def disconnect_interface(self, interface):
-        if interface.name in self.interfaces:
-            del self.interfaces[interface.name]
+        if interface.ID in self.interfaces:
+            del self.interfaces[interface.ID]
 
     def toggle_interface(self, interface, *args):
         if self.selected_interface != interface:
             self.selected_interface = interface
             self._update_plot_pars()
-    
+
     def stop_all_stims(self, *args):
         """
         (Force) Stop all stimulation by sending stim 0, 0 to all sensors
         """
-        
+
         for m in self.interfaces.values():
             for s in m.sensors.values():
                 for sc in s.stim_control.values():
@@ -562,8 +583,7 @@ class InputOutput(EventDispatcher):
                         sc.stop_stim() 
                     except:
                         pass
-        
-        
+
         for s in self.sensors.values():
             if hasattr(s, "stim_control"):
                 for sc in s.stim_control.values():
@@ -673,7 +693,6 @@ class InputOutput(EventDispatcher):
             start = self.client.start()
         await start
         self.NETWORK_READY.set()
-
 
     def switch_client(self, client, *args):
         if client in self.client_ip_list:
@@ -838,6 +857,7 @@ class InputOutput(EventDispatcher):
             time_stamp (float, optional): timestamp for note, if nothing is entered, current time will be used
         """
         time_stamp = time_stamp or time.time()
+        note = f"{self.selected_interface}: {note}"   # add selected interface to note
         self.shared_buffer.add_1_to_buffer('notes', (time_stamp, note))
         self.update_feedback()
 
@@ -853,8 +873,14 @@ class InputOutput(EventDispatcher):
             _dt_f = datetime.fromtimestamp
 
         # covert timestamp to readable format zip notes and timestamps & limit charaters per line
-        _text = map(lambda _t, n:
-                    f"{n.decode()[:19]} {_dt_f(_t).strftime('%X')}" if n else " ",
+        def convert_note(t, n):
+            if not n:
+                return " "
+            n = n.decode()
+            n = n.replace(f"{self.selected_interface}: ", "")
+            return f"{n[:19]} {_dt_f(t).strftime('%X')}"
+
+        _text = map(convert_note,
                     _notes['time'], _notes['note'])
 
         self._set_feedback_txt(_text)
@@ -890,7 +916,7 @@ class InputOutput(EventDispatcher):
 
         self.shared_buffer.close_all()
         self.shared_buffer.unlink_all()
-    
+
 
 # TESTING
 if __name__ == '__main__':
