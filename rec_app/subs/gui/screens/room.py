@@ -787,7 +787,8 @@ class RoomScreen(Scr):
 
         # set lights
         self.lights_current_color = int.from_bytes(rgb, byteorder="big")
-        self.app.IO.chip_command(None, "Light", "fill", rgb)
+        # self.app.IO.chip_command(None, "Light", "fill", rgb)
+        self.app.IO.chip_command(None, "LGT", "on", any(rgb))
 
     def start(self):
         if not self.app.IO.running:
