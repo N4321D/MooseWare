@@ -38,6 +38,8 @@ from subs.gui.vars import BUT_BGR, MO, MO_BGR
 
 import concurrent.futures
 
+from subs.misc.rpi_usb_check_and_mount import AutoMounter
+
 # create logger
 try:
     from subs.log import create_logger
@@ -389,6 +391,8 @@ class FileManager(FloatLayout):
         self.app = App.get_running_app()
         self.setupname = self.app.setupname
         self.client = client
+        
+        self.automounter = AutoMounter()
 
         # init widgets on start
         Clock.schedule_once(self.__kv_init__, 0)
@@ -398,7 +402,7 @@ class FileManager(FloatLayout):
     
     def __kv_init__(self, dt):
         self._init_widgets()
-
+        # self.automounter.start()
 
     def _init_widgets(self, *args):
         """
@@ -485,6 +489,7 @@ class FileManager(FloatLayout):
         
 
     def check_usb_drives(self, *args):
+        self.automounter.check_mounted()                # check and connect usb drives on rpi
         self.connected_usb = self.check_connected_drives()
         self.dstbut.types = list(self.connected_usb)
         if self.dstbut.text not in self.dstbut.types:
@@ -529,8 +534,14 @@ class FileManager(FloatLayout):
         
         try:
             l_dir = set(_dir.iterdir())
+        
+        except (OSError, FileNotFoundError):
+            # USB drive not found or disconnected
+            self.switch_view()
+            return
             
-        except:
+        except Exception as e:        
+            log(e, "warning")
             self.last_listdir = set()
             self.filechooser._update_files()
             return
@@ -762,8 +773,8 @@ class FileManager(FloatLayout):
                     usb_i += 1
                     drives[drive['name']] = drive
       
-                except PermissionError:
-                    # needed for Windows
+                except (PermissionError, OSError):
+                    # needed for Windows or linux when drive is unmounted
                     pass
 
         return drives

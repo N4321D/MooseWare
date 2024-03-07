@@ -1,52 +1,68 @@
-from pathlib import Path
 import platform
-import os
+import subprocess
 import json
+import time
+import asyncio
+import threading
 
+# create logger
 try:
-    # Setup logging
     from subs.log import create_logger
-
-    logger = create_logger()
-
-    def log(message, level="info"):
-        getattr(logger, level)(
-            f"AUTOMOUNT: {message}"
-        )  # change RECORDER SAVER IN CLASS NAME
-
 except:
+    def create_logger():
+        class Logger():
+            def __init__(self) -> None:
+                # change messenger in whatever script you are importing
+                f = lambda *x: print("FILEMANAGER: ", *x)
+                self.warning = self.info = self.critical = self.debug = self.error = f
+        return Logger()
 
-    def log(*args):
-        print("AUTOMOUNT: ", *args)
+logger = create_logger()
+
+
+def log(message, level="info"):
+    # change RECORDER SAVER IN CLASS NAME
+    getattr(logger, level)("FILEMANAGER: {}".format(message))
+
 
 
 class AutoMounter:
-    usb_drives = {}
-    mounted_drives = {}
-    disconnected_drives = {}
-
     MOUNTABLE_FSTYPES = {"ext4", "vfat", "ntfs", "exfat"}
 
-    def __init__(self) -> None:
-        if (not os.popen("pmount").read(0)) and (
-            platform.system() in {"armv7l", "aarch64"}
-        ):
-            # Raspberry pi, but raspbian not installed
-            log("Pmount not installed, install with sudo apt install pmount", "warning")
+    def __init__(self, dt=1) -> None:
+        self.usb_drives = {}        # all usb drives
+        self.mounted_drives = {}    # mounted drives
+
+        self.CHECK_TIMEOUT = dt     # timeout for check loop
+        self.PMOUNT_INSTALLED = False
+
+        try:
+            subprocess.run("pmount")
+            if platform.machine() in {"armv7l", "aarch64"}:
+                self.PMOUNT_INSTALLED = True
+                log("Pmount installed", "debug")
+
+        except FileNotFoundError:
+            if platform.machine() in {"armv7l", "aarch64"}:
+                # Raspberry pi, but pmount not installed
+                log(
+                    "Pmount not installed, install with 'sudo apt install pmount'",
+                    "warning",
+                )
 
     def parse_lsblk(
         self,
         columns=[],
         unpack_partitions=True,
-    ):
+    ) -> dict:
         """
         parses lsblk info as json object
 
         Args:
-            columns (list, optional): columns to return from lsblk see info 
+            columns (list, optional): columns to return from lsblk see info
                                       below for desription
-            unpack_partitions (bool): if partitions should be unpacked or not 
-                                      (if not partitions are items under the 
+            unpack_partitions (bool): if partitions should be unpacked or not
+                                      (if not partitions are items under the
                                        key 'children' under the root dev)
 
         Returns:
@@ -113,16 +129,23 @@ class AutoMounter:
         DAX             dax-capable device
         """
         columns = [i.upper() for i in columns]  # covert to upper case
-        lsblk_out = json.loads(
-            os.popen(
-                f"lsblk --json {('-o' + ','.join(columns)) if columns else ''}"
-            ).read()
-        ).get("blockdevices", [])
+        args = ["lsblk", "--json"]
+
+        if columns:
+            args.append("-o" + ",".join(columns))
+
+        lsblk_out = subprocess.run(args, capture_output=True).stdout
+
+        if not lsblk_out:
+            return {}
+
+        lsblk_out = json.loads(lsblk_out).get("blockdevices", [])
 
         if unpack_partitions:
             lsblk_out += [
-                partition for dev in lsblk_out 
-                for partition in dev.get("children", []) 
+                partition
+                for dev in lsblk_out
+                for partition in dev.get("children", [])
                 if partition
             ]
 
@@ -132,19 +155,28 @@ class AutoMounter:
 
     def check_mounted(self):
         self.usb_drives = self.parse_lsblk(
-            ["PATH", "FSTYPE", "SIZE", "HOTPLUG", "NAME", 
-             "MOUNTPOINT", "LABEL", "SUBSYSTEMS"],
+            [
+                "PATH",
+                "FSTYPE",
+                "SIZE",
+                "HOTPLUG",
+                "NAME",
+                "MOUNTPOINT",
+                "LABEL",
+                "SUBSYSTEMS",
+            ],
             unpack_partitions=True,
         )
 
         # mount drives
         for dev, info in self.usb_drives.items():
-            if (info["hotplug"] and 
-                info["fstype"] in self.MOUNTABLE_FSTYPES and
-                "usb" in info['subsystems']                
+            if (
+                info["hotplug"]
+                and info["fstype"] in self.MOUNTABLE_FSTYPES
+                and "usb" in info["subsystems"]
             ):  # select only usb and removable devices
                 if info["mountpoint"] is None:  # mount drive
-                    self.mount_drive(dev)
+                    self.mount_drive(dev, info["label"])
                     self.mounted_drives[dev] = info
 
                 else:
@@ -156,20 +188,60 @@ class AutoMounter:
             self.unmount_drive(disconnected_dev)
             del self.mounted_drives[disconnected_dev]
 
-    def mount_drive(self, dev):
-        log(f"mounted {dev}", "debug")
-        print('mount', dev)
+    def mount_drive(self, dev, label=None):
+        log(f"mounting {dev}", "debug")
+        if not self.PMOUNT_INSTALLED:
+            return
+        args = ["pmount", 
+                "--umask", "000", 
+                "--noatime", 
+                "-w", 
+                "--sync", 
+                dev
+                ]
+        if label:
+            args.append(label)
 
-        # os.popen(f"pmount ... {dev}")
-        # TODO mount here
+        res = subprocess.run(args)
+        if res.returncode != 0:
+            log(f"Error mounting {dev}: {res.stderr}", "warning")
 
     def unmount_drive(self, dev):
-        log(f"unmounted {dev}", "debug")
-        print('unmount', dev)
-        # os.popen(f"pumount ... {dev}")
-        # TODO unmount here
+        log(f"unmounting {dev}", "debug")
+        if not self.PMOUNT_INSTALLED:
+            return
+        res = subprocess.run(["pumount", dev])
+        if res.returncode != 0:
+            log(f"Error unmounting {dev}: {res.stderr}", "warning")
+
+    async def check_mounted_async(self):
+        while True:
+            print('check async')
+            self.check_mounted()
+            await asyncio.sleep(self.CHECK_TIMEOUT)
+
+    def check_mounted_thread(self):
+        while True:
+            print('check tr')
+            self.check_mounted()
+            time.sleep(self.CHECK_TIMEOUT)
+
+    def start(self):
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(self.check_mounted_async())
+            else:
+                raise RuntimeError("No running event loop")
+            
+        except RuntimeError:
+            self._checking_thread = threading.Thread(
+                target=self.check_mounted_thread, daemon=True
+            )
+            self._checking_thread.start()
 
 
 if __name__ == "__main__":
     print("Automounter test, automounter initiated as 'm'")
     m = AutoMounter()
+    m.start()
