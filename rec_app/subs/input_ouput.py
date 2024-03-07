@@ -320,6 +320,7 @@ class InputOutput(EventDispatcher):
 
         if interface not in self.interfaces and interface is not None:
             return
+        
         interfaces = [interface] if interface else self.interfaces
         [self.interfaces[i].write(
             {chip: {key:value}}) for i in interfaces
