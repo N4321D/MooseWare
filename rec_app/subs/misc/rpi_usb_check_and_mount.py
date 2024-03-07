@@ -24,8 +24,8 @@ class AutoMounter:
     usb_drives = {}
     mounted_drives = {}
     disconnected_drives = {}
-    
-    MOUNTABLE_FSTYPES = {'ext4', 'vfat', 'ntfs', 'exfat'}
+
+    MOUNTABLE_FSTYPES = {"ext4", "vfat", "ntfs", "exfat"}
 
     def __init__(self) -> None:
         if (not os.popen("pmount").read(0)) and (
@@ -37,12 +37,17 @@ class AutoMounter:
     def parse_lsblk(
         self,
         columns=["PATH", "FSTYPE", "SIZE", "MOUNTPOINT", "NAME", "HOTPLUG"],
+        unpack_partitions=True,
     ):
         """
-        _summary_
+        parses lsblk info as json object
 
         Args:
-            COLUMNS (list, optional): _description_.
+            COLUMNS (list, optional): columns to return from lsblk see info 
+                                      below for desription
+            unpack_partitions (bool): if partitions should be unpacked or not 
+                                      (if not partitions are items under the 
+                                       key 'children' under the root dev)
 
         Returns:
             _type_: _description_
@@ -112,38 +117,50 @@ class AutoMounter:
                 f"lsblk --json {('-o' + ','.join(columns)) if columns else ''}"
             ).read()
         ).get("blockdevices", [])
-        children = [child for dev in lsblk_out for child in dev.get("children", {}) if child]
+
+        if unpack_partitions:
+            lsblk_out += [
+                partition for dev in lsblk_out 
+                for partition in dev.get("children", []) 
+                if partition
+            ]
+
         key = columns[0] if columns else "NAME"  # set key to first item in columns
-        output = {i[key.lower()]: i for i in lsblk_out + children}  # convert to dict
+        output = {i[key.lower()]: i for i in lsblk_out}  # convert to dict
         return output
 
     def check_mounted(self):
-        self.usb_drives = self.parse_lsblk(["PATH", "FSTYPE", "SIZE", 
-                                   "HOTPLUG", "NAME", "MOUNTPOINT", "LABEL"])
-        
+        self.usb_drives = self.parse_lsblk(
+            ["PATH", "FSTYPE", "SIZE", "HOTPLUG", "NAME", "MOUNTPOINT", "LABEL"],
+            unpack_partitions=True,
+        )
+
         # mount drives
         for dev, info in self.usb_drives.items():
-            if info['hotplug'] and (info['fstype'] in self.MOUNTABLE_FSTYPES):                 # select only usb and removable devices
-                if info['mountpoint'] is None:   # mount drive
+            if info["hotplug"] and (
+                info["fstype"] in self.MOUNTABLE_FSTYPES
+            ):  # select only usb and removable devices
+                if info["mountpoint"] is None:  # mount drive
                     self.mount_drive(dev)
                     self.mounted_drives[dev] = info
-                    
+
                 else:
                     # add already mounted drives
                     self.mounted_drives[dev] = info
-                
+
         # unmount drives that are not connected anymore
         for disconnected_dev in set(self.mounted_drives).difference(self.usb_drives):
             self.unmount_drive(disconnected_dev)
             del self.mounted_drives[disconnected_dev]
-    
+
     def mount_drive(self, dev):
-        print(f'mount {dev}')
+        log(f"mounted {dev}", "debug")
+
         # os.popen(f"pmount ... {dev}")
         # TODO mount here
-    
+
     def unmount_drive(self, dev):
-        print('unmount {dev}')
+        log(f"unmounted {dev}", "debug")
         # os.popen(f"pumount ... {dev}")
         # TODO unmount here
 
