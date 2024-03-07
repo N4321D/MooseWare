@@ -36,21 +36,22 @@ class AutoMounter:
 
     def parse_lsblk(
         self,
-        columns=["PATH", "FSTYPE", "SIZE", "MOUNTPOINT", "NAME", "HOTPLUG"],
+        columns=[],
         unpack_partitions=True,
     ):
         """
         parses lsblk info as json object
 
         Args:
-            COLUMNS (list, optional): columns to return from lsblk see info 
+            columns (list, optional): columns to return from lsblk see info 
                                       below for desription
             unpack_partitions (bool): if partitions should be unpacked or not 
                                       (if not partitions are items under the 
                                        key 'children' under the root dev)
 
         Returns:
-            _type_: _description_
+            dict: dictionary with lsblk info. Key is the first column in columns
+                  or the name, value is the rest of the information
 
         Available output columns:
         NAME            device name
@@ -131,14 +132,16 @@ class AutoMounter:
 
     def check_mounted(self):
         self.usb_drives = self.parse_lsblk(
-            ["PATH", "FSTYPE", "SIZE", "HOTPLUG", "NAME", "MOUNTPOINT", "LABEL"],
+            ["PATH", "FSTYPE", "SIZE", "HOTPLUG", "NAME", 
+             "MOUNTPOINT", "LABEL", "SUBSYSTEMS"],
             unpack_partitions=True,
         )
 
         # mount drives
         for dev, info in self.usb_drives.items():
-            if info["hotplug"] and (
-                info["fstype"] in self.MOUNTABLE_FSTYPES
+            if (info["hotplug"] and 
+                info["fstype"] in self.MOUNTABLE_FSTYPES and
+                "usb" in info['subsystems']                
             ):  # select only usb and removable devices
                 if info["mountpoint"] is None:  # mount drive
                     self.mount_drive(dev)
@@ -155,12 +158,14 @@ class AutoMounter:
 
     def mount_drive(self, dev):
         log(f"mounted {dev}", "debug")
+        print('mount', dev)
 
         # os.popen(f"pmount ... {dev}")
         # TODO mount here
 
     def unmount_drive(self, dev):
         log(f"unmounted {dev}", "debug")
+        print('unmount', dev)
         # os.popen(f"pumount ... {dev}")
         # TODO unmount here
 
