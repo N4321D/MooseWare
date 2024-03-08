@@ -21,7 +21,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 
 # used in kv builder, do not remove!
-from subs.gui.widgets.Graph import Graph
+from subs.gui.widgets.graph import Graph
 from subs.gui.buttons.TextIn import TIn
 
 from kivy.app import App

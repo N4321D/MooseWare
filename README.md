@@ -36,25 +36,17 @@ Recording Software
 - [License](#license)
 
 ## Description 
-Recording software to record from Neureflect inc. patented devices. This repository consists of micro controller drivers for RPI Pico written in C++ (Arduino IDE) and the control / GUI software which can run on multiple devices written in python.
+Recording software to record from Neureflect inc. patented devices. This repository consists of the control / GUI software which can run on multiple devices written in python and the drivers for the internal I2C and GPIO ports of the Rapberry Pi.
 
 ## Installation
 ### GUI / Recording Software:
 Install python rec_app with poetry for easy installation:
 1. install poetry (see: https://python-poetry.org/)
 2. clone repository
-3. goto folder where repository is and run `poetry install`
+3. go to the folder where the repository is and run `poetry install`
 
-### Micro controller driver:
-To use this Arduino sketch, follow these steps:
-
-1. Install the Arduino IDE and the RPI pico board plugins if you haven't already.
-2. Open the Arduino IDE and create a new sketch.
-3. Load the contents of the provided `arduino_send_interrupt` folder into your new sketch.
-4. Install the latest versions of these libraries: "Adafruit_SSD1306", "Adafruit_GFX", "RPi_Pico_TimerInterrupt"  and "ArduinoJson" 
-5. Connect your RPi pico board to your computer.
-6. Select the appropriate board and port from the "Tools" menu.
-7. Upload the sketch to your board.
+## Hardware
+Tested and running on most Linux devices including Rapsbian Bookworm Lite on the Raspberry Pi 4. Should also run on Windows and OSX devices, but testing has been limited. Connects to microcontroller over USB serial to record.
 
 ## Usage
 To start make sure the poetry env is activated `poetry shell`, then go to the rec_app folder and run the main.py file
@@ -69,4 +61,4 @@ Contributions to this code are welcome! If you find bugs or want to add features
 5. Open a pull request to the main repository.
 
 ## License
-
+Yes Using, No Stealing. Will be updated later

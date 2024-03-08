@@ -18,7 +18,7 @@ from subs.autostimulator import AutoStimPanel
 
 # used in kv lang, do not remove
 from subs.gui.widgets.chips_widget import ChipWidget
-from subs.gui.widgets.Graph import Graph
+from subs.gui.widgets.graph import Graph
 
 from functools import partial
 
@@ -200,12 +200,15 @@ kv_str = """
         size_hint: 0.6,0.38
         pos_hint: {'x': 0.07, 'top': 0.88}
         skipnan: False
+        show_last_value: True
 
     Graph2:
         id: graf2
         size_hint: 0.6,0.38
         pos_hint: {'x': 0.07, 'top': 0.43}
         skipnan: False
+        show_last_value: True
+
 
     SPLOT:
         id: splot1

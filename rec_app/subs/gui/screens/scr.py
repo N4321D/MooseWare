@@ -10,7 +10,7 @@ from kivy.clock import Clock
 
 
 from functools import partial
-from subs.gui.widgets.Notes import Notes
+from subs.gui.widgets.notes import Notes
 
 
 Builder.load_string(
