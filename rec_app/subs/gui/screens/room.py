@@ -669,6 +669,10 @@ class RoomScreen(Scr):
         `alert` list as an argument.
         """
 
+        return
+    
+        # TODO fix getting parameters here from interfaces
+
         cycle = 24  # time back in hours to check min/max
         alert = []  # list with pars to send alert for
 
