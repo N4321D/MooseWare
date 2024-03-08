@@ -16,7 +16,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 
 from subs.gui.vars import *
-from subs.gui.widgets.Notes import Notes
+from subs.gui.widgets.notes import Notes
 
 # imports for builder do not delete
 import subs.gui.screens.kv_other.imports_vars
@@ -32,7 +32,7 @@ from subs.gui.screens.sett_scr import SetScreen
 from subs.gui.screens.help import HelpScreen
 from subs.gui.screens.screensaver import ScreenSaver
 
-from subs.gui.widgets.Notes import Notes
+from subs.gui.widgets.notes import Notes
 
 
 from datetime import datetime
@@ -40,7 +40,7 @@ from datetime import datetime
 
 Builder.load_string(
 """
-#:kivy 1.10.1
+#:kivy 2.0.0
 <RootLayout>:
     orientation: "vertical"
 

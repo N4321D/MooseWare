@@ -16,7 +16,7 @@ from subs.gui.screens.scr import Scr
 from subs.gui.vars import *
 
 # used in kv builder, do not remove!
-from subs.gui.widgets.Graph import Graph
+from subs.gui.widgets.graph import Graph
 
 import time
 
