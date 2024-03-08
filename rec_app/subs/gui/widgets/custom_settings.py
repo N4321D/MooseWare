@@ -28,7 +28,7 @@ import re
 import ast
 from ast import literal_eval
 
-from subs.gui.misc.Stimulation import StimPanel
+from subs.gui.misc.stimulation import StimPanel
 
 from cryptography.fernet import Fernet
 

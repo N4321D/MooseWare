@@ -1,5 +1,5 @@
 import json
-from subs.gui.misc.Stimulation import StimController
+from subs.gui.misc.stimulation import StimController
 
 class Chip():
     """
