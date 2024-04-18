@@ -293,7 +293,7 @@ kv_str = """
         size_hint:  (0.2, 0.1)
         color: WHITE if app.IO.running else MO
         background_color: GREEN_OK if app.IO.running else GREY
-        text: 'LOGGING' if app.IO.running else 'START\\nLOGGING'
+        text: 'RECORDING' if app.IO.running else 'START\\RECORDING'
         on_release: root.start()
 
 

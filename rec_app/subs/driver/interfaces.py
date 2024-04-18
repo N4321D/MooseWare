@@ -88,7 +88,7 @@ class Interface:
                  **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
-        self.data_dtype_fields = {}
+        # self.data_dtype_fields = {}
         self.name = None
         self.other_names = set()         # iterable with names of other interfaces (for renaming) == interfaces dictionary from IO
         self.disconnected = asyncio.Event()
@@ -124,6 +124,9 @@ class Interface:
         self.ID = None   # will be overwritten with serial number / unique ID of interface
 
     def connect_buffer(self):
+        """
+        connect to shared buffer, only called on interface connect
+        """
         name_id = self.get_buffer_name()
         self.data_structure = self.shared_buffer.data_structure
         self.buffer = self.shared_buffer.buffer
@@ -164,6 +167,9 @@ class Interface:
 
         if self.run and self.record:
             # Start
+            # remove existing parameters from buffer
+            self.shared_buffer.remove_parameter(self.get_buffer_name())   
+            
             self.lasttime = None
             self.starttime = time.time()
             self.emarate = 0
@@ -312,12 +318,10 @@ class Interface:
             # create buffer based on incoming data
             self.set_buffer_dims()
 
-            # save dtype of current data
-            self.data_dtype_fields = self.line_buffer.dtype.fields
 
         _last_chip = ""
         # unpack dictionary
-        for parname in self.data_dtype_fields:
+        for parname in self.line_buffer.dtype.fields:
             par, *subpar = parname.split("_")
             val = data.get(par, np.nan)
 
@@ -353,7 +357,7 @@ class Interface:
                         self,
                         send_cmd=self.write,
                     )
-                if _status is None or _status >= 0:
+                if _status is None or _status >= 0 and sensors[par].record:
                     # if status is ok, add dtype to pars
                     dtypes += [
                         (f"{par}_{subpar}", self.dtypes.get(subpar, self.dtypes[None]))
