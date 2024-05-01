@@ -476,9 +476,28 @@ class Interface:
             version (str): version of interface driver
         """
         if version < INTERFACE_MINIMAL_VERSION:
+            
             log(f"Interface {self.name} ({self.ID}) driver version ({version}) "
                 f"incompatible. {INTERFACE_MINIMAL_VERSION} required", 
                 "critical")
+            from kivy.clock import Clock
+            def _popup_warning(*dt):
+                
+                self.app.popup.load_defaults()
+                self.app.popup.buttons = {"OK": {}}
+                self.app.popup.title_align = "justify"
+                self.app.popup.title = (
+                    "WARNING: UPDATE DRIVER")
+
+                self.app.popup.text=(f"'{self.name or self.ID}' has an [i]incompatible driver version[/i]!\n\n"
+                              f"Please update to driver version [b]{INTERFACE_MINIMAL_VERSION}[/b] immediately\n"
+                              "Failure to update will result in data corruption")
+                self.app.popup.pos_hint = {'top': 0.8}
+                self.app.popup.size_hint = {0.8, 0.4}
+                self.app.popup.open()
+            Clock.schedule_once(_popup_warning, 2)
+
+            self._version_check = lambda *x: None  # disable furhter version checks
 
     def write(self, value):
         # process controller commands / config

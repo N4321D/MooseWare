@@ -78,7 +78,7 @@ from kivy.event import EventDispatcher
 from kivy.clock import Clock
 from kivy.app import App
 from kivy.uix.settings import SettingsPanel, SettingSpacer
-
+from kivy.uix.label import Label
 from subs.gui.widgets.custom_settings import (SettingsWithSidebar, 
     timestr_2_timedelta, val_type_loader,)
 from subs.gui.misc.settings_panel import settings_panel
@@ -280,12 +280,18 @@ class guiApp(App):
 #           BUTTONS and WIDGETS
 # ==========================================
 class Popup(MyPopup):
+    text = StringProperty("")   # add content text to popup use by setting popup.text before calling open
+    text_label = Label() 
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.load_defaults()
+        self.bind(text=self.on_text)
 
     def load_defaults(self):
         # set defaults
+        self.text = ""
+        self.remove_widget(self.text_label)
         self.size_hint = (0.4, 0.25)
         self.title_size = '20sp'
         self.title_color = WHITE
@@ -296,7 +302,17 @@ class Popup(MyPopup):
                           'foreground_color': WHITE,
                           'font_size': '18sp',
                           'size_hint': (0.1, 0.2)}
-
+    
+    def on_text(self, *args):
+        if self.text:
+            self.text_label = Label(text=self.text,
+                      markup=True,
+                      font_size="20sp",
+                      size_hint = (0.5, 0.5)
+                      )
+ 
+            self.content.add_widget(self.text_label, index=len(self.content.children) + 1)
+                
 
 if (system() == 'Linux'
     or (__name__ == "__main__")):     # needed for multiprocessing to not spawn multiple windows on mac & win (or start from run.py)
