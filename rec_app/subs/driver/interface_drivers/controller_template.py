@@ -31,6 +31,7 @@ class Controller:
     async def run(self) -> None:
         """
         loop or event that has to be awaited or run to record
+        called from app.IO interface factory
         """
         await self.disconnected.wait()
 

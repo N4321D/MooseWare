@@ -45,7 +45,6 @@ class InternalController(Controller):
         return asyncio.gather(self._queue_processor.run_loop(), 
                               self.on_connect_default(), 
                               return_exceptions=True)
-
         
     def write(self, data) -> None:
         if self.q_out:

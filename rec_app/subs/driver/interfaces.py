@@ -136,7 +136,7 @@ class Interface:
 
         if  name_id in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=name_id) # (par= self.name)
+            self.reset_buffer()
 
     def set_buffer_dims(self, *args):
         """
@@ -154,9 +154,11 @@ class Interface:
         self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
+        # called from app.IO and interface factory to start interface
         await self.controller.start()
 
     async def async_run(self):
+        # calls the run from the controller template class (or controller if specified)
         await self.controller.run()
         self.exit()
 
@@ -171,11 +173,6 @@ class Interface:
         if self.run and self.record:
             # Start
             # remove existing parameters from buffer
-            # self.shared_buffer.remove_parameter(self.get_buffer_name())   
-
-            # todo next line crashes if paramter is not in buffer:""
-            # self.shared_buffer.reset(self.get_buffer_name()) 
-            
             self.lasttime = None
             self.starttime = time.time()
             self.emarate = 0
@@ -186,7 +183,8 @@ class Interface:
             self.starttime = 0
 
         # clear / reset buffers
-        self.buffer_length = 0
+        # self.buffer_length = 0
+        self.reset_buffer()
 
         # write start
         self.controller.write({"CTRL": out})
@@ -379,16 +377,21 @@ class Interface:
             if isinstance(val, dict):
                 _status = val.pop("#ST") if "#ST" in val else None
                 if par in sensors:
+                    # update sensor status
                     if _status is not None:
                         sensors[par].status = _status
                 else:
+                    # create new sensor
                     sensors[par] = Chip(
                         par,
                         {"status": _status if _status is not None else 0},
                         self,
                         send_cmd=self.write,
                     )
-                if _status is None or _status >= 0 and sensors[par].record:
+                
+                _status = sensors[par].status  # set status to actual status
+
+                if _status >= 0 and sensors[par].record:
                     # if status is ok, add dtype to pars
                     dtypes += [
                         (f"{par}_{subpar}", self.dtypes.get(subpar, self.dtypes[None]))
@@ -405,7 +408,6 @@ class Interface:
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.get_buffer_name(),
-            # tuple(data.values())
             self.line_buffer,
         )
 
@@ -499,6 +501,17 @@ class Interface:
             str: name (Key) that is used in the buffer for this interface
         """
         return f"{self.name} ({self.ID})"
+
+    def reset_buffer(self):
+        """
+        resets shared buffer (disconnects and removes all data and statusses related to self)
+        """
+        name_id = self.get_buffer_name()
+        if name_id in self.shared_buffer.buffer:
+            self.shared_buffer.reset(par=name_id)  # reset buffer counters
+            self.shared_buffer.remove_parameter(name_id) # remove current device from buffer
+            self.buffer_length = 0   # this forces the buffer to be created again on new data
+            
 
     def exit(self):
         self.start_stop(False)
