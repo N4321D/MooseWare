@@ -177,15 +177,13 @@ class Interface:
             self.starttime = time.time()
             self.emarate = 0
             out["freq"] = self.samplerate
+            # clear / reset buffers
+            self.reset_buffer()
 
         else:
             # Stop
             self.starttime = 0
-
-        # clear / reset buffers
-        # self.buffer_length = 0
-        self.reset_buffer()
-
+            
         # write start
         self.controller.write({"CTRL": out})
 
