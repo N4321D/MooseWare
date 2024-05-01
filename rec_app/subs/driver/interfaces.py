@@ -163,6 +163,12 @@ class Interface:
         self.exit()
 
     def start_stop(self, start=None):
+        """
+        Called on start or stop recording
+
+        Args:
+            start (bool):start or stop if not defined it toggles. Defaults to None.
+        """
         if start is not None:
             self.run = start
         else:
