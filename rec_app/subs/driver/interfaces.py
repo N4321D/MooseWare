@@ -212,7 +212,7 @@ class Interface:
         self.sensors["CTRL"] = Chip(
             "CTRL",
             {
-                "name": f"Controller: {self.name} ({self.ID}) - V{(self.version)}",
+                "name": f"Controller: {self.ID} - V{(self.version)}",
                 "control_str": [
                     {
                         "title": f"Controller Name",
