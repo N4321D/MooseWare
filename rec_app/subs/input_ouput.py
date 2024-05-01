@@ -849,16 +849,17 @@ class InputOutput(EventDispatcher):
                                          [('time', 'f8'), ('note', 'S1024')],
                                          NOTES_LENGTH)
 
-    def add_note(self, note, time_stamp=0.0):
+    def add_note(self, note, time_stamp=0.0, interface=None):
         """
         add note to notes in file and update feedback box
 
         Args:
             note (str): note
             time_stamp (float, optional): timestamp for note, if nothing is entered, current time will be used
+            interface: interface where the note is linked to, if None the currently selected interface will be used
         """
         time_stamp = time_stamp or time.time()
-        note = f"{self.selected_interface}: {note}"   # add selected interface to note
+        note = f"{interface or self.selected_interface}: {note}"   # add selected interface to note
         self.shared_buffer.add_1_to_buffer('notes', (time_stamp, note))
         self.update_feedback()
 

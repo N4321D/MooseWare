@@ -7,6 +7,8 @@ from subs.recording.buffer import SharedBuffer
 
 from subs.driver.interface_drivers.chip import Chip
 
+from subs.gui.vars import INTERFACE_MINIMAL_VERSION
+
 import numpy as np
 import re
 
@@ -122,6 +124,7 @@ class Interface:
         self.shared_buffer = SharedBuffer()
 
         self.ID = None   # will be overwritten with serial number / unique ID of interface
+        self.version = "" # version of microcontroller driver
 
     def connect_buffer(self):
         """
@@ -168,7 +171,10 @@ class Interface:
         if self.run and self.record:
             # Start
             # remove existing parameters from buffer
-            self.shared_buffer.remove_parameter(self.get_buffer_name())   
+            # self.shared_buffer.remove_parameter(self.get_buffer_name())   
+
+            # todo next line crashes if paramter is not in buffer:""
+            # self.shared_buffer.reset(self.get_buffer_name()) 
             
             self.lasttime = None
             self.starttime = time.time()
@@ -206,10 +212,10 @@ class Interface:
         self.sensors["CTRL"] = Chip(
             "CTRL",
             {
-                "name": "Controller",
+                "name": f"Controller: {self.name} ({self.ID}) - V{(self.version)}",
                 "control_str": [
                     {
-                        "title": "Controller Name",
+                        "title": f"Controller Name",
                         "type": "string",
                         "desc": "set / change the name of the controller",
                         "key": "name",
@@ -259,7 +265,17 @@ class Interface:
     def on_incoming(self, data):
         # TODO speed_up by making async? -> on incoming sets flag and when flag is set
         #       get fifo is async or multiprocessing processed?
+
         if isinstance(data, dict):
+            # if self.ID is None and "CTRL" not in data:
+            #     return  # wait for control pars to be received first
+            # save control settings as interface variables
+            if "CTRL" in data:
+                self.do_controller_instructions(data.pop("CTRL"))
+
+            if self.ID is None or not data:
+                return
+
             if "idle" in data:
                 self.do_idle(data)
 
@@ -271,19 +287,33 @@ class Interface:
             # no dictionary packed data, probably feedback
             self.do_feedback(data)
 
+    def do_controller_instructions(self, data):
+        for k, v in data.items():
+            if k == "notes":
+                if self.ID:
+                    self.app.IO.add_note(v, interface=self.ID)
+            
+            elif k == "freq":
+                # set actual frequency
+                self.current_rate = v
+            
+            elif k == "version":
+                # check version
+                self.version = v
+                self._version_check(v)
+                
+            else:
+                setattr(self, k, v)
+
+        if not self.settings_received.is_set():
+            if self.ID is not None and self.version is not "":
+                self.settings_received.set()
+
     def do_idle(self, data):
         del data["idle"]
 
-        if self.ID is None and "CTRL" not in data:
-            return  # wait for control pars to be received first
-
         for name, chip_d in data.items():
             status = chip_d.pop("#ST") if "#ST" in chip_d else 0
-
-            # save control settings as interface variables
-            if name == "CTRL":
-                [setattr(self, k, v) for k, v in chip_d.items()]
-                self.settings_received.set()
 
             if name not in self.sensors:
                 # Create chip widget
@@ -310,7 +340,8 @@ class Interface:
         if ("us" in data) and ("time" not in data):
             data["time"] = self._do_time(data["us"])
 
-        self._calc_ema(data.pop("sDt"))
+        if "sDt" in data:
+            self._calc_ema(data.pop("sDt"))
 
         if self.buffer_length == 0:
             self.create_line_buffer(data)
@@ -386,14 +417,8 @@ class Interface:
             data (str, bytes): data to process
         """
         if isinstance(data, (bytes, bytearray)):
-            data = data.decode()
-        if isinstance(data, str) and data[-4:] == " Hz\r":
-            try:
-                self.current_rate = float(data[:-4])
-            except ValueError:
-                log(f"Cannot unpack sample rate: {data}", "warning")
-        else:
-            print(f"FEEDBACK ({self.get_buffer_name()}): {data}")
+            # data = data.decode()
+            print(f"FEEDBACK ({self.get_buffer_name()}): {data.decode()}")
 
     def set_dev(self, dev):
         txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
@@ -436,6 +461,18 @@ class Interface:
         else:
             n = self.samplerate * 60  # ema over 1 min
             self.emarate = (self.emarate - (self.emarate / n)) + ((1 / dt) / n)
+    
+    def _version_check(self, version):
+        """
+        Check if version is bigger that required minimum, report if not.
+
+        Args:
+            version (str): version of interface driver
+        """
+        if version < INTERFACE_MINIMAL_VERSION:
+            log(f"Interface {self.name} ({self.ID}) driver version ({version}) "
+                f"incompatible. {INTERFACE_MINIMAL_VERSION} required", 
+                "critical")
 
     def write(self, value):
         # process controller commands / config
