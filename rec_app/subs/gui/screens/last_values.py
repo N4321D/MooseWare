@@ -10,13 +10,10 @@ from kivy.lang.builder import Builder
 from kivy.clock import Clock
 from kivy.properties import StringProperty, DictProperty, ConfigParserProperty
 from kivy.uix.togglebutton import ToggleButton
-from subs.gui.widgets.custom_settings import timestr_2_timedelta, val_type_loader
+from kivy.uix.boxlayout import BoxLayout
 
 from subs.gui.screens.scr import Scr
 from subs.gui.vars import *
-
-# used in kv builder, do not remove!
-from subs.gui.widgets.graph import Graph
 
 import time
 
@@ -31,11 +28,23 @@ def log(message, level="info"):
 kv_str = """
 #:kivy 1.10.1
 
+<DataItem@BoxLayout>:
+    Label:
+        id: title
+    Label:
+        id: data
+
 <LastValScreen>:
+    BoxLayout:
+        id: datagrid
 
 """
+class DataItem(BoxLayout):
+    pass
 
 class LastValScreen(Scr):
+    data = DictProperty({})
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Builder.load_string(kv_str)
@@ -44,17 +53,34 @@ class LastValScreen(Scr):
 
         Clock.schedule_interval(self.get_last_value, 2)
 
-        # Dictionary with link to sensors
-        # self.rwi2c = self.app.IO.readwrite
     
     def get_last_value(self, *args, **kwargs):
-        for interface, data in self.shared_buffer.buffer.items():
+        """
+        collects last data points from shared buffer for each interface
+        """
+        self.data = {}                                          # clear dictionary
+        for interface in self.shared_buffer.buffer:
             if interface == 'notes':
                 continue
             last_values = self.shared_buffer.get_buf(interface, 
                                                      start=..., # has to be a value but not None
                                                      end=None,  # None indicates last added data
                                                      n_items=1, # number of items to get back from end (will overwrite start)
-                                                     )
-            print(last_values)
+                                                     )[0]
+            last_values = {k: v for k, v in zip(last_values.dtype.names, last_values)}
+            self.data[interface.replace(" ", "\n")] = last_values
+        self.create_widgets()
+
+    def create_widgets(self, *args, **kwargs):
+        """
+        creates text widgets with last data
+        """
+        self.clear_widgets()
+        for interface, data in self.data.items():
+            widget = DataItem()
+            widget.ids.title.text = interface
+            widget.ids.data.text = '\n'.join(f"{key}: {value}" for key, value in data.items())
+            self.add_widget(widget)
+
+
             
