@@ -25,12 +25,13 @@ import subs.gui.screens.kv_other.cust_widgets
 
 # screens for builder do not delete!!!
 from subs.gui.screens.rec import RecScreen
-from subs.gui.screens.room import RoomScreen
+from subs.gui.screens.environment import EnvScreen
 from subs.gui.screens.about import AboutScreen
 from subs.gui.screens.splash import SplashScreen
 from subs.gui.screens.sett_scr import SetScreen
 from subs.gui.screens.help import HelpScreen
 from subs.gui.screens.screensaver import ScreenSaver
+from subs.gui.screens.last_values import LastValScreen
 
 from subs.gui.widgets.notes import Notes
 
@@ -114,8 +115,10 @@ Builder.load_string(
             name: 'Settings'
         RecScreen:
             name: 'Record'
-        RoomScreen:
-            name: 'Ambient'
+        EnvScreen:
+            name: 'Env.'
+        LastValScreen:
+            name: 'Last Vals.'
         HelpScreen:
             name: 'Help'
         AboutScreen:
