@@ -13,7 +13,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.app import App
 
-from subs.gui.vars import MO, MO_BGR, LIGHTER_BLUE
+from subs.gui.vars import MO, MO_BGR, BUT_BGR, LIGHTER_BLUE
 
 import time
 
@@ -36,28 +36,18 @@ PAR_TXT_COL = kivy_rgba_to_rgba(LIGHTER_BLUE)
 kv_str = """
 #:kivy 2.1.0
 
-<LabLastData@Label>:
+<LastLabData@Label>:
     text_size: self.size
-    markup: True
-    background_color: 0, 0.5, 0.3, 1
-    height: self.texture_size[1]
+    valign: 'top'
     halign: "left"
-    valign: "top"
-
-<LabLastDataTitle@Label>:
-    text_size: self.size
     markup: True
-    background_color: 0, 0.5, 0.3, 1
-    height: self.texture_size[1]
-    halign: "left"
-    valign: "top"
+    padding_y: "10sp"
+    padding_x: "10sp"
 
-<DataItem@BoxLayout>:
-    orientation: "vertical"
 
 <LastValWidget>:
-    size_hint: 1, 0.9
-    pos_hint: {"top": 1, "right": 1}
+    size_hint: 1, 0.8
+    pos_hint: {"x": 0, "y": 0.1}
     canvas.before:
         Color:
             rgba: (0, 0, 0, 0.6)
@@ -66,11 +56,13 @@ kv_str = """
             size: self.size
     orientation: "vertical"
 
-    BoxLayout:
+    # Data Panel
+    GridLayout:
         id: datagrid
-        orientation: "horizontal"
-        size_hint_y: 0.9
-
+        orientation: "tb-lr"
+        rows: 2
+        size_hint: 1, 0.8
+    
     # Button Panel
     BoxLayout:
         size_hint_y: 0.1
@@ -92,13 +84,7 @@ kv_str = """
             size_hint_x: 0.2
 
 """
-class DataItem(BoxLayout):
-    pass
-
 class LastLabData(Label):
-    pass
-
-class LastLabDataTitle(LastLabData):
     pass
 
 class LastValWidget(BoxLayout):
@@ -112,7 +98,8 @@ class LastValWidget(BoxLayout):
         self.app = App.get_running_app()
         self.shared_buffer = self.app.IO.shared_buffer
 
-        Clock.schedule_interval(self.get_last_value, 2)
+        self.event = Clock.schedule_interval(self.get_last_value, 2)
+        self.event.cancel()
     
     def on_touch_down(self, touch):
             """
@@ -139,6 +126,16 @@ class LastValWidget(BoxLayout):
                 return False
             return True
 
+    def on_parent(self, widget, parent):
+        """
+        run when widget is added or removed
+        """
+        if parent is None:
+            self.event.cancel()
+        else:
+            self.event()
+            self.get_last_value()
+
     def get_last_value(self, *args, **kwargs):
         """
         collects last data points from shared buffer for each interface
@@ -161,17 +158,43 @@ class LastValWidget(BoxLayout):
         creates text widgets with last data
         """
         self.ids.datagrid.clear_widgets()
+
         for interface, data in self.data.items():
-            widget = DataItem()
-            widget.add_widget(LastLabDataTitle(
+            title = LastLabData(
                 text=f"[b][u][color=#{PAR_TXT_COL}]{interface}[/color][/b][/u]",     
-                markup=True,
-                ))
-            widget.add_widget(LastLabData(
-                text='\n'.join(f"{key}: {value:.3f}" for key, value in data.items()),
-                markup=True,
-                ))
-            self.ids.datagrid.add_widget(widget)
+                size_hint=(0.1, 0.1),
+                )
+
+            data = LastLabData(
+                text=('\n'.join(f"{key}: {self.format_numbers(value)}" 
+                                 for key, value in data.items() 
+                                 if key not in {"time", "us"})),
+                size_hint=(0.1, 0.9),
+                )            
+            self.ids.datagrid.add_widget(title)
+            self.ids.datagrid.add_widget(data)
+    
+    def format_numbers(self, num):
+        """
+        format numbers to text and round if larger
+
+        Args:
+            num (float, int): input number
+
+        Returns:
+            str: formatted number
+        """
+        if abs(num) >= 1000:
+            return f"{num:.0f}"  # No decimal places for large numbers
+        
+        elif abs(num) >= 100:
+            return f"{num:.1f}"  # One decimal place for medium numbers
+        
+        elif abs(num) >= 10:
+            return f"{num:.2f}"  # One decimal place for medium numberselif num >= 100:
+        
+        else:
+            return f"{num:.3f}"  # Two decimal places for small numbers
 
 
 if __name__ == "__main__":
@@ -180,6 +203,12 @@ if __name__ == "__main__":
 
     """
     import numpy as np
+    
+    kv_str = f"""
+    #:set MO {MO}\n
+    #:set BUT_BGR {BUT_BGR}\n
+    \n{kv_str}
+"""
 
     class TestSharedBuffer:
         def __init__(self):
