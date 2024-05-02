@@ -31,7 +31,6 @@ from subs.gui.screens.splash import SplashScreen
 from subs.gui.screens.sett_scr import SetScreen
 from subs.gui.screens.help import HelpScreen
 from subs.gui.screens.screensaver import ScreenSaver
-from subs.gui.screens.last_values import LastValScreen
 
 from subs.gui.widgets.notes import Notes
 
@@ -116,9 +115,7 @@ Builder.load_string(
         RecScreen:
             name: 'Record'
         EnvScreen:
-            name: 'Env.'
-        LastValScreen:
-            name: 'Last Vals.'
+            name: 'Envr.'
         HelpScreen:
             name: 'Help'
         AboutScreen:

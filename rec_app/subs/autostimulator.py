@@ -133,7 +133,6 @@ kv_str = (
     # READOUTS
     # text labels are added in python script below
     ReadOutPanel:
-        # size_hint: 1, 0.9
         id: readouts_panel
         cols: 4
 
