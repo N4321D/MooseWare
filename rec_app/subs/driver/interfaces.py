@@ -308,7 +308,7 @@ class Interface:
                 setattr(self, k, v)
 
         if not self.settings_received.is_set():
-            if self.ID is not None and self.version is not "":
+            if self.ID is not None and self.version != "":
                 self.settings_received.set()
 
     def do_idle(self, data):
