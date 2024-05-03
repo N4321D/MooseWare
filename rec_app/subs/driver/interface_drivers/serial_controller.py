@@ -21,7 +21,7 @@ try:
     logger = create_logger()
 
     def log(message, level="info"):
-        cls_name = "PICO"
+        cls_name = "MICRO_CONTROLLER"
         getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
 except:

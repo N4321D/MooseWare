@@ -343,6 +343,12 @@ class InputOutput(EventDispatcher):
         runs/returns `self.exit()` at the end
         """
         while not self.EXIT.is_set():
+            # check if enough diskspace:
+            if self.sav is not None and self.sav.disk_full:
+                self.stop_recording()
+                log("Disk almost full, recording stopped", "warning")
+                return
+
             tasks = set()
             self.shared_buffer.check_new()
             if self.running:
