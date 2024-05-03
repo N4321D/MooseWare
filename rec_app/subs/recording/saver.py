@@ -244,8 +244,10 @@ class Saver():
         checks free disk space for folder for saving
         """
         free = disk_usage(self.paths['save_dir']).free
-        self.disk_full = free > self.MINIMAL_DISK_SPACE   # disk too full stop recording     
-        print(free)
+        self.disk_full = free < self.MINIMAL_DISK_SPACE   # disk too full stop recording     
+
+        if self.disk_full:
+            log("Not enough space to create new files", "warning")
 
     def get_data(self, par):
         """

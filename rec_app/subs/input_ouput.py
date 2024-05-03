@@ -347,6 +347,11 @@ class InputOutput(EventDispatcher):
             if self.sav is not None and self.sav.disk_full:
                 self.stop_recording()
                 log("Disk almost full, recording stopped", "warning")
+                self.app.popup.load_defaults()
+                self.app.popup.buttons = {"OK": {}}
+                self.app.popup.title = (
+                    "DISK FULL:\nRecording Stopped")
+                self.app.popup.open()
                 return
 
             tasks = set()
