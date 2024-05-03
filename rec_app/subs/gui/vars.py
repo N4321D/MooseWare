@@ -43,7 +43,7 @@ SPLASH_SCREEN_TIMEOUT = 2
 
 # SETTINGS (change able in settings)
 # TODO: replace other vars with these ones
-SETTINGS_VAR = {"Main": {"app_version": "2024.02.18",
+SETTINGS_VAR = {"Main": {"app_version": "2024.04.17",
                          'title': "MooseWare",
                          'app_logo': '└┘┘┘┘=|◶◶|=└└└└┘',
                          }
@@ -51,3 +51,7 @@ SETTINGS_VAR = {"Main": {"app_version": "2024.02.18",
 
 # KV FILE SPECIFIC:
 STIM_PAR_HEIGHT = 0.9  # height of stimpar buttons
+
+
+# Micro Controller
+INTERFACE_MINIMAL_VERSION = "2024.04.26"

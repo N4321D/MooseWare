@@ -22,6 +22,8 @@ from pathlib import Path
 import importlib.util
 import sys
 
+from subs.gui.vars import INTERFACE_MINIMAL_VERSION
+
 driver_dir = Path(
     "./../internal_bus_drivers"
 )  # Get the absolute path of the directory of the current script
@@ -118,6 +120,7 @@ class InternalBus:
 
     NAME = "InternalBus"  # Name of interface
     UNIQUE_ID = "INTERNALBUS"  # inque id in microcontrollers is hex value, use _ to make sure it is not overlapping any hex values
+    VERSION = INTERFACE_MINIMAL_VERSION    # this driver should always work / be up to data, no need to check version
 
     Serial = None  # Placeholder for Faked Serial interface
 
@@ -133,8 +136,8 @@ class InternalBus:
 
     # feedback texts
     texts = {
-        "idle": "Standby...",
-        "rec": "Recording...",
+        "idle": "Standby",
+        "rec": "Recording",
         "defaultName": "Internal",
     }
 
@@ -169,7 +172,6 @@ class InternalBus:
     def adjustFreq(self, freq):
         if not (self.settings["min_freq_hz"] <= freq <= self.settings["timer_freq_hz"]):
             return
-        self.feedbackstats(f"{freq:.1f} Hz\r")
 
         # limit loops before adjust to 10 if sample rate is lower than TIME BEFORE ADJUST
         if freq > 10:
@@ -181,6 +183,9 @@ class InternalBus:
 
         self.settings["current_timer_freq_hz"] = freq
         self.loopCounter = self.callCounter
+
+        doc_out = self.doc_out.setdefault("CTRL", {})
+        doc_out['freq'] = freq
 
     def sample(self):
         # trigger sensor reset if needed
@@ -198,7 +203,7 @@ class InternalBus:
         ]
 
         # read data
-        self.doc_out = {
+        self.doc_out.update({
             "time": time.time(),
             "sDt": self.sampleDT,
             **{
@@ -206,8 +211,9 @@ class InternalBus:
                 for sens_name, sens in self.Sensors.items()
                 if (sens.connected and sens.record)
             },
-        }
+        })
         self.sendData()
+        self.doc_out = {}
 
     def idle(self):
         """
@@ -223,14 +229,16 @@ class InternalBus:
         [sens.test_connection() for sens in self.Sensors.values()]
 
         # get data from sensors
-        self.doc_out = {
-            "idle": True,
-            "CTRL": {"name": self.NAME,
+        self.doc_out["idle"] = True
+        doc_out_CTRL = self.doc_out.setdefault("CTRL", {})
+        doc_out_CTRL.update({"name": self.NAME,
                      "ID": self.UNIQUE_ID,
-                     },
-            **{sens_name: sens.getInfo() for sens_name, sens in self.Sensors.items()},
-        }
+                     "version": self.VERSION,
+                     })
+        self.doc_out.update({sens_name: sens.getInfo() 
+                             for sens_name, sens in self.Sensors.items()})
         self.sendData()
+        self.doc_out = {}
 
     def stop_sensors(self):
         [sens.stop() for sens in self.Sensors.values()]

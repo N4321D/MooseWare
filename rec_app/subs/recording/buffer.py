@@ -147,9 +147,10 @@ class SharedBuffer():
         - n_items: if defined: number items back to get from end
         - decimated_out_len: desired length of output (achieved by decimation)
         """
-        if start is None: start = self.data_structure.get('saved', par)
-        if end is None: end = self.data_structure.get('added', par)
+        if start is None: start = self.data_structure.get('saved', par) or 0   # or 0 prevents creash when lookup failures
+        if end is None: end = self.data_structure.get('added', par) or 0 # or 0 prevents creash when lookup failures
 
+        # lookup failed return empty array when nothing in buffer:
         end += 1
 
         if n_items is not None:

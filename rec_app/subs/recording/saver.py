@@ -3,16 +3,15 @@ This class saves data to h5 file
 """
 
 # create logger
+cls_name = "SAVER"
 try:
     from subs.log import create_logger
     logger = create_logger()
+    def log(message, level="info"):
+        getattr(logger, level)(f"{cls_name}: {message}")  # change CLASSNAME here
 
 except:
-    logger = None
-
-def log(message, level="info"):
-    getattr(logger, level)(f"SAVER: {message}")  # change CLASSNAME here
-
+    log = lambda *args: print(cls_name, *args)
 
 import h5py
 import threading as tr
@@ -24,7 +23,7 @@ from subs.recording.buffer import SharedBuffer
 from pathlib import Path
 import tempfile
 
-from shutil import rmtree
+from shutil import rmtree, disk_usage
 
 
 class Saver():
@@ -49,7 +48,9 @@ class Saver():
 
     BLOCK_SIZE = 0x7FFF                         # items (in 1st dim) to buffer data before writing to file
     BLOCK_PAR = 'data'                          # parameter on which max items is tested
+    MINIMAL_DISK_SPACE = 2.024e9                # Minimal free disk space to keep, saver will stop if this is not available
     save_block_lengths = {}                     # dictionary with buffer length for each save block
+    disk_full = False                           # Flags if disk is too full for further recording
 
     NEW_FILE_INTERVAL = timedelta(days=1, 
                                   hours = 0,
@@ -111,7 +112,7 @@ class Saver():
         
     def stop(self):
         self.STOP.set()
-        self.save_tr.join()
+        self.save_tr.join() if self.save_tr else None
         self.save_buffer()
         self.close_file()
         self.tempdir.cleanup()                      # empty tempdir on clean stop
@@ -136,6 +137,11 @@ class Saver():
         if self.file:
             self.close_file()
 
+        self.check_disk_space()   # check disk space
+        if self.disk_full:
+            self.stop()
+            return                  # dont create file when not enough free disk space
+
         self.start_time = start_time or datetime.now()
 
         self.date = self.start_time.strftime("_%Y%m%d_%H%M%S")
@@ -157,6 +163,8 @@ class Saver():
         log("new file: {}".format(self.full_file_name), "debug")
 
     def close_file(self):
+        if not self.file:
+            return
         self.file.attrs.update(self.attrs)
         self.file.close()
         self.file = None
@@ -213,6 +221,8 @@ class Saver():
         ''' 
         call this method to save data
         '''
+        if not self.file:
+            return   # no file to write in
         
         for par in (self.buffer if par is None else (par,)):
             data, newest_pos = self.get_data(par)
@@ -228,6 +238,16 @@ class Saver():
             if ((datetime.now() - self.start_time) >= self.NEW_FILE_INTERVAL
                 and not self.STOP.is_set()):
                 self.new_file()
+        
+    def check_disk_space(self, *args):
+        """
+        checks free disk space for folder for saving
+        """
+        free = disk_usage(self.paths['save_dir']).free
+        self.disk_full = free < self.MINIMAL_DISK_SPACE   # disk too full stop recording     
+
+        if self.disk_full:
+            log("Not enough space to create new files", "warning")
 
     def get_data(self, par):
         """
@@ -316,6 +336,7 @@ if __name__ == "__main__":
         sav.shared_buffer.add_parameter('random', 'f8', TEST_ITEMS)
 
         for i in range(int(TEST_ITEMS)): 
+            print(f"FOR TESTING: iteration: {i}")
             sav.buffer['data']['time'][i] = time.time()
             sav.buffer['data']['random1'][i] = np.random.random()
             sav.buffer['data']['lin1'][i] = i

@@ -7,6 +7,8 @@ from subs.recording.buffer import SharedBuffer
 
 from subs.driver.interface_drivers.chip import Chip
 
+from subs.gui.vars import INTERFACE_MINIMAL_VERSION
+
 import numpy as np
 import re
 
@@ -88,7 +90,7 @@ class Interface:
                  **kwargs) -> None:
         self.sensors = {}
         self.parameters = {}
-        self.data_dtype_fields = {}
+        # self.data_dtype_fields = {}
         self.name = None
         self.other_names = set()         # iterable with names of other interfaces (for renaming) == interfaces dictionary from IO
         self.disconnected = asyncio.Event()
@@ -122,15 +124,19 @@ class Interface:
         self.shared_buffer = SharedBuffer()
 
         self.ID = None   # will be overwritten with serial number / unique ID of interface
+        self.version = "" # version of microcontroller driver
 
     def connect_buffer(self):
+        """
+        connect to shared buffer, only called on interface connect
+        """
         name_id = self.get_buffer_name()
         self.data_structure = self.shared_buffer.data_structure
         self.buffer = self.shared_buffer.buffer
 
         if  name_id in self.buffer:
             # clear existing data
-            self.shared_buffer.reset(par=name_id) # (par= self.name)
+            self.reset_buffer()
 
     def set_buffer_dims(self, *args):
         """
@@ -148,13 +154,21 @@ class Interface:
         self.parameters = set(self.line_buffer.dtype.names)
 
     async def async_start(self):
+        # called from app.IO and interface factory to start interface
         await self.controller.start()
 
     async def async_run(self):
+        # calls the run from the controller template class (or controller if specified)
         await self.controller.run()
         self.exit()
 
     def start_stop(self, start=None):
+        """
+        Called on start or stop recording
+
+        Args:
+            start (bool):start or stop if not defined it toggles. Defaults to None.
+        """
         if start is not None:
             self.run = start
         else:
@@ -164,18 +178,18 @@ class Interface:
 
         if self.run and self.record:
             # Start
+            # remove existing parameters from buffer
             self.lasttime = None
             self.starttime = time.time()
             self.emarate = 0
             out["freq"] = self.samplerate
+            # clear / reset buffers
+            self.reset_buffer()
 
         else:
             # Stop
             self.starttime = 0
-
-        # clear / reset buffers
-        self.buffer_length = 0
-
+            
         # write start
         self.controller.write({"CTRL": out})
 
@@ -200,10 +214,10 @@ class Interface:
         self.sensors["CTRL"] = Chip(
             "CTRL",
             {
-                "name": "Controller",
+                "name": f"Controller: {self.ID} - V{(self.version)}",
                 "control_str": [
                     {
-                        "title": "Controller Name",
+                        "title": f"Controller Name",
                         "type": "string",
                         "desc": "set / change the name of the controller",
                         "key": "name",
@@ -253,7 +267,17 @@ class Interface:
     def on_incoming(self, data):
         # TODO speed_up by making async? -> on incoming sets flag and when flag is set
         #       get fifo is async or multiprocessing processed?
+
         if isinstance(data, dict):
+            # if self.ID is None and "CTRL" not in data:
+            #     return  # wait for control pars to be received first
+            # save control settings as interface variables
+            if "CTRL" in data:
+                self.do_controller_instructions(data.pop("CTRL"))
+
+            if self.ID is None or not data:
+                return
+
             if "idle" in data:
                 self.do_idle(data)
 
@@ -265,19 +289,33 @@ class Interface:
             # no dictionary packed data, probably feedback
             self.do_feedback(data)
 
+    def do_controller_instructions(self, data):
+        for k, v in data.items():
+            if k == "notes":
+                if self.ID:
+                    self.app.IO.add_note(v, interface=self.ID)
+            
+            elif k == "freq":
+                # set actual frequency
+                self.current_rate = v
+            
+            elif k == "version":
+                # check version
+                self.version = v
+                self._version_check(v)
+                
+            else:
+                setattr(self, k, v)
+
+        if not self.settings_received.is_set():
+            if self.ID is not None and self.version != "":
+                self.settings_received.set()
+
     def do_idle(self, data):
         del data["idle"]
 
-        if self.ID is None and "CTRL" not in data:
-            return  # wait for control pars to be received first
-
         for name, chip_d in data.items():
             status = chip_d.pop("#ST") if "#ST" in chip_d else 0
-
-            # save control settings as interface variables
-            if name == "CTRL":
-                [setattr(self, k, v) for k, v in chip_d.items()]
-                self.settings_received.set()
 
             if name not in self.sensors:
                 # Create chip widget
@@ -304,7 +342,8 @@ class Interface:
         if ("us" in data) and ("time" not in data):
             data["time"] = self._do_time(data["us"])
 
-        self._calc_ema(data.pop("sDt"))
+        if "sDt" in data:
+            self._calc_ema(data.pop("sDt"))
 
         if self.buffer_length == 0:
             self.create_line_buffer(data)
@@ -312,12 +351,10 @@ class Interface:
             # create buffer based on incoming data
             self.set_buffer_dims()
 
-            # save dtype of current data
-            self.data_dtype_fields = self.line_buffer.dtype.fields
 
         _last_chip = ""
         # unpack dictionary
-        for parname in self.data_dtype_fields:
+        for parname in self.line_buffer.dtype.fields:
             par, *subpar = parname.split("_")
             val = data.get(par, np.nan)
 
@@ -344,16 +381,21 @@ class Interface:
             if isinstance(val, dict):
                 _status = val.pop("#ST") if "#ST" in val else None
                 if par in sensors:
+                    # update sensor status
                     if _status is not None:
                         sensors[par].status = _status
                 else:
+                    # create new sensor
                     sensors[par] = Chip(
                         par,
                         {"status": _status if _status is not None else 0},
                         self,
                         send_cmd=self.write,
                     )
-                if _status is None or _status >= 0:
+                
+                _status = sensors[par].status  # set status to actual status
+
+                if _status >= 0 and sensors[par].record:
                     # if status is ok, add dtype to pars
                     dtypes += [
                         (f"{par}_{subpar}", self.dtypes.get(subpar, self.dtypes[None]))
@@ -370,7 +412,6 @@ class Interface:
         # save data in memory
         self.shared_buffer.add_1_to_buffer(
             self.get_buffer_name(),
-            # tuple(data.values())
             self.line_buffer,
         )
 
@@ -382,14 +423,8 @@ class Interface:
             data (str, bytes): data to process
         """
         if isinstance(data, (bytes, bytearray)):
-            data = data.decode()
-        if isinstance(data, str) and data[-4:] == " Hz\r":
-            try:
-                self.current_rate = float(data[:-4])
-            except ValueError:
-                log(f"Cannot unpack sample rate: {data}", "warning")
-        else:
-            print(f"FEEDBACK ({self.get_buffer_name()}): {data}")
+            # data = data.decode()
+            print(f"FEEDBACK ({self.get_buffer_name()}): {data.decode()}")
 
     def set_dev(self, dev):
         txt = f"{dev.manufacturer} - {dev.product}" if dev else "disconnected"
@@ -432,6 +467,37 @@ class Interface:
         else:
             n = self.samplerate * 60  # ema over 1 min
             self.emarate = (self.emarate - (self.emarate / n)) + ((1 / dt) / n)
+    
+    def _version_check(self, version):
+        """
+        Check if version is bigger that required minimum, report if not.
+
+        Args:
+            version (str): version of interface driver
+        """
+        if version < INTERFACE_MINIMAL_VERSION:
+            
+            log(f"Interface {self.name} ({self.ID}) driver version ({version}) "
+                f"incompatible. {INTERFACE_MINIMAL_VERSION} required", 
+                "critical")
+            from kivy.clock import Clock
+            def _popup_warning(*dt):
+                
+                self.app.popup.load_defaults()
+                self.app.popup.buttons = {"OK": {}}
+                self.app.popup.title_align = "justify"
+                self.app.popup.title = (
+                    "WARNING: UPDATE DRIVER")
+
+                self.app.popup.text=(f"'{self.name or self.ID}' has an [i]incompatible driver version[/i]!\n\n"
+                              f"Please update to driver version [b]{INTERFACE_MINIMAL_VERSION}[/b] immediately\n"
+                              "Failure to update will result in data corruption")
+                self.app.popup.pos_hint = {'top': 0.8}
+                self.app.popup.size_hint = {0.8, 0.4}
+                self.app.popup.open()
+            Clock.schedule_once(_popup_warning, 2)
+
+            self._version_check = lambda *x: None  # disable furhter version checks
 
     def write(self, value):
         # process controller commands / config
@@ -458,6 +524,17 @@ class Interface:
             str: name (Key) that is used in the buffer for this interface
         """
         return f"{self.name} ({self.ID})"
+
+    def reset_buffer(self):
+        """
+        resets shared buffer (disconnects and removes all data and statusses related to self)
+        """
+        name_id = self.get_buffer_name()
+        if name_id in self.shared_buffer.buffer:
+            self.shared_buffer.reset(par=name_id)  # reset buffer counters
+            self.shared_buffer.remove_parameter(name_id) # remove current device from buffer
+            self.buffer_length = 0   # this forces the buffer to be created again on new data
+            
 
     def exit(self):
         self.start_stop(False)

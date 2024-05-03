@@ -33,7 +33,7 @@ kv_str = """
     halign: 'right'
 
 # ROOM SCREEN & BUTTONS
-<RoomScreen>:
+<EnvScreen>:
     on_enter:
         self.main()
 
@@ -293,7 +293,7 @@ kv_str = """
         size_hint:  (0.2, 0.1)
         color: WHITE if app.IO.running else MO
         background_color: GREEN_OK if app.IO.running else GREY
-        text: 'LOGGING' if app.IO.running else 'START\\nLOGGING'
+        text: 'RECORDING' if app.IO.running else 'START\\nRECORDING'
         on_release: root.start()
 
 
@@ -459,7 +459,7 @@ def dict_loader(value):
         return str(value)
 
 
-class RoomScreen(Scr):
+class EnvScreen(Scr):
     """
     Screen with room controls (controls lights, records pressure, humidity,
     temp)
@@ -668,6 +668,10 @@ class RoomScreen(Scr):
         `alert` list is not empty, the `send_alert` function is called with the
         `alert` list as an argument.
         """
+
+        return
+    
+        # TODO fix getting parameters here from interfaces
 
         cycle = 24  # time back in hours to check min/max
         alert = []  # list with pars to send alert for

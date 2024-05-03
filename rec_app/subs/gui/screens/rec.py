@@ -15,6 +15,7 @@ from subs.gui.vars import *
 from subs.gui.screens.scr import Scr
 
 from subs.autostimulator import AutoStimPanel
+from subs.gui.widgets.last_values import LastValWidget
 
 # used in kv lang, do not remove
 from subs.gui.widgets.chips_widget import ChipWidget
@@ -105,11 +106,20 @@ kv_str = """
         halign: 'right'
         text_size: self.size
 
+    # LAST VALUE BUTTON
+    StdButton:
+        id: autostim
+        pos_hint: {'right': 1, 'top': 0.4}
+        text: "Last\\nValues"
+        # disabled: not app.IO.running
+        on_release:
+            root.open_last_values()
+
     # STIMBUTTONS
     StdButton:
         id: autostim
         pos_hint: {'right': 1, 'top': 0.5}
-        text: 'Autostim:\\n{}'.format(root.autostim.status if app.IO.running else "Options")
+        text: 'Autostim\\n{}'.format(root.autostim.status if app.IO.running else "Options")
         # disabled: not app.IO.running
         on_release:
             root.open_autostim()
@@ -252,6 +262,8 @@ class RecScreen(Scr):
         self.autostim = self.autostim_pan.autostim
         self.autostim.wake_up_out = self.wake_up
 
+        self.last_values_widget = LastValWidget()
+
         self.graph1 = []            # list with [par, graph, kwargs]
         self.graph2 = []             # list with [par, graph, kwargs]
       
@@ -385,6 +397,13 @@ class RecScreen(Scr):
         # (when touching screen)
         if auto:
             return self.plotonoff_event()
+    
+    # Last Values
+    def open_last_values(self,):
+        """
+        opens last values panel
+        """
+        self.add_widget(self.last_values_widget)
 
     # Autostimulation
     def open_autostim(self,):
