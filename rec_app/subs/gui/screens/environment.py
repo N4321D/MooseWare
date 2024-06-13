@@ -785,7 +785,6 @@ class EnvScreen(Scr):
 
         # adjust rgb for brightness
         rgb = [int(x * brightness) for x in rgb]
-        print(rgb)
 
         # set menu colors
         self.change_menu_color()
