@@ -92,7 +92,6 @@ class Interface:
         self.parameters = {}
         # self.data_dtype_fields = {}
         self.name = None
-        self.other_names = set()         # iterable with names of other interfaces (for renaming) == interfaces dictionary from IO
         self.disconnected = asyncio.Event()
         self.connected = asyncio.Event()
         self.starttime = 0
@@ -206,8 +205,6 @@ class Interface:
         if not self.name:
             self.name = "NAMELESS_INTERFACE"
 
-        # name = self.check_name(self.name, self.other_names)
-        # self.rename(name)
 
         self.connect_buffer()   # NOTE: this does not need name yet, buffer with name will be created on first data
 

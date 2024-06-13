@@ -151,7 +151,7 @@ class InternalBus:
             self.NAME += " TEST"
 
         # init serial
-        self.Serial = FakeSerial()
+        self.Serial = FakeSerial()  # create similar interaction with internal bus as with serial
 
         # setup
         self.setup()

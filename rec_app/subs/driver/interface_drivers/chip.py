@@ -45,7 +45,8 @@ class Chip():
                      "type": "bool",
                      "desc": "Record data from this device",
                      "key": "record",
-                     "default_value": True,
+                     "default_value": True if "internalbus" not in self.name.lower() else False,     #hotfix to standard disable recording for internalbus
+                     "section": f"{self.parent_name}: {self.name}",
                   }] + _buttons
         
         # add section for saving settings
