@@ -789,10 +789,29 @@ class EnvScreen(Scr):
         # set menu colors
         self.change_menu_color()
 
-        # set lights
+        # save lights
         self.lights_current_color = int.from_bytes(rgb, byteorder="big")
-        # self.app.IO.chip_command(None, "Light", "fill", rgb)
+        
+        # change lights
+        self.change_lights(rgb)
+    
+    def change_lights(self, rgb):
+        red, green, blue = rgb
+        
+        # enable sini lights
         self.app.IO.chip_command(None, "LGT", "on", any(rgb))
+
+        if red == green == blue:
+            # white light
+            brightness = int((red/255) * 100)
+            self.app.IO.chip_command(None, "ILLC", "wht", brightness)
+            self.app.IO.chip_command(None, "DMX", "wht", brightness)
+
+        elif red and not blue and not green:
+            # red light
+            brightness = int((red/255) * 100)
+            self.app.IO.chip_command(None, "ILLC", "red", brightness)
+            self.app.IO.chip_command(None, "DMX", "red", brightness)
 
     def start(self):
         if not self.app.IO.running:
