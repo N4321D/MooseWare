@@ -61,4 +61,10 @@ Contributions to this code are welcome! If you find bugs or want to add features
 5. Open a pull request to the main repository.
 
 ## License
-Yes Using, No Stealing. Will be updated later
+This project is licensed under the MIT License for non-commercial use. For commercial use, please contact me.
+
+### Non-Commercial Use
+You are free to use, modify, and distribute this software for non-commercial purposes under the terms of the MIT License.
+
+### Commercial Use
+For commercial use, please reach out to me at dmitri@neureflect.com
