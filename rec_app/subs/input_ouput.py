@@ -214,7 +214,7 @@ class InputOutput(EventDispatcher):
         tasks.add(self.plot())
 
         # setup network
-        tasks.add(self.serv_client())
+        # tasks.add(self.serv_client())
 
         # start interface factory
         tasks.add(self.interface_loop())
@@ -689,6 +689,7 @@ class InputOutput(EventDispatcher):
         to the app setupname. It sets self.server to None and returns the result 
         of calling self.client.start().
         """
+    
         if self.app.SERVER:
             self.server = nw_server.Server()
             self.server.on_client_disconnected = partial(
