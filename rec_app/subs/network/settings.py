@@ -11,7 +11,7 @@ class ServClientShared():
     HTTP_PORT = 0xDA7A
     BROADCAST_PORT = 0xABBA
     BOUNDARY = "WVv-|QQ|-vVW"
-    KEY = b'O2dTXcCkL_H2jsUGZwRTRLzVEEdkFNEK7ljRtzY9Hm0='   # TODO set key in settings
+    KEY = b''   # TODO set key in settings
 
 
     SERVER_ANNOUNCE_MSG = b"WVv-|QQ|-vVW"
